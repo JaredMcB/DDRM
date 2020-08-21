@@ -1,7 +1,5 @@
 using StatsBase
 
-
-
 function Autocov(X,lags = 0:50)
     d, steps = size(X)
     A = zeros(d,d,length(lags))
