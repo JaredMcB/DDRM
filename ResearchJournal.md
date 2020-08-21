@@ -24,83 +24,56 @@ l_pad_minus = Nex >= L+1 ? cat(dims = 3,l,zeros(nu,nu,Nex - L - 1)) :  l[:,:,1:
 
 1:11 PM - Reran runme_g3_nex.jl (job 106). Another problem. Time to meet with Dr. Lin so I ran runme_g3.jl at 1:30 PM (108) hope fully I will have results to show. Didn't get results fast enough. But it looks like it went through. 
 
-1:30 PM - Met with Dr. Lin. He started with a request that I look at how the Wiener filter changes as the obs_gap decreases. So, I said I would have that done by next Wednesday. The thing is that when the obs-gap changes the resultant Wiener filter does a slightly different thing. For instance, when obs_gap is 100 the wiener filter gives you a prediction in 100 steps (whatever the time equivalent of that is). So, that would have to be considered. 
+1:30 PM - Met with Dr. Lin. He started with a request that I look at how the Wiener filter changes as the `obs_gap` decreases. So, I said I would have that done by next Wednesday. The thing is that when the `obs-gap` changes the resultant Wiener filter does a slightly different thing. For instance, when `obs_gap` is 100 the wiener filter gives you a prediction in 100 steps (whatever the time equivalent of that is). So, that would have to be considered. 
 
 Next we talked about what I was working on just now, which was adjusting the code, to allow for the z-sepectrum to be computed using fewer evenly spaced grid points on the unit circle. This lead to a discussion on how the z_spectrum was approximated. I need 
 
-3:23 PM - Ran script runme.jl:
+3:23 PM - Ran script `runme.jl`:
 ```julia
 using Dates
 
 include("Model_KSE.jl")
 
-Parameters for KSE model
+# Parameters for KSE model
 
 T = 10^5 # Length (in seconds) of time of run
-
 T_disc = Int(T/2) # Length (in seconds) of time discarded
-
 P = 21.55  # Period
-
 N = 96  # Number of fourier modes used
-
 h = 1e-3 # Timestep
-
 g = x -> randn()*cos(2π*x/P)*(randn() + sin.(2π*x/P))
-
 obs_gap = 100
 
 uu, vv, tt =  my_KSE_solver(T,
-
     T_disc  = T_disc,
-
     P = P,
-
     N = N,
-
     h = h,
-
     g = g,
-
     n_gap = obs_gap)
 
 # set save destinations
-
 sol_file = "../data/KSE_Data/KSE_sol_Lin.jld"
-
 paramaters = Dict(
-
       "T" => T,
-
       "T_disc" => T_disc,
-
       "P" => P,
-
       "N" => N,
-
       "h" => h,
-
       "g" => "x -> cos(π*x/16)*(1 + sin.(π*x/16))",
-
       "obs_gap" => obs_gap,
-
       "tm" => now())
-
 dat = Dict(
-
      "dat_uu" => uu,
-
      "dat_vv" => vv,
-
      "dat_tt" => tt)
 
 Data = merge(paramaters,dat)
-
 save(sol_file,Data)
 ```
 to produce a run of Dr. Lin's data from the paper (job 109). This didn't work because I forgot to include using JLD
 
-Monday July 27, 2020
+# Monday July 27, 2020
 
 1:01 PM - Today I got to a late start because Erin and Daniel had doctors appoinments, so me and Emeline watch Tinker Belle. Anyway, what little I have been doing this morning has been reading Chapter 23: Spectral Estimation, from 
 
@@ -115,28 +88,21 @@ Actually, I am going to try and take a break from that to get a run of the KSE w
 ⦁  Lu, Fei, Kevin K. Lin, and Alexandre J. Chorin. "Data-based stochastic model reduction for the Kuramoto--Sivashinsky equation." Physica D: Nonlinear Phenomena 340 (2017): 46-57.
 
 1:19 - Ran runme.jl (I will rename this one runme_Lin.jl) with the following parameters
-
+```julia
 ## Parameters for KSE model
-
 T = 10^5 # Length (in seconds) of time of run
-
 T_disc = Int(T/2) # Length (in seconds) of time discarded
-
 P = 21.55  # Period
-
 N = 96  # Number of fourier modes used
-
 h = 1e-3 # Timestep
-
 g = x -> randn()*cos(2π*x/P)*(randn() + sin.(2π*x/P))
-
 obs_gap = 100
-
+```
 This is job 124. The email never came for some reason but the job completed anyway. 
 
-3:15 PM - I have already downloaded the data made by the a bove job (KSE_sol_Lin.jld) and am now writing the spreadsheet to discuss it. I also read more of chapeter 23, it is interesting.
+3:15 PM - I have already downloaded the data made by the a bove job (`KSE_sol_Lin.jld`) and am now writing the spreadsheet to discuss it. I also read more of chapeter 23, it is interesting.
 
-Tuesday, July 28, 2020
+# Tuesday, July 28, 2020
 
 11:30 AM - Started late. Right now I am coding the smoothers suggested in Pollack (p. 711-12). 
 
@@ -146,35 +112,35 @@ Tuesday, July 28, 2020
 
 5:17 - It looks like using a periodogram with many more points and then smoothing is going to give me a lot better estimates of the z-spectrum. I will continue to pursue this tommorrow. Done for the day.
 
-Wednesday, July 29, 2020
+# Wednesday, July 29, 2020
 
 10:37 AM - Starting research. I will start by reading Pollack on periodograms. 
 
-12:17 PM - Seeing if I can reprdoduce the periodogram from DSP.jl
+12:17 PM - Seeing if I can reproduce the periodogram from `DSP.jl`
 
-1:16 PM - I was able to reproduce the periodogram function from DSP.jl. but I don't really know what that does form me at this point. 
+1:16 PM - I was able to reproduce the periodogram function from `DSP.jl`. but I don't really know what that does form me at this point. 
 
 2:00 PM - Meeting with Dr. Lin and group. Use better approximation techniques in code.
 
 Thursday, July 30, 2020
 
-2:00 PM - A good day so far I did a lot with the new spectral denity estimatorrs and am contemplating how to incorperate them into the code. I wrote a small tutorial/ reference sheet about the DFT and fft. There are two things I want to work on now. (1) use a periodogram analogue, some "cross-periodogram" to approximate the crossspectral density. (2) consider rational approximation of the smoothed spectral density of the predictors and preform the the spetral faztorization on the quotent. 
+2:00 PM - A good day so far I did a lot with the new spectral density estimators and am contemplating how to incorporate them into the code. I wrote a small tutorial/ reference sheet about the DFT and `fft`. There are two things I want to work on now. (1) use a periodogram analogue, some "cross-periodogram" to approximate the cross spectral density. (2) consider rational approximation of the smoothed spectral density of the predictors and preform the spectral factorization on the quotient. 
 
-4:00 PM - Fininshed writing the function z_crsspect_scalar in Model_reduction.jl it gives much smoother approximations to the cross-spectrum.
+4:00 PM - Finished writing the function `z_crsspect_scalar` in `Model_reduction.jl` it gives much smoother approximations to the cross spectrum.
 
-Friday, July 31, 2020
+# Friday, July 31, 2020
 
-12:00 PM - The goal today will be to use the smoothed periodogram to improve preformance for spectral factiorization. 
+12:00 PM - The goal today will be to use the smoothed periodogram to improve performance for spectral factorization. 
 
-12:54 PM -  I realized if I just increase Nex and L considerable the approximation becaomes a whole lot better. The problem I run into now however is memory. So, I will look into sparse array computation. 
+12:54 PM -  I realized if I just increase `Nex` and `L` considerably the approximation becomes a whole lot better. The problem I run into now however is memory. So, I will look into sparse array computation. 
 
 I put in sparse array computation and it worked out, that is I got a computation without an error. I talked to Dr. Lin for about an hour and a half. I feel a lot like I am finally fitting into the research area. 
 
-Anyway, I think I will work a little tommorow. I really need to try and work harder each day. 
+Anyway, I think I will work a little tomorrow. I really need to try and work harder each day. 
 
-⦁  Test the new Wiener filter is it stable, how does itn do. 
+* Test the new Wiener filter is it stable, how does it do. 
 
-⦁  Think about rational approximations!!
+* Think about rational approximations!!
 
 Worked: 4 hrs.
 
