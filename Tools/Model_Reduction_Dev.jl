@@ -193,7 +193,7 @@ function.
 """
 function _crosscov_con(x::AbstractVector{<:Number},
                       y::AbstractVector{<:Number},
-                      lags::UnitRange{Int})
+                      lags)
     lx = size(x,1)
     ly = size(y,1)
     lx == ly || throw(DimensionMismatch("series must be same length"))
@@ -211,7 +211,7 @@ end
 
 function _crosscov_dot(x::AbstractVector{<:Number},
                       y::AbstractVector{<:Number},
-                      lags::UnitRange{Int})
+                      lags)
     L = min(length(x),length(y))
     m = length(lags)
 
@@ -228,13 +228,13 @@ end
 
 function my_crosscov(x::AbstractVector{<:Number},
                      y::AbstractVector{<:Number},
-                     lags::UnitRange{Int})
+                     lags)
     length(lags) > 1000 ? _crosscov_con(x,y, lags) : _crosscov_dot(x,y, lags)
 end
 
 function my_crosscor(x::AbstractVector{<:Number},
                      y::AbstractVector{<:Number},
-                     lags::UnitRange{Int})
+                     lags)
     my_crosscov(x,y,lags)/my_crosscov(x,y,0:0)[1]
 end
 

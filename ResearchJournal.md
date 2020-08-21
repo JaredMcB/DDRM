@@ -289,3 +289,12 @@ I moved my research journal to the repository and converted it to markdown. Now 
 1. reproduce the model
 2. apply a form of model reduction
 3. verify results by computing and comparing autocovariances
+
+3:18 PM - Working on the scalar linear SDE (LSDE).
+
+4:18 PM - Verified numerical implementation of LSDE using `Scalar LinearSDE Model Tester.ipynb`. Now I will preform model reduction on it, I will use `Scalar LinearSDE Model Reduction.ipynb`.
+
+the model is
+$$dX_t = AX_tdt + \sigma dW_t$$
+my implementation of Euler-Maruyama produces
+$$ X_{n+1} = (1 + hA)X_n + \sqrt{h}\sigma u_n \qquad \text{where }u_n \sim N(0,1)$$
