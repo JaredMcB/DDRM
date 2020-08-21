@@ -167,8 +167,7 @@ I realized that the reason the process was being killed was it that I forgot to 
 5:30 PM - I am done for the day. I thought about the approximation problem. One thing I've got is that it should be a sort of least-square things since we have many more points then degrees of freedom in the approximation. 
 
 10:15 PM - This evening the calculation ran on my computer and here is the output:
-```
-Sol save location: Data\KSE_sol_Lin.jld
+```Sol save location: Data\KSE_sol_Lin.jld
 WF save location: Data\KSE_wf_Lin-Mo10000.jld
 redmodrun save location: Data\KSE_rmrun_Lin-Mo10000.jld
 the Parameters ===================
@@ -273,3 +272,20 @@ Thursday, August 20, 2020
 10:57 AM - This morning I got it all working the plan will be to leave my laptop at the school now and do all the work I need to do at home. This will confine me to the living room, but saves me transporting my laptop. I plan to basically work at school these days, anyway. 
 
 Now, The goal is to start from the bottom and work my way up to the top. Basically, I do what before took months in a manner of days. First, I'll start with a scalar linear process and use the software in `
+
+I moved my research journal to the repository and converted it to markdown. Now it will be travel with the code and is easily readable on github.
+
+12:00 PM - Now, I get to work on the code. Here is the
+
+## Todo
+### Examples
+1. scalar linear
+2. vector linear
+3. scalar nonlinear Langevin (double well)
+4. general more general state space models (with easily computed spectral densities)
+5. KSE!
+
+### For each example
+1. reproduce the model
+2. apply a form of model reduction
+3. verify results by computing and comparing autocovariances
