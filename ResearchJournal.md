@@ -29,7 +29,7 @@ l_pad_minus = Nex >= L+1 ? cat(dims = 3,l,zeros(nu,nu,Nex - L - 1)) :  l[:,:,1:
 Next we talked about what I was working on just now, which was adjusting the code, to allow for the z-sepectrum to be computed using fewer evenly spaced grid points on the unit circle. This lead to a discussion on how the z_spectrum was approximated. I need 
 
 3:23 PM - Ran script runme.jl:
-```{julia}
+```julia
 using Dates
 
 include("Model_KSE.jl")
