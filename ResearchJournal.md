@@ -294,7 +294,6 @@ I moved my research journal to the repository and converted it to markdown. Now 
 
 4:18 PM - Verified numerical implementation of LSDE using `Scalar LinearSDE Model Tester.ipynb`. Now I will preform model reduction on it, I will use `Scalar LinearSDE Model Reduction.ipynb`.
 
-the model is
-$$dX_t = AX_tdt + \sigma dW_t$$
-my implementation of Euler-Maruyama produces
-$$ X_{n+1} = (1 + hA)X_n + \sqrt{h}\sigma u_n \qquad \text{where }u_n \sim N(0,1)$$
+(I inserted some latex in `Scalar LinearSDE Model Reduction.ipynb`)
+
+5:00 PM - Done for the day. I computed the wiener filter by hand and got exactly (1 + hA) for h_0 and 0 everywhere else. Monday, I will continue to work in this direction. 
