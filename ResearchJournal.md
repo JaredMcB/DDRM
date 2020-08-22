@@ -296,4 +296,4 @@ I moved my research journal to the repository and converted it to markdown. Now 
 
 (I inserted some latex in `Scalar LinearSDE Model Reduction.ipynb`)
 
-5:00 PM - Done for the day. I computed the wiener filter by hand and got exactly (1 + hA) for h_0 and 0 everywhere else. Monday, I will continue to work in this direction. 
+5:00 PM - Done for the day. I computed the wiener filter by hand and got exactly (1 + hA) for h_0 and 0 everywhere else. Monday, I will continue to work in this direction. This is not however what the notebook says. I think that the autocorrelation time for my example is too, big so I don't have enought independent points. 
