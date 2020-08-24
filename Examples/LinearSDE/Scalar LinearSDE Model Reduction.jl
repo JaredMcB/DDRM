@@ -11,14 +11,18 @@ A = reshape([-0.5],1,1)
 σ = reshape([1],1,1)
 Xo = [1]
 t_disc = 1000
-gap = 1
+gap = 10
 scheme = "EM"
 
+d = size(A,1)
+
 t_start = 0
-t_stop  = 1e4
+t_stop  = 1e6
 h       = 1e-2
 
-X = modgen_LSDE(t_start,t_stop,h,
+Δt      = h*gap
+
+@time X = modgen_LSDE(t_start,t_stop,h,
     A = A,
     σ = σ,
     Xo = Xo,
@@ -29,7 +33,7 @@ X = modgen_LSDE(t_start,t_stop,h,
 N = size(X,2)
 
 nfft = nextfastfft(N)
-X = X[:,1:nfft]
+X = [X zeros(d,nfft - N)]
 
 X2 = copy(X)
 X1 = copy(X)
@@ -38,16 +42,18 @@ lags = -10000:10000
 A1 = my_crosscor(X1[:],X1[:],lags)
 A2 = my_crosscor(X2[:],X2[:],lags)
 
-plot(lags*h,[A1 A2])
+plot(lags*h*gap,A2)
 
-τ_exp1, τ_int1 = auto_times(X1[:])
-
-
-
+τ_exp1, τ_int1 = auto_times(X1[:])*Δt
+τ_exp2, τ_int2 = auto_times(X2[:])*Δt
+N_ef1 = N*Δt/τ_int1
+N_ef2 = N*Δt/τ_int2
 
 Psi(x) = x
 
 @time h_wf = get_wf(X,Psi)
+
+h_wf
 
 1 .+ h*A
 

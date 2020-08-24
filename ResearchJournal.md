@@ -328,3 +328,13 @@ h       = 1e-2
 from `Model_Reduction_Dev.jl` to `AnalysisToolbox.jl`.
 
 I also updated `auto_times` in the `AnalysisToolbox.jl`. There was a problem with me lagging the length of the series. Inserting the  "- 1" here was required, in `L = minimum([lx - 1, 10^6])`.
+
+3:00 PM - I continue to investigate the LSDE model. It seems that the number of effective samples was a role to play in the accuracy of the wiener filter. So, I will try to quantify this.
+
+3:58 PM - It is apparent that this issue I began the day investigating is a problem with the effective number of samples. When A = -0.05 the autocorrelation time I computed with `auto_times` was about 20 seconds. run for 9,000 seconds this made the effective number of samples about 500, which would seem unacceptable. so I ran it with `t_stop = 1e5` and went from `h_wf[1,1,1] = -.56` to `h_wf[1,1,1] = -1.2` which is better. (the WF took 81 secs to compute with a series of size 9,920,232).
+
+I started a new session and now what to try `t_stop = 1e6` but with `gap = 10` this should take up the about the same memory but stretch further, as in have about 10 times more effective samples. This got the wiener filter even closer to the solution.  Now I try `gap = 100` and `t_stop = 1e7`
+
+I think I want to give thelio a job. I would like to investigate the convergence of the Wiener filter.
+
+4:49 PM - I am done for the day. Tomorrow I will see how these wiener filters run. 

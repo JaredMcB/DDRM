@@ -37,13 +37,17 @@ function modgen_LSDE(t_start,t_stop,h;
     steps_disc = floor(Int,(t_disc - t_start)/h) + 1
     steps = steps_tot - steps_disc
 
-    W = σ * randn(nu,steps_tot)
-    X = zeros(d,steps_tot); X[:,1] = Xo
+    num_obs = floor(Int, steps/gap) + 1
+
+    X = zeros(d,num_obs)
+    x = Xo
     for i = 2:steps_tot
-        X[:,i] = (I + h*A)*X[:,i-1] + sqrt(h)*W[:,i]
+        x = (I + h*A)*x + sqrt(h)*σ*randn(nu,1)
+        if i >= steps_disc && (i - steps_disc) % gap == 0
+            X[:,(i - steps_disc) ÷ gap + 1] = x
+        end
     end
-    W = W[:,steps_disc+1:end]
-    X = X[:,steps_disc+1:gap:end]
+    X
 end
 
 
