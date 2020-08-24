@@ -296,4 +296,35 @@ I moved my research journal to the repository and converted it to markdown. Now 
 
 (I inserted some latex in `Scalar LinearSDE Model Reduction.ipynb`)
 
-5:00 PM - Done for the day. I computed the wiener filter by hand and got exactly (1 + hA) for h_0 and 0 everywhere else. Monday, I will continue to work in this direction. This is not however what the notebook says. I think that the autocorrelation time for my example is too, big so I don't have enought independent points. 
+5:00 PM - Done for the day. I computed the wiener filter by hand and got exactly (1 + hA) for h_0 and 0 everywhere else. Monday, I will continue to work in this direction. This is not however what the notebook says. I think that the autocorrelation time for my example is too, big so I don't have enought independent points.
+
+
+# Monday, August 24, 2020
+
+11:04 AM - Last Friday I computed the WF by hand and got exactly what makes sense. I will start there today and open up the program to make sure I get this result numerically. Goal: have this working by noon.  
+
+The particular case I start with is
+```julia
+A = reshape([-0.05],1,1)
+σ = reshape([1],1,1)
+Xo = [1]
+t_disc = 1000
+gap = 1
+scheme = "EM"
+
+t_start = 0
+t_stop  = 1e4
+h       = 1e-2
+```
+
+11:38 AM - I rearranged this a trifle, I moved the functions
+* `_crosscov_con`
+* `_crosscov_dot`
+* `my_crosscov`
+* `my_crosscor`
+* `z_crossspect_fft`
+* `z_spect_scalar`
+* `z_crossspect_scalar`
+from `Model_Reduction_Dev.jl` to `AnalysisToolbox.jl`.
+
+I also updated `auto_times` in the `AnalysisToolbox.jl`. There was a problem with me lagging the length of the series. Inserting the  "- 1" here was required, in `L = minimum([lx - 1, 10^6])`.

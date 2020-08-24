@@ -5,7 +5,7 @@ using Polynomials
 using StatsBase
 using SparseArrays
 
-
+include("AnalysisToolbox.jl")
 
 """
     `get_wf` provides the causal wiener filter that best approximates `signal`
@@ -185,131 +185,6 @@ function _window(L; win = "Par",two_sided = true)
     end
     two_sided ? [lam[L+1:-1:2]; lam] : lam
 end
-
-"""
-    my_crosscov
-I don't remember why I wrote this or if it has any advantage over some builtin
-function.
-"""
-function _crosscov_con(x::AbstractVector{<:Number},
-                      y::AbstractVector{<:Number},
-                      lags)
-    lx = size(x,1)
-    ly = size(y,1)
-    lx == ly || throw(DimensionMismatch("series must be same length"))
-
-    if maximum(lags) > lx
-        println("lag cannot be greater than lenght of series")
-        lags = filter(x -> abs(x) < lx, lags)
-    end
-
-    x .-= mean(x)
-    y .-= mean(y)
-    C = conv(x,conj(reverse(y)))/lx
-    C = [C[k + lx] for k in lags]
-end
-
-function _crosscov_dot(x::AbstractVector{<:Number},
-                      y::AbstractVector{<:Number},
-                      lags)
-    L = min(length(x),length(y))
-    m = length(lags)
-
-    zx = x .- mean(x)
-    zy = y .- mean(y)
-
-    C = zeros(Complex,m)
-    for k = 1:m
-        l = lags[k]
-        C[k] = ( l >= 0 ? dot(zx[1+l : L],zy[1 : L-l]) : dot(zx[1 : L+l],zy[1-l : L]))/L
-    end
-    C
-end
-
-function my_crosscov(x::AbstractVector{<:Number},
-                     y::AbstractVector{<:Number},
-                     lags)
-    length(lags) > 1000 ? _crosscov_con(x,y, lags) : _crosscov_dot(x,y, lags)
-end
-
-function my_crosscor(x::AbstractVector{<:Number},
-                     y::AbstractVector{<:Number},
-                     lags)
-    my_crosscov(x,y,lags)/my_crosscov(x,y,0:0)[1]
-end
-
-
-"""
-    z_crossspect_fft(sig::Array{Complex{Float64},2},pred::Array{Complex{Float64},2};
-n = 3, p = 2500, win = "Par")
-
-The output has length nfft = nextfastfft(steps)
-"""
-function z_crossspect_fft(
-    sig,
-    pred::Array{T,2} where T <: Number;
-    nfft = 0,
-    n = 3,
-    p = 2500,
-    win = "Par")
-
-    ## sig = d x steps, pred = nu x steps
-    d, stepsx = size(sig)
-    nu, stepsy = size(pred)
-
-    stepsx == stepsy || print("sig and pred are not the same length. Taking min.")
-    steps = minimum([stepsx stepsy])
-    nfft = nfft == 0 ? nextfastfft(steps) : nfft
-    steps == nfft || println("adjusted no. of steps from $steps to $nfft")
-    steps = nfft
-
-    z_spect_mat = zeros(Complex, d, nu, nfft)
-    for i = 1 : d
-        for j = 1 : nu
-            z_spect_mat[i,j,:] = z_crsspect_scalar(sig[i,:],pred[j,:],
-                                                  nfft = nfft, n = n, p = p)
-        end
-    end
-    z_spect_mat
-end
-
-function z_spect_scalar(sig; n = 3, p=100, ty = "ave")
-    μ = _smoother(n,p,ty = "ave")
-
-    siz = length(sig)
-    nfft = nextfastfft(siz)
-    sig_pad = [sig; zeros(nfft - siz)]
-
-    peri = abs.(fft(sig_pad)).^2/nfft
-    peri_pad = [peri[end - p*n + 1 : end]; peri; peri[1:p*n]]
-    z_spect_smoothed = conv(μ,peri_pad)[2n*p:2n*p+nfft-1]
-end
-
-"""
-z_crsspect_scalar has output of size nfft
-"""
-function z_crsspect_scalar(sig,pred; nfft = 0, n = 3, p=100, ty = "ave")
-    μ = _smoother(n,p,ty = "ave")
-
-    l_sig = length(sig)
-    l_pred = length(pred)
-    l_sig == l_pred || println("sizes must be the same, taking min and truncating")
-    l = min(l_sig,l_pred)
-
-    nfft = nfft == 0 ? nfft = nextfastfft(l) : nfft
-
-    # nfft == l || println("adjusted size from $l to $nfft")
-    sig_pad = l < nfft ? [sig[1:l]; zeros(nfft - l)] : sig[1:nfft]
-    pred_pad = l < nfft ? [pred[1:l]; zeros(nfft - l)] : pred[1:nfft]
-
-    fftsig = fft(sig_pad)
-    fftpred = conj(fft(pred_pad))
-
-    peri = fftsig .* fftpred / nfft
-    peri_pad = [peri[end - p*n + 1 : end]; peri; peri[1:p*n]]
-    z_crsspect_smoothed = conv(μ,peri_pad)[2n*p:2n*p+nfft-1]
-end
-
 
 
 """
