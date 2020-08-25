@@ -1,30 +1,27 @@
+# include("modgen_LSDE.jl")
+# include("../../Tools/Model_Reduction_Dev.jl")
+
+include("modgen_LSDE.jl")
+include("..\\..\\Tools\\Model_Reduction_Dev.jl")
+
 using JLD
 using PyPlot
 using DSP: nextfastfft
 
-include"../../Tools/modgen_LSDE.jl")
-include("../../Tools/Model_Reduction_Dev.jl")
+function runner(;
+    A       = reshape([-0.5],1,1),
+    σ       = reshape([1],1,1),
+    Xo      = [1],
+    t_disc  = 1000,
+    gap     = 10,
+    scheme  = "EM",
+    d       = size(A,1),
+    t_start = 0,
+    t_stop  = 1e6,
+    h       = 1e-2,
+    Δt      = h*gap,
+    M_out   = 100)
 
-#Parameters
-A       = reshape([-0.5],1,1)
-σ       = reshape([1],1,1)
-Xo      = [1]
-t_disc  = 1000
-gap     = 10
-scheme  = "EM"
-d       = size(A,1)
-t_start = 0
-t_stop  = 1e7
-h       = 1e-2
-Δtry    = h*gap
-
-# Study the convergence of the wiener filter.
-
-T_stop = [1e4, 1e5, 1e6, 1e7]
-
-for i = 1:length(T_stop)
-    println("Generating data for t_stop = $T_stop[i]")
-    println("it took :")
     @time X = modgen_LSDE(t_start,t_stop,h,
         A = A,
         σ = σ,
@@ -33,19 +30,43 @@ for i = 1:length(T_stop)
         gap = gap,
         scheme = scheme)
 
-    # Groom the data
-    N = size(X,2)
-    nfft = nextfastfft(N)
+    N       = size(X,2)
+    nfft    = nextfastfft(N)
     X = [X zeros(d,nfft - N)]
 
-    τ_exp, τ_int = auto_times(X1[:])*Δt
-    N_ef = floor(N*Δt/τ_int)
-    println("tau_exp = $τ_exp")
-    println("tau_int = $τ_int")
-    println("N_ef = $N_ef")
+    τ_exp, τ_int    = auto_times(X[:])*Δt
+    N_eff           = N*Δt/τ_int
 
+    println("Time to get h_wf: ")
     Psi(x) = x
+    @time h_wf_num = get_wf(X,Psi, M_out = M_out)
 
-    @time h_wf = get_wf(X,Psi)
+    h_wf_ana = zeros(1,1,M_out)
+    h_wf_ana[1,1,1] = (1 .+ h*A)[1]
 
-    
+    err     = abs.(h_wf_ana - h_wf_num)
+    comp1_err = err[1,1,1]
+    tail_err = maximum(err[:,:,2:end])
+    err_sum = sum(err)
+
+    println("======================")
+    println("N_eff : $N_eff")
+    println("comp1_err : $comp1_err")
+    println("tail_err : $tail_err")
+    println("======================")
+    [N_eff; comp1_err; tail_err]
+end
+
+data = zeros(3,3)
+T_stop = map(x -> 10^x, 3:.5:4)
+M = 2
+
+for i in 1:length(T_stop)
+    for j in 1:M
+        dat = runner(t_stop = T_stop[i])
+        data(:,i) .+=  dat/M
+    end
+end
+
+# save("/u5/jaredm/data/LSDE_Data/NoiseVNeff.jld", "data", data)
+save("LSDE_Data\\NoiseVNeff.jld", "data", data)

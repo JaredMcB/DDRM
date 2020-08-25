@@ -6,40 +6,110 @@ using PyPlot
 using DSP: nextfastfft
 
 
-A       = reshape([-0.5],1,1)
-σ       = reshape([1],1,1)
-Xo      = [1]
-t_disc  = 1000
-gap     = 10
-scheme  = "EM"
-d       = size(A,1)
-t_start = 0
-t_stop  = 1e6
-h       = 1e-2
-Δt      = h*gap
-M_out   = 100
+# A       = reshape([-0.5],1,1)
+# σ       = reshape([1],1,1)
+# Xo      = [1]
+# t_disc  = 1000
+# gap     = 10
+# scheme  = "EM"
+# d       = size(A,1)
+# t_start = 0
+# t_stop  = 1e6
+# h       = 1e-2
+# Δt      = h*gap
+# M_out   = 100
+#
+# @time X = modgen_LSDE(t_start,t_stop,h,
+#     A = A,
+#     σ = σ,
+#     Xo = Xo,
+#     t_disc = t_disc,
+#     gap = gap,
+#     scheme = scheme)
+#
+# N       = size(X,2)
+# nfft    = nextfastfft(N)
+# X = [X zeros(d,nfft - N)]
+#
+# τ_exp, τ_int    = auto_times(X[:])*Δt
+# N_eff           = N*Δt/τ_int
+#
+# println("Time to get h_wf: ")
+# Psi(x) = x
+# @time h_wf_num = get_wf(X,Psi, M_out = M_out)
+#
+# h_wf_ana = zeros(1,1,M_out)
+# h_wf_ana[1,1,1] = (1 .+ h*A)[1]
+#
+# err     = abs.(h_wf_ana - h_wf_num)
+# comp1_err = err[1,1,1]
+# tail_err = maximum(err[:,:,2:end])
+# err_sum = sum(err)
+#
+# println("N_eff : $N_eff")
+# println("comp1_err : $comp1_err")
+# println("tail_err : $tail_err")
 
-@time X = modgen_LSDE(t_start,t_stop,h,
-    A = A,
-    σ = σ,
-    Xo = Xo,
-    t_disc = t_disc,
-    gap = gap,
-    scheme = scheme)
+function runner(;
+    A       = reshape([-0.5],1,1),
+    σ       = reshape([1],1,1),
+    Xo      = [1],
+    t_disc  = 1000,
+    gap     = 10,
+    scheme  = "EM",
+    d       = size(A,1),
+    t_start = 0,
+    t_stop  = 1e6,
+    h       = 1e-2,
+    Δt      = h*gap,
+    M_out   = 100)
 
-N       = size(X,2)
-nfft    = nextfastfft(N)
-X = [X zeros(d,nfft - N)]
+    @time X = modgen_LSDE(t_start,t_stop,h,
+        A = A,
+        σ = σ,
+        Xo = Xo,
+        t_disc = t_disc,
+        gap = gap,
+        scheme = scheme)
 
-τ_exp, τ_int    = auto_times(X[:])*Δt
-N_eff           = N*Δt/τ_int
+    N       = size(X,2)
+    nfft    = nextfastfft(N)
+    X = [X zeros(d,nfft - N)]
 
-println("Time to get h_wf: ")
-Psi(x) = x
-@time h_wf_num = get_wf(X,Psi, M_out = M_out)
+    τ_exp, τ_int    = auto_times(X[:])*Δt
+    N_eff           = N*Δt/τ_int
 
-h_wf_ana = zeros(1,1,M_out)
-h_wf_ana[1,1,1] = (1 .+ h*A)[1]
+    println("Time to get h_wf: ")
+    Psi(x) = x
+    @time h_wf_num = get_wf(X,Psi, M_out = M_out)
 
-err     = abs.(h_wf_ana - h_wf_num)
-err_sum = sum(err)
+    h_wf_ana = zeros(1,1,M_out)
+    h_wf_ana[1,1,1] = (1 .+ h*A)[1]
+
+    err     = abs.(h_wf_ana - h_wf_num)
+    comp1_err = err[1,1,1]
+    tail_err = maximum(err[:,:,2:end])
+    err_sum = sum(err)
+
+    println("N_eff : $N_eff")
+    println("comp1_err : $comp1_err")
+    println("tail_err : $tail_err")
+    println("======================")
+    [N_eff; comp1_err; tail_err]
+end
+
+runner(t_stop = 1e5)
+
+runner(t_stop = 1e4)
+
+runner(t_stop = 1e7)
+
+data = zero(3,9)
+T_stop = map(x -> 10^x, 3:.5:7)
+
+for i in 1:length(T_stop)
+    for j in 1:M
+        dat = runner(t_stop = T_stop[i])
+        data(:,i) .+=  dat/M
+    end
+end

@@ -83,7 +83,7 @@ function z_crossspect_fft(
     stepsx == stepsy || print("sig and pred are not the same length. Taking min.")
     steps = minimum([stepsx stepsy])
     nfft = nfft == 0 ? nextfastfft(steps) : nfft
-    steps == nfft || println("adjusted no. of steps from $steps to $nfft")
+    # steps == nfft || println("adjusted no. of steps from $steps to $nfft")
     steps = nfft
 
     z_spect_mat = zeros(Complex, d, nu, nfft)
@@ -138,7 +138,7 @@ function auto_times(x::AbstractVector{<:Real};plt = false)
     L = minimum([lx - 1, 10^6])
 
     lags = 0:L
-    A = my_autocov(x,lags)
+    A = real(my_autocov(x,lags))
 
     end_int = try
                 findall(A.<0)[1] - 1
@@ -147,7 +147,7 @@ function auto_times(x::AbstractVector{<:Real};plt = false)
                     L
                 end
             end
-    end_exp = Int64(round(end_int/3))
+    end_exp = Int64(round(end_int/3)) #what if int_int < 2? we get and error
 
     A_mat = [ones(end_exp,1) reshape(1:end_exp,end_exp,1)]
     b = inv(A_mat'*A_mat)*A_mat'*log.(A[1:end_exp])

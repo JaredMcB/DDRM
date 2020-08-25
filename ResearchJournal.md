@@ -365,6 +365,14 @@ M_out   = 100
 ```
 
 ### Experiment Table
-| `A` | `t_stop` | `N_eff` | First comp err | Tail err |
-|---  |---       |---      |---             |---       |
-|-0.5 | 1e6      |  ≃ 5e5  | ≃ 5.95e-3     | 4.04e-5  |
+| `A` | `t_stop` |`gap` | `N_eff`     | First comp err | Tail err |
+|---  |---       |---   |---          |---             |---       |
+|-0.5 | 1e7      | 10   | ≃ 4.98e6   | ≃ 4.97e-3     | 4.57e-5   |
+|-0.5 | 1e6      | 10   | ≃ 4.9?e5   | ≃ 5.95e-3     | 4.04e-5   |
+|-0.5 | 1e6      | 10   | ≃ 4.94e5   | ≃ 4.94e-3     | 4.04e-5   |
+|-0.5 | 1e5      | 10   | ≃ 5.14e4   | ≃ 5.47e-3     | 7.41e-4   |
+|-0.5 | 1e4      | 10   | ≃ 4.34e3   | ≃ 5.46e-2     | 9.24e-2   |
+
+
+3:19 PM - Back to work.
+4:29 AM - Worked on the thelio script. Had to debug a little. 
