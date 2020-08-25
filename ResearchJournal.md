@@ -337,4 +337,34 @@ I started a new session and now what to try `t_stop = 1e6` but with `gap = 10` t
 
 I think I want to give thelio a job. I would like to investigate the convergence of the Wiener filter.
 
-4:49 PM - I am done for the day. Tomorrow I will see how these wiener filters run. 
+4:49 PM - I am done for the day. Tomorrow I will see how these wiener filters run.
+
+
+# Tuesday, August 25, 2020
+
+8:45 AM - Started research for the day. The goal for today in the roughly three hours I have to research will be to learn all I need to from the scalar linear SDE experiments.
+
+Yesterday, I found that the effective number of samples had a effect on the accuracy of the WF. I would like to study that effect and (1) find how the effective number of samples scales with the errors. (2) I can compute the autocorrelation time by hand, I would like to see how it compares to what I have estimated. (3) Then I would like to run the reduced models, perhaps with an optimal noise (?).
+
+8:54 AM - How does the noise scale with the effective number of samples?
+
+### Parameters:
+```julia
+A       = reshape([-0.5],1,1)
+σ       = reshape([1],1,1)
+Xo      = [1]
+t_disc  = 1000
+gap     = 10
+scheme  = "EM"
+d       = size(A,1)
+t_start = 0
+t_stop  = 1e6
+h       = 1e-2
+Δt      = h*gap
+M_out   = 100
+```
+
+### Experiment Table
+| `A` | `t_stop` | `N_eff` | First comp err | Tail err |
+------------------------------------------------------
+|-0.5 | 1e6      |  ≃ 5e5| ≃ 5.95e-3        | 4.04e-5 |
