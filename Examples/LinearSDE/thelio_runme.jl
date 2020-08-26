@@ -21,7 +21,8 @@ function runner(;
     h       = 1e-2,
     Δt      = h*gap,
     M_out   = 100)
-
+    println("===========t_stop = $t_stop===========")
+    println("Time to get data: ")
     @time X = modgen_LSDE(t_start,t_stop,h,
         A = A,
         σ = σ,
@@ -57,16 +58,20 @@ function runner(;
     [N_eff; comp1_err; tail_err]
 end
 
-data = zeros(3,3)
-T_stop = map(x -> 10^x, 3:.5:4)
+
+T_stop = map(x -> 10^x, 4:.5:6)
+data = zeros(3,length(T_stop))
 M = 2
 
 for i in 1:length(T_stop)
     for j in 1:M
         dat = runner(t_stop = T_stop[i])
-        data(:,i) .+=  dat/M
+        data[:,i] .+=  dat/M
     end
 end
 
 # save("/u5/jaredm/data/LSDE_Data/NoiseVNeff.jld", "data", data)
-save("LSDE_Data\\NoiseVNeff.jld", "data", data)
+save("c:\\Users\\JaredMcBride\\Desktop\\DDMR\\Examples\\LinearSDE\\LSDE_Data\\NoiseVNeff.jld", "data", data)
+data
+
+loglog(data[1,:],[data[2,:] data[3,:]])
