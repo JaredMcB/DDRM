@@ -98,12 +98,6 @@ function runner(;
     [N_eff; comp1_err; tail_err]
 end
 
-runner(t_stop = 1e5)
-
-runner(t_stop = 1e4)
-
-runner(t_stop = 1e7)
-
 data = zero(3,9)
 T_stop = map(x -> 10^x, 3:.5:7)
 
