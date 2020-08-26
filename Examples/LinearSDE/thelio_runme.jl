@@ -1,8 +1,8 @@
-# include("modgen_LSDE.jl")
-# include("../../Tools/Model_Reduction_Dev.jl")
-
 include("modgen_LSDE.jl")
-include("..\\..\\Tools\\Model_Reduction_Dev.jl")
+include("../../Tools/Model_Reduction_Dev.jl")
+
+# include("modgen_LSDE.jl")
+# include("..\\..\\Tools\\Model_Reduction_Dev.jl")
 
 using JLD
 using PyPlot
@@ -59,9 +59,9 @@ function runner(;
 end
 
 
-T_stop = map(x -> 10^x, 4:.5:6)
+T_stop = map(x -> 10^x, 4:.5:7)
 data = zeros(3,length(T_stop))
-M = 2
+M = 20
 
 for i in 1:length(T_stop)
     for j in 1:M
@@ -70,8 +70,5 @@ for i in 1:length(T_stop)
     end
 end
 
-# save("/u5/jaredm/data/LSDE_Data/NoiseVNeff.jld", "data", data)
-save("c:\\Users\\JaredMcBride\\Desktop\\DDMR\\Examples\\LinearSDE\\LSDE_Data\\NoiseVNeff.jld", "data", data)
-data
-
-loglog(data[1,:],[data[2,:] data[3,:]])
+save("/u5/jaredm/data/LSDE_Data/NoiseVNeff.jld", "data", data)
+# save("c:\\Users\\JaredMcBride\\Desktop\\DDMR\\Examples\\LinearSDE\\LSDE_Data\\NoiseVNeff.jld", "data", data)
