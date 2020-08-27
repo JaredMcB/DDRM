@@ -1,4 +1,4 @@
-using DSP, Statistics
+using DSP, Statistics, LinearAlgebra
 
 """
     my_crosscov

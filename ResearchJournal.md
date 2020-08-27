@@ -375,4 +375,178 @@ M_out   = 100
 
 
 3:19 PM - Back to work.
-4:29 AM - Worked on the thelio script. Had to debug a little. 
+
+4:29 AM - Worked on the thelio script. Had to debug a little.
+
+
+# Wednesday, August 26, 2020
+
+11:49 AM - Got started.
+
+12:23 PM - Ready to run thelio_runme.jl on thelio. I cloned my github repo on to thelio.
+Heris thelio_runme.jl:
+```julia
+include("modgen_LSDE.jl")
+include("../../Tools/Model_Reduction_Dev.jl")
+
+# include("modgen_LSDE.jl")
+# include("..\\..\\Tools\\Model_Reduction_Dev.jl")
+
+using JLD
+using PyPlot
+using DSP: nextfastfft
+
+function runner(;
+    A       = reshape([-0.5],1,1),
+    σ       = reshape([1],1,1),
+    Xo      = [1],
+    t_disc  = 1000,
+    gap     = 10,
+    scheme  = "EM",
+    d       = size(A,1),
+    t_start = 0,
+    t_stop  = 1e6,
+    h       = 1e-2,
+    Δt      = h*gap,
+    M_out   = 100)
+    println("===========t_stop = $t_stop===========")
+    println("Time to get data: ")
+    @time X = modgen_LSDE(t_start,t_stop,h,
+        A = A,
+        σ = σ,
+        Xo = Xo,
+        t_disc = t_disc,
+        gap = gap,
+        scheme = scheme)
+
+    N       = size(X,2)
+    nfft    = nextfastfft(N)
+    X = [X zeros(d,nfft - N)]
+
+    τ_exp, τ_int    = auto_times(X[:])*Δt
+    N_eff           = N*Δt/τ_int
+
+    println("Time to get h_wf: ")
+    Psi(x) = x
+    @time h_wf_num = get_wf(X,Psi, M_out = M_out)
+
+    h_wf_ana = zeros(1,1,M_out)
+    h_wf_ana[1,1,1] = (1 .+ h*A)[1]
+
+    err     = abs.(h_wf_ana - h_wf_num)
+    comp1_err = err[1,1,1]
+    tail_err = maximum(err[:,:,2:end])
+    err_sum = sum(err)
+
+    println("======================")
+    println("N_eff : $N_eff")
+    println("comp1_err : $comp1_err")
+    println("tail_err : $tail_err")
+    println("======================")
+    [N_eff; comp1_err; tail_err]
+end
+
+
+T_stop = map(x -> 10^x, 4:.5:7)
+data = zeros(3,length(T_stop))
+M = 20
+
+for i in 1:length(T_stop)
+    for j in 1:M
+        dat = runner(t_stop = T_stop[i])
+        data[:,i] .+=  dat/M
+    end
+end
+
+save("/u5/jaredm/data/LSDE_Data/NoiseVNeff.jld", "data", data)
+# save("c:\\Users\\JaredMcBride\\Desktop\\DDMR\\Examples\\LinearSDE\\LSDE_Data\\NoiseVNeff.jld", "data", data)
+```
+
+Before I run it I need to analysis memory cost. so, the longest time series will be for `t_stop = 1e7` which since `gap = 10` and `t-disc = 1000` will be of size ≃1x1x999900, so about 8 MB. Not too much. Job 131.
+
+Immediate error:
+```ERROR: LoadError: InitError: PyError (PyImport_ImportModule
+
+The Python package matplotlib could not be found by pyimport. Usually this means
+that you did not install matplotlib in the Python version being used by PyCall.
+
+PyCall is currently configured to use the Python version at:
+
+/usr/bin/python3
+```
+I did not want to address it just now so I simple commented out `using PyPlot` and sent it back. Job 132.
+
+2:22 PM - Job 132 still running, I think `M = 20` is what's taking so long.
+
+Now to finally investigate the convergence of the factorization algorithm.
+
+3:52 PM - I did a convergence study of the CKMS factorization algorithm. The main idea is the following
+
+```julia
+NN_ckms = map(x-> floor(Int, 10^x),2:.25:4)
+LL = complex(zeros(1,1,L+1,length(NN_ckms)))
+for i in 1:length(NN_ckms)
+    LL[:,:,:,i] = spectfact_matrix_CKMS(A_v2_smoothed,
+        N_ckms = NN_ckms[i])
+end
+
+Norm = map(i -> norm(LL[1,1,:,9] .- LL[1,1,:,i],Inf),1:9)
+loglog(NN_ckms, Norm)
+```
+
+`NN_ckms` is the array of the various `N_ckms` used in the study. `LL` holds the factored coefficients. So, I did my convergence study using the data for the KSE model, the parameters were the same used in Dr. Lin's work. I used the modes 2,3,4 and found that the algorithm converged at about machine epsilon at 5.5e3.
+in one dimension it was around 1.5e3. Here is another look:
+
+```julia
+pred = vv[3:6,:]
+nu, stepsx = size(pred)
+
+steps = stepsx
+nfft = nextfastfft(stepsx)
+nffth = Int(floor(nfft/2))
+
+L = 1500
+lags = -L:L
+
+# Smoothed viewing window
+lam = _window(L, win = "Par", two_sided = false)
+
+R_pred_smoothed = zeros(Complex,nu,nu,length(0:L))
+for i = 1 : nu
+    for j = 1 : nu
+        temp = my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
+        temp = .5*(temp[L+1:end] + conj(reverse(temp[1:L+1])))
+        R_pred_smoothed[i,j,:] = lam .* temp
+    end
+end
+R_pred_smoothed
+plot((0:L)*Δt,real(R_pred_smoothed[2,2,:]))
+
+NN_ckms = map(x-> floor(Int, 10^x),2:.25:5)
+LL = complex(zeros(nu,nu,L+1,length(NN_ckms)))
+for i in 1:length(NN_ckms)
+    LL[:,:,:,i] = spectfact_matrix_CKMS(R_pred_smoothed,
+        N_ckms = NN_ckms[i])
+end
+
+Norm = zeros(9,0)
+for i = 1:nu
+    for j = 1:nu
+        global Norm
+        Norm = [Norm map(k -> norm(LL[i,j,:,9] .- LL[i,j,:,k],Inf),1:9)]
+    end
+end
+
+
+loglog(NN_ckms, Norm)
+```
+The result is saved in `Figure8-26-2020.png` in the data folder in tools.
+
+4:40 PM - Make the eps, which is in the stopping criterion it is a tolerance of the ∞-norm of the consecutive outputs, make this a tunable parameter consecutive outputs a tunable parameter. The paper suggested that `N_ckms = 200` usually work should work. I think that that is true when the number of terms is small. These
+jobs, I am using it for have very many parameters. So, here is the table
+
+| d = 1 | d = 3| d = 4 |
+|---    |---   |---    |
+|≃1.5e3 |≃5.65e3|≃5.65e3|
+
+A finer grid of number of iterations may be helpful. Either way they all converged by 1e4.

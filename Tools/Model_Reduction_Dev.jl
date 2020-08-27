@@ -111,7 +111,7 @@ function spectfact_matrix_CKMS(P; N_ckms = 200)
     l
 end
 
-function spectfact_matrix_CKMS_pinv(P; N_ckms = 200, rtol = 1e-6)
+function spectfact_matrix_CKMS_pinv(P; N_ckms = 1500, rtol = 1e-6)
     d = size(P)[1];
     m = size(P)[3] - 1
 
