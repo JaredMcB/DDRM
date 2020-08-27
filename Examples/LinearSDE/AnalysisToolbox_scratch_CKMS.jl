@@ -6,6 +6,8 @@ using FFTW
 include("c:\\Users\\JaredMcBride\\Desktop\\"*
             "DDMR\\Tools\\AnalysisToolbox.jl")
 include("..\\..\\Tools\\Model_Reduction_Dev.jl")
+include("AnalysisToolbox_scratch.jl")
+
 Data = load("c:\\Users\\JaredMcBride\\Desktop\\"*
             "DDMR\\Examples\\KSE\\Data\\KSE_sol_lin.jld")
 
@@ -26,7 +28,7 @@ ind_stop =floor(Int,t_stop/Δt)
 
 H1 = imshow(uu[:,ind_start:ind_stop]', extent=[0,21.55,0,150], aspect="auto")
 
-pred = vv[3:6,:]
+pred = vv[3:3,:]
 nu, stepsx = size(pred)
 
 steps = stepsx
@@ -48,22 +50,24 @@ for i = 1 : nu
     end
 end
 R_pred_smoothed
-plot((0:L)*Δt,real(R_pred_smoothed[2,2,:]))
+plot((0:L)*Δt,real(R_pred_smoothed[1,1,:]))
 
-NN_ckms = map(x-> floor(Int, 10^x),2:.25:4)
-LL = complex(zeros(nu,nu,L+1,length(NN_ckms)))
-for i in 1:length(NN_ckms)
-    LL[:,:,:,i] = spectfact_matrix_CKMS(R_pred_smoothed,
+expons = 1:.25:4.5
+Num_e = length(expons)
+NN_ckms = map(x-> floor(Int, 10^x),expons)
+LL = complex(zeros(nu,nu,L+1,Num_e))
+for i in 1:Num_e
+    LL[:,:,:,i] = spectfact_matrix_CKMS_SC(R_pred_smoothed,
         N_ckms = NN_ckms[i])
 end
 
-Norm = zeros(9,0)
+Norm = zeros(Num_e,0)
 for i = 1:nu
     for j = 1:nu
         global Norm
-        Norm = [Norm map(k -> norm(LL[i,j,:,9] .- LL[i,j,:,k],Inf),1:9)]
+        Norm = [Norm map(k -> norm(LL[i,j,:,Num_e] .- LL[i,j,:,k],Inf),1:Num_e)]
     end
 end
-
+Norm
 
 semilogy(NN_ckms, Norm)

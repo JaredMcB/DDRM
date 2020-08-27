@@ -554,4 +554,44 @@ A finer grid of number of iterations may be helpful. Either way they all converg
 
 # Thursday, August 27, 2020
 
-8:36 AM - Getting started.  
+8:36 AM - Getting started. Yesterday, I investigated the convergence of the CKMS factorization algorithm, and noted that the more variables involved, the more degrees of freedom the longer the algorithm takes to converge. So, I think a stopping criterion should be imposed. So, I add that to today's agenda:
+
+### To do:
+* Add stopping criterion to CKMS implementation.
+* Analyze the error message for job 132, fix problem and run it again. Continue with the convergence analysis of the WF. Then run the reduced models.
+
+8:54 AM - Add stopping criterion with tunable parameter eps to CKMS implementation.
+
+```julia
+i = 0
+    errK = errR = 1
+    Err = zeros(0,2)
+    while (errK > ϵ || errR > ϵ) && i <= 10^5
+        hL = h*L; FL = F*L
+
+        # Stopping criteria stuff
+        i += 1
+        FL_RrhLt = FL/Rr*hL'
+        hL_RrhLt = hL/Rr*hL'
+        errK = norm(FL_RrhLt)
+        errR = norm(hL_RrhLt)
+        Err = [Err; errK errR]
+        println("err : $errK and $errR")
+        #
+
+        K_new = K - FL_RrhLt
+        L_new = FL - K/Re*hL
+        Re_new = Re - hL_RrhLt
+        Rr_new = Rr - hL'/Re*hL
+
+        K = K_new
+        L = L_new
+        Re = Re_new
+        Rr = Rr_new
+    end
+
+    println("i : $i")
+    k = K/Re
+    re = Re
+    ```
+    This worked well and I was able to see that for the example the Re converged faster than the K did, that is the estimated covariance of the noise converged faster than the Kalman gain vector. So, I think convergence of the Kalman matrix is what I want to use for the stopping criterion, of course I could check the other things but they do not directly contribute to the output as can be seem in the last two lines of the code snippet. 
