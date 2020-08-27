@@ -550,3 +550,8 @@ jobs, I am using it for have very many parameters. So, here is the table
 |≃1.5e3 |≃5.65e3|≃5.65e3|
 
 A finer grid of number of iterations may be helpful. Either way they all converged by 1e4.
+
+
+# Thursday, August 27, 2020
+
+8:36 AM - Getting started.  
