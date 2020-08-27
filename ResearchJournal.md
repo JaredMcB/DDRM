@@ -594,4 +594,5 @@ i = 0
     k = K/Re
     re = Re
     ```
+
     This worked well and I was able to see that for the example the Re converged faster than the K did, that is the estimated covariance of the noise converged faster than the Kalman gain vector. So, I think convergence of the Kalman matrix is what I want to use for the stopping criterion, of course I could check the other things but they do not directly contribute to the output as can be seem in the last two lines of the code snippet. 
