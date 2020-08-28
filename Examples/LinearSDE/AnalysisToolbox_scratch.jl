@@ -29,13 +29,15 @@ function spectfact_matrix_CKMS_SC(P; ϵ = 1e-10)
     while (errK > ϵ || errR > ϵ) && i <= 10^5
         hL = h*L; FL = F*L
 
+        # Stopping criteria stuff
         i += 1
         FL_RrhLt = FL/Rr*hL'
         hL_RrhLt = hL/Rr*hL'
         errK = norm(FL_RrhLt)
         errR = norm(hL_RrhLt)
         Err = [Err; errK errR]
-        println("err : $errK and $errR")
+        i % 10 == 0 && println("err : $errK and $errR and i : $i" )
+        #
 
         K_new = K - FL_RrhLt
         L_new = FL - K/Re*hL

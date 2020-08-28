@@ -234,7 +234,7 @@ function vector_wiener_filter_fft(
                                l[:,:,1:nfft]
 
     z_spect_pred_minus_num_fft = fft(l_pad_minus,3)
-    z_spect_pred_plus_num_fft = zeros(Complex,nu,nu,nfft)
+    z_spect_pred_plus_num_fft = complex(zeros(nu,nu,nfft))
     for i = 1 : nfft
         z_spect_pred_plus_num_fft[:,:,i] = z_spect_pred_minus_num_fft[:,:,i]'
     end

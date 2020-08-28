@@ -595,3 +595,13 @@ k = K/Re
 re = Re
 ```
 This worked well and I was able to see that for the example the Re converged faster than the K did, that is the estimated covariance of the noise converged faster than the Kalman gain vector. So, I think convergence of the Kalman matrix is what I want to use for the stopping criterion, of course I could check the other things but they do not directly contribute to the output as can be seem in the last two lines of the code snippet.
+
+11:50 AM - I would like to test the factorization on a random function.
+
+3:54 PM - I have set it up as follows:
+
+The normal example converged very differently.
+
+The `fft` gives coefficients but times `nfft` and `v_1` is the coefficient to `z/nfft`
+
+4:56 PM - I really need to investigate this because CKMS is not working the way I think it should.
