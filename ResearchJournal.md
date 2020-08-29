@@ -605,3 +605,40 @@ The normal example converged very differently.
 The `fft` gives coefficients but times `nfft` and `v_1` is the coefficient to `z/nfft`
 
 4:56 PM - I really need to investigate this because CKMS is not working the way I think it should.
+
+
+# Friday, August 28, 2020
+
+1:57 PM - I am working at home this afternoon. The goal for today will be to update and correct the code for the CKMS implementation. I first noticed that something was internally wrong yesterday, when I tried to investigate the convergence of the algorithm. I included a dynamic stopping condition (one that depended on the difference of consecutive outputs). I began to realize that  was not getting out the right answer. Indeed, I put in the classic example
+
+```julia
+P = zeros(2,2,2)
+P[:,:,1] = [6 22; 22 84]
+P[:,:,2] = [2 7; 11 38]
+```
+
+The output should be
+```julia
+l[:,:,1] = [2 1; 7 3]
+l[:,:,1] = [1 0; 5 1]
+```
+ But I did not get this out. Today I went back the earlier code:
+ `spectfact_matrix_CKMS` from the file `DDMR\\Tools\\Model_Reduction_Dev.jl`.
+
+ I put in the following
+ ```julia
+P = zeros(1,1,2)
+P[1,1,1] = 10
+P[1,1,2] = 3
+
+L = spectfact_matrix_CKMS(P)
+```
+and got
+```1×1×2 Array{Complex{Float64},3}:
+[:, :, 1] =
+ 3.000000000000001 + 0.0im
+
+[:, :, 2] =
+ 0.9999999999999998 + 0.0im
+```
+which is correct. 

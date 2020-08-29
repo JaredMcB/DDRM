@@ -37,7 +37,7 @@ function spectfact_matrix_CKMS_SC(P; ϵ = 1e-10)
         errR = norm(hL_RrhLt)
         Err = [Err; errK errR]
         i % 10 == 0 && println("err : $errK and $errR and i : $i" )
-        #
+
 
         K_new = K - FL_RrhLt
         L_new = FL - K/Re*hL
