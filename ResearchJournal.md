@@ -325,8 +325,8 @@ h       = 1e-2
 * `z_crossspect_fft`
 * `z_spect_scalar`
 * `z_crossspect_scalar`
-from `Model_Reduction_Dev.jl` to `AnalysisToolbox.jl`.
 
+from `Model_Reduction_Dev.jl` to `AnalysisToolbox.jl`.
 I also updated `auto_times` in the `AnalysisToolbox.jl`. There was a problem with me lagging the length of the series. Inserting the  "- 1" here was required, in `L = minimum([lx - 1, 10^6])`.
 
 3:00 PM - I continue to investigate the LSDE model. It seems that the number of effective samples was a role to play in the accuracy of the wiener filter. So, I will try to quantify this.
@@ -384,7 +384,7 @@ M_out   = 100
 11:49 AM - Got started.
 
 12:23 PM - Ready to run thelio_runme.jl on thelio. I cloned my github repo on to thelio.
-Heris thelio_runme.jl:
+Here is thelio_runme.jl:
 ```julia
 include("modgen_LSDE.jl")
 include("../../Tools/Model_Reduction_Dev.jl")
@@ -462,7 +462,7 @@ save("/u5/jaredm/data/LSDE_Data/NoiseVNeff.jld", "data", data)
 # save("c:\\Users\\JaredMcBride\\Desktop\\DDMR\\Examples\\LinearSDE\\LSDE_Data\\NoiseVNeff.jld", "data", data)
 ```
 
-Before I run it I need to analysis memory cost. so, the longest time series will be for `t_stop = 1e7` which since `gap = 10` and `t-disc = 1000` will be of size ≃1x1x999900, so about 8 MB. Not too much. Job 131.
+Before I run it I need to analysis memory cost. So, the longest time series will be for `t_stop = 1e7` which since `gap = 10` and `t-disc = 1000` will be of size ≃1x1x999900, so about 8 MB. Not too much. Job 131.
 
 Immediate error:
 ```ERROR: LoadError: InitError: PyError (PyImport_ImportModule
@@ -474,7 +474,7 @@ PyCall is currently configured to use the Python version at:
 
 /usr/bin/python3
 ```
-I did not want to address it just now so I simple commented out `using PyPlot` and sent it back. Job 132.
+I did not want to address it just now so I simply commented out `using PyPlot` and sent it back. Job 132.
 
 2:22 PM - Job 132 still running, I think `M = 20` is what's taking so long.
 
@@ -542,7 +542,7 @@ loglog(NN_ckms, Norm)
 ```
 The result is saved in `Figure8-26-2020.png` in the data folder in tools.
 
-4:40 PM - Make the eps, which is in the stopping criterion it is a tolerance of the ∞-norm of the consecutive outputs, make this a tunable parameter consecutive outputs a tunable parameter. The paper suggested that `N_ckms = 200` usually work should work. I think that that is true when the number of terms is small. These
+4:40 PM - Make the eps, which is in the stopping criterion it is a tolerance of the ∞-norm of the consecutive outputs, make this a tunable parameter. The paper suggested that `N_ckms = 200` usually work should work. I think that that is true when the number of terms is small. These
 jobs, I am using it for have very many parameters. So, here is the table
 
 | d = 1 | d = 3| d = 4 |
@@ -554,7 +554,7 @@ A finer grid of number of iterations may be helpful. Either way they all converg
 
 # Thursday, August 27, 2020
 
-8:36 AM - Getting started. Yesterday, I investigated the convergence of the CKMS factorization algorithm, and noted that the more variables involved, the more degrees of freedom the longer the algorithm takes to converge. So, I think a stopping criterion should be imposed. So, I add that to today's agenda:
+8:36 AM - Getting started. Yesterday, I investigated the convergence of the CKMS factorization algorithm, and noted that the more variables involved, the more degrees of freedom, the longer the algorithm takes to converge. So, I think a stopping criterion should be imposed. So, I add that to today's agenda:
 
 ### To do:
 * Add stopping criterion to CKMS implementation.
@@ -594,7 +594,7 @@ println("i : $i")
 k = K/Re
 re = Re
 ```
-This worked well and I was able to see that for the example the Re converged faster than the K did, that is the estimated covariance of the noise converged faster than the Kalman gain vector. So, I think convergence of the Kalman matrix is what I want to use for the stopping criterion, of course I could check the other things but they do not directly contribute to the output as can be seem in the last two lines of the code snippet.
+This worked well and I was able to see that for the example the `Re` converged faster than the `K` did, that is, the estimated covariance of the noise converged faster than the Kalman gain vector. So, I think convergence of the Kalman matrix is what I want to use for the stopping criterion, of course I could check the other things but they do not directly contribute to the output as can be seem in the last two lines of the code snippet.
 
 11:50 AM - I would like to test the factorization on a random function.
 
@@ -609,7 +609,7 @@ The `fft` gives coefficients but times `nfft` and `v_1` is the coefficient to `z
 
 # Friday, August 28, 2020
 
-1:57 PM - I am working at home this afternoon. The goal for today will be to update and correct the code for the CKMS implementation. I first noticed that something was internally wrong yesterday, when I tried to investigate the convergence of the algorithm. I included a dynamic stopping condition (one that depended on the difference of consecutive outputs). I began to realize that  was not getting out the right answer. Indeed, I put in the classic example
+1:57 PM - I am working at home this afternoon. The goal for today will be to update and correct the code for the CKMS implementation. I first noticed that something was internally wrong yesterday, when I tried to investigate the convergence of the algorithm. I included a dynamic stopping condition (one that depended on the difference of consecutive outputs). I began to realize that it was not getting out the right answer. Indeed, I put in the classic example
 
 ```julia
 P = zeros(2,2,2)
@@ -641,4 +641,53 @@ and got
 [:, :, 2] =
  0.9999999999999998 + 0.0im
 ```
-which is correct. 
+which is correct.
+
+
+# Monday, August 30, 2020
+
+8:00 AM - I started by read all of last week.
+
+8:23 AM - It turned out, from what I saw Friday, that the function `spectfact_matrix_CKMS_SC` ('SC' stands for 'stopping condition') did give a correct answer but it was not the one found in the paper below:
+
+G. Janashia, E. Lagvilava and L. Ephremidze, "A New Method of Matrix Spectral Factorization," in *IEEE Transactions on Information Theory*, vol. 57, no. 4, pp. 2318-2326, April 2011, doi: 10.1109/TIT.2011.2112233.
+
+But these factors can be off by a unitary matrix. However, strictly speaking does not seem to be the case here, though it is close. I plotted the difference of the recovered spectrum, that is, I did this
+
+```julia
+P = zeros(2,2,2)
+P[:,:,1] = [6 22; 22 84]
+P[:,:,2] = [2 7; 11 38]
+
+l1 = spectfact_matrix_CKMS_SC(P)[1]
+
+l = zeros(2,2,2)
+l[:,:,1] = [2 1; 7 3]
+l[:,:,2] = [1 0; 5 1]
+l2 = l
+
+ll = size(l1,3)
+
+S1_fun_minus(z) = sum(l1[:,:,i]*z^(-i+1) for i = 1:ll)
+S2_fun_minus(z) = sum(l2[:,:,i]*z^(-i+1) for i = 1:ll)
+
+res(z) = S1_fun_minus(z)*S1_fun_minus(z^(-1))' -
+            S2_fun_minus(z)*S2_fun_minus(z^(-1))'
+
+d= 2; nfft = 10^3
+Res = complex(zeros(d,d,nfft))
+for i = 1:nfft
+    Res[:,:,i] = res(exp(im*2π*i/nfft))
+end
+
+for i = 1:d
+  for j = i:d
+    plot(abs.(Res[i,j,:]),label = "($i,$j)")
+  end
+end
+legend()
+```
+
+12:01 PM - Everything's to be working as it should. I don't understand why the JLE example has so strong a difference between the CKMS solution and the analytic solution. Though this difference decreases and the number of iterates increases.
+
+Now, I want to test higher order function (much higher order functions).

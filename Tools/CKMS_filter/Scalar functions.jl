@@ -3,7 +3,7 @@ include("..\\AnalysisToolbox_scratch_ckms.jl")
 
 using PyPlot
 pygui(true)
-
+### Example 1###
 P = zeros(1,1,2)
 P[1,1,1] = 10
 P[1,1,2] = 3
@@ -18,6 +18,7 @@ l, Err = spectfact_matrix_CKMS_SC(P);
 visual_test_ckms(P,l,nfft)
 L
 
+### Example 2 ###
 P = zeros(2,2,2)
 P[:,:,1] = [10 0 ; 0 84]
 P[:,:,2] = [3 0; 0 38]
@@ -28,6 +29,8 @@ l = spectfact_matrix_CKMS(P)
 
 (sqrt(-38/ρ),-ρ*sqrt(-38/ρ))
 
+
+### Example 3 ###
 P = zeros(2,2,10)
 P[:,:,1] = [100 30 ; 12 84]
 P[:,:,2] = [3 1; -1 38]
@@ -70,12 +73,14 @@ function visual_test_ckms(P,l,nfft)
     legend()
 end
 
+
+### Example 4 from JLE ###
 P = zeros(2,2,2)
 P[:,:,1] = [6 22; 22 84]
 P[:,:,2] = [2 7; 11 38]
 
 l1 = spectfact_matrix_CKMS_SC(P);
-l1
+
 l = zeros(2,2,2)
 l[:,:,1] = [2 1; 7 3]
 l[:,:,2] = [1 0; 5 1]
@@ -90,14 +95,23 @@ S2_fun_minus(z) = sum(l2[:,:,i]*z^(-i+1) for i = 1:ll)
 res(z) = S1_fun_minus(z)*S1_fun_minus(z^(-1))' -
             S2_fun_minus(z)*S2_fun_minus(z^(-1))'
 
-res(exp(im*4))
-
 d= 2; nfft = 10^3
 Res = complex(zeros(d,d,nfft))
 for i = 1:nfft
     Res[:,:,i] = res(exp(im*2π*i/nfft))
 end
+M = zeros(size(Res[:,:,1]))
+for i = 1:d
+  for j = i:d
+    plot(abs.(Res[i,j,:]), label = "($i,$j)")
+    M[i,j] = maximum(abs.(Res[i,j,:]))
+  end
+end
+legend()
+M1 = M
+M2 = M
 
-maximum(abs.(Res[2,1,:]))
+M2
 
-plot(abs.(Res[2,2,:]))
+
+M1
