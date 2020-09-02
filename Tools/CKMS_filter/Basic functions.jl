@@ -1,5 +1,5 @@
 include("..\\Model_Reduction_Dev.jl")
-include("..\\AnalysisToolbox_scratch_ckms.jl")
+include("AnalysisToolbox_scratch_ckms.jl")
 
 using PyPlot
 pygui(true)
@@ -10,13 +10,9 @@ P[1,1,2] = 3
 
 L = spectfact_matrix_CKMS(P)
 
-P = zeros(1,1,2)
-P[1,1,1] = 10
-P[1,1,2] = 3
-
 l, Err = spectfact_matrix_CKMS_SC(P);
 visual_test_ckms(P,l,nfft)
-L
+
 
 ### Example 2 ###
 P = zeros(2,2,2)
