@@ -46,7 +46,7 @@ Psi(x) = x
 
 signal = X
 Psi    = Psi
-M_out  = 20
+M_out  = M_out
 n      = 3
 p      = 1500
 par    = 1500
@@ -74,12 +74,12 @@ end
 
 sig     = signal[:,1:end-1]
 pred    = pred
-M_out   = 20
-par     = 1500
+M_out   = M_out
+par     = 2000
 win     = "Par"
 n       = 3
 p       = 1500
-PI      = true
+PI      = false
 rtol    = 1e-6
 
 d, stepsy = size(sig)
@@ -89,23 +89,17 @@ stepsx == stepsy || print("X and Y are not the same length. Taking min.")
 steps = minimum([stepsx stepsy])
 nfft = nextfastfft(steps)
 nffth = Int(floor(nfft/2))
-
 L = par
-lags = -L:L
 
-# Smoothed viewing window
-lam = _window(L, win = win, two_sided = false)
-
-R_pred_smoothed = zeros(Complex,nu,nu,length(0:L))
-for i = 1 : nu
-    for j = 1 : nu
-        temp = my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
-        temp = .5*(temp[L+1:end] + conj(reverse(temp[1:L+1])))
-        R_pred_smoothed[i,j,:] = lam .* temp
-    end
-end
+R_pred_smoothed = matrix_autocov_seq(pred,
+   L = L,
+   steps = steps,
+   nu = nu,
+   win = win
+   )
 
 ### Breaking in:
+L = par
 tmp_R = R_pred_smoothed[:]
 tmp_R_ana = map(x -> (1+h*A[1,1])^(gap*x),0:L)
 plot((0:L)*Δt,[tmp_R tmp_R_ana])
@@ -118,7 +112,7 @@ for i in 1:length(NN_ckms)
         N_ckms = NN_ckms[i])
 end
 plot(LL[1,1,:,:])
-    
+
 Norm = map(i -> norm(LL[1,1,:,9] .- LL[1,1,:,i],Inf),1:9)
 loglog(NN_ckms, Norm)
 
@@ -131,6 +125,25 @@ loglog(NN_ckms, Norm)
 # Compute coefficients of spectral factorization of z-spect-pred
 l = PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed,rtol = rtol) :
          spectfact_matrix_CKMS(R_pred_smoothed)
+### Breaking in
+Nfft = 1000
+visual_test_ckms(R_pred_smoothed,l,Nfft;semilog = true)
+
+Θ = 2π*(0:Nfft-1)/Nfft
+Z = exp.(im*Θ)
+a = A[1,1]
+Δt
+S_X_ana_fun(z) = Δt/( (1 - (1+h*a)*z^(-1))*(1 - (1+h*a)*z) )
+S_X_ana = S_X_ana_fun.(Z)
+
+
+S_X_num = z_crossspect_scalar(X[:],X[:]; nfft = 0, n = 3, p=1000, ty = "ave")
+N_temp = length(S_X_num)
+Θ_temp = 2π*(0:N_temp-1)/N_temp
+
+semilogy(Θ_temp,S_X_num)
+semilogy(Θ,S_X_ana)
+###
 
 l_pad_minus = nfft >= L+1 ? cat(dims = 3,l,zeros(nu,nu,nfft - L - 1)) :
                            l[:,:,1:nfft]

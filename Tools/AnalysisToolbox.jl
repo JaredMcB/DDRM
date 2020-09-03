@@ -165,3 +165,33 @@ function auto_times(x::AbstractVector{<:Real};plt = false)
         end
     plt ? [τ_exp, τ_int, P] : [τ_exp, τ_int]
 end
+
+function visual_test_ckms(P,l,nfft;semilog = false)
+    d  = size(P,1)
+    lp = size(P,3)
+    ll = size(l,3)
+    S_fun(z)    = P[:,:,1] + sum(P[:,:,i]*z^(-i+1) + P[:,:,i]'*z^(i-1) for i = 2:lp)
+    S_fun_minus(z) = sum(l[:,:,i]*z^(-i+1) for i = 1:ll)
+    S_fun_plus(z) = sum(l[:,:,i]'*z^(i-1) for i = 1:ll)
+
+    Θ = 2π*(0:nfft-1)/nfft
+    Z = exp.(im*Θ)
+    S = complex(zeros(d,d,nfft))
+    S_l = complex(zeros(d,d,nfft))
+    for i = 1:nfft
+        S[:,:,i] = S_fun(Z[i])
+        S_l[:,:,i] = S_fun_minus(Z[i])*S_fun_plus(Z[i])
+    end
+
+
+    for i = 1:d
+        for j = i:d
+            semilog ? semilogy(Θ,real(S[i,j,:]), label = "S ($i,$j)") :
+                      plot(Θ,real(S[i,j,:]), label = "S ($i,$j)")
+
+            semilog ? semilogy(Θ,real(S_l[i,j,:]), label = "S_l ($i,$j)") :
+                      plot(Θ,real(S_l[i,j,:]), label = "S_l ($i,$j)")
+        end
+    end
+    legend()
+end

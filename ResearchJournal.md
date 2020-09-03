@@ -691,3 +691,44 @@ legend()
 12:01 PM - Everything's to be working as it should. I don't understand why the JLE example has so strong a difference between the CKMS solution and the analytic solution. Though this difference decreases and the number of iterates increases.
 
 Now, I want to test higher order function (much higher order functions).
+
+
+# Tuesday, September 1, 2020
+
+8:17 AM - Today I want to clean up and focus the research I have done so far and draw some conclusions. That will be the goal of this morning summarize what I have been up to the past few working days, see what I have learned and see what more I need to learn before I can start working on the Wiener Filter again.
+
+#### What I need:
+I need to see how well CKMS factorization preforms with inputs of 1500 to 2000 coefficients  and of various sizes. I need to know how many iterations are necessary for effective wiener filtering. Right now my metric is qualitative, how well does the graph match.  
+
+#### What have I done?
+The project is all contained in `DDMR\Tools\CKMS_filter`. Here we find the files
+* `AnalysisToolbox_scratch_ckms.jl` - this contains the CKMS implementation with the stopping criterion called `spectfact_matrix_CKMS_SC`         
+* `CKMS with Approximated Spectra.ipyn` - this notebook was created yesterday to help me investigate the performance of CKMS when feed `fft` generated coefficients.
+* `CKMS with Approximated Spectra.jl` - just a Julia file of the notebook
+* `Basic functions.ipynb` - this is a notebook containing hither to successful tests of CKMS using natural coefficients (as opposed to `fft` generated coefficients)                   
+* `Basic functions.jl` - just a Julia file of the notebook
+
+In `Basic functions` I test the following cases:
+|Type                        | No. of Terms|
+|---                         |---          |
+|scalar                                 | 2|
+|2×2-diagonal                           | 2|
+|2×2-nondiagonal                        | 2|
+|2×2-nondiagonal (w/ unit circle zeros) | 2|
+|d×d-matrix valued random               | m|
+
+The above all worked very well visually.
+
+The next thing to do is to look at `fft` generated autocovariances.
+
+
+# Wednesday, September 2, 2020
+
+9:09 AM - Yesterday, the CKMS filter was shown to behave well for certain examples, at least visually. Today I will investigate who it preforms on the KSE data. It preforms much better than it did when `L=55`, that is to say the plot of what I am taking to be the true spectral density is much closer to the recovered spectral factorization. However, there still seems to be a great disparity in the spectral density near 1 where it off by as much as a facto of ten. Anyway, lets see how it works now in the wiener filter. I think one problem was the number of iterates was too small.
+
+So, now I keep all I did with CKMS very close and go back to the Wiener filter algorithm as a whole.
+
+2:57 PM - I just concluded a meeting with the UQ Group. We mainly talked about estimation
+
+4:30 PM - I went to the ABD2PHD seminar. Here are some take aways:
+* Find out how the graduate coordinator is.

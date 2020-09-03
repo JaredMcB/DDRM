@@ -186,6 +186,29 @@ function _window(L; win = "Par",two_sided = true)
     two_sided ? [lam[L+1:-1:2]; lam] : lam
 end
 
+function matrix_autocov_seq(pred;
+    L = 1500,
+    steps = size(pred,2),
+    nu = size(pred,1),
+    win = "par"
+    )
+
+    lags = -L:L
+
+    # Smoothed viewing window
+    lam = _window(L, win = win, two_sided = false)
+
+    R_pred_smoothed = zeros(Complex,nu,nu,length(0:L))
+    for i = 1 : nu
+        for j = 1 : nu
+            temp = my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
+            temp = .5*(temp[L+1:end] + conj(reverse(temp[1:L+1])))
+            R_pred_smoothed[i,j,:] = lam .* temp
+        end
+    end
+    R_pred_smoothed
+end
+
 
 """
     vector_wiener_filter_fft
@@ -211,20 +234,12 @@ function vector_wiener_filter_fft(
     nfft = nextfastfft(steps)
     nffth = Int(floor(nfft/2))
 
-    L = par
-    lags = -L:L
-
-    # Smoothed viewing window
-    lam = _window(L, win = win, two_sided = false)
-
-    R_pred_smoothed = zeros(Complex,nu,nu,length(0:L))
-    for i = 1 : nu
-        for j = 1 : nu
-            temp = my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
-            temp = .5*(temp[L+1:end] + conj(reverse(temp[1:L+1])))
-            R_pred_smoothed[i,j,:] = lam .* temp
-        end
-    end
+    R_pred_smoothed = matrix_autocov_seq(pred,
+       L = 1500,
+       steps = steps,
+       nu = nu,
+       win = win
+       )
 
     # Compute coefficients of spectral factorization of z-spect-pred
     l = PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed,rtol = rtol) :

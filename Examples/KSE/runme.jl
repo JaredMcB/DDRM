@@ -3,7 +3,7 @@ using JLD
 include("Model_KSE.jl")
 
 ## Parameters for KSE model
-T = 10^4 # Length (in seconds) of time of run
+T = 10^5 # Length (in seconds) of time of run
 T_disc = Int(T/2) # Length (in seconds) of time discarded
 P = 21.55  # Period
 N = 96  # Number of fourier modes used
@@ -20,7 +20,7 @@ uu, vv, tt =  my_KSE_solver(T,
     n_gap = obs_gap)
 
 # set save destinations
-sol_file = "../data/KSE_Data/KSE_sol_Lin.jld"
+sol_file = "Examples\\KSE\\Data\\KSE_sol_Lin.jld"
 
 paramaters = Dict(
       "T" => T,
