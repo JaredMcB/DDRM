@@ -56,7 +56,10 @@ which satisfies
     For this function the input is P and the output is l.
 """
 
-function spectfact_matrix_CKMS(P; N_ckms = 200)
+function spectfact_matrix_CKMS(P; ϵ = 1e-10,
+    update = 10,
+    N_ckms = 10^5)
+
     d = size(P)[1];
     m = size(P)[3] - 1
 
@@ -73,25 +76,35 @@ function spectfact_matrix_CKMS(P; N_ckms = 200)
     L = K
 
     # spectfactLog = zeros(4,N_ckms)
-
-    for i = 1:N_ckms
+    i = 0
+    errK = errR = 1
+    Err = zeros(0,2)
+    while (errK > ϵ || errR > ϵ) && i <= N_ckms
         hL = h*L; FL = F*L
 
-        K_new = K - FL/Rr*hL'
-        L_new = FL - K/Re*hL
-        Re_new = Re - hL/Rr*hL'
-        Rr_new = Rr - hL'/Re*hL
+        # Stopping criteria stuff
+        i += 1
+        FL_RrhLt = FL/Rr*hL'
+        hL_RrhLt = hL/Rr*hL'
+        errK = norm(FL_RrhLt)
+        errR = norm(hL_RrhLt)
+        Err = [Err; errK errR]
+        i % update == 0 && println("err : $errK and $errR and i : $i" )
 
-        # spectfactLog[:,i] = [cond(Rr),
-        #                      cond(Re),
-        #                      norm(K - K_new),
-        #                      norm(L - L_new)]
+
+        K_new = K - FL_RrhLt
+        L_new = FL - K/Re*hL
+        Re_new = Re - hL_RrhLt
+        Rr_new = Rr - hL'/Re*hL
 
         K = K_new
         L = L_new
         Re = Re_new
         Rr = Rr_new
     end
+
+    println("Number of CKMS iterations: $i")
+    println("errK errR : $errK $errR")
 
     k = K/Re
     re = Re

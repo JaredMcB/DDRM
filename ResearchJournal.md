@@ -728,7 +728,16 @@ The next thing to do is to look at `fft` generated autocovariances.
 
 So, now I keep all I did with CKMS very close and go back to the Wiener filter algorithm as a whole.
 
-2:57 PM - I just concluded a meeting with the UQ Group. We mainly talked about estimation
+2:57 PM - I just concluded a meeting with the UQ Group. We mainly talked about estimation.
 
 4:30 PM - I went to the ABD2PHD seminar. Here are some take aways:
 * Find out how the graduate coordinator is.
+
+
+# Thursday, September 3, 2020
+
+9:08 AM - This morning I am working with the file `Scalar LinearSDE_ExplodedView.jl` which is in the folder `Examples\LinearSDE` the point is to return to the Wiener filter having a better understanding of the performance of CKMS factorization algorithm. the goal for the day is to get the code to return an approximation of the wiener filter (we know precisely what the exact WF is in this case) which is good enough to run a stable model.
+
+# Friday, September 4, 2020
+
+9:31 AM - Yesterday, I had some computer troubles. Today, I have the same goal. I control the factorization and cross-spectral estimation parameters to produce a good wiener filter. Something I did get from yesterday is that sans noise the reduced model did blow up. I am investigating that more now. 

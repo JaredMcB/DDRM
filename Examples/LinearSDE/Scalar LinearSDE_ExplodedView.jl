@@ -158,6 +158,19 @@ end
 z_crossspect_sigpred_num_fft = z_crossspect_fft(sig, pred,
                     nfft = nfft, n = n, p = p, win = "Par");
 
+### Breaking in
+Nfft = 1000
+Θ = 2π*(0:Nfft-1)/Nfft
+Z = exp.(im*Θ)
+a = A[1,1]
+Δt
+S_YX_ana_fun(z) = Δt*z*σ^2/( (1 - (1+h*a)*z^(-1))*(1 - (1+h*a)*z) )
+S_YX_ana = S_YX_ana_fun.(Z)
+
+semilogy(2π*(0:100:nfft-1)/nfft,
+    z_crossspect_sigpred_num_fft[1,1,1:100:end])
+semilogy(Θ,S_YX_ana)
+
 # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
 S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
 
@@ -207,3 +220,10 @@ X_hat
 for i = 1:100
     println(X_hat[:,i]')
 end
+
+ind = findall(x -> abs(x)>10^8, X_hat[:])[1]
+
+plot([X[1:8000] X_hat[1:8000]])
+
+h_wf_old = h_wf
+norm(h_wf[:] - h_wf_old[:])

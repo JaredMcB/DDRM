@@ -9,7 +9,7 @@ using SparseArrays
 function spectfact_matrix_CKMS_SC(P; ϵ = 1e-10,
     update = 10,
     N_ckms = 10^5)
-    
+
     d = size(P)[1];
     m = size(P)[3] - 1
 
@@ -69,5 +69,5 @@ function spectfact_matrix_CKMS_SC(P; ϵ = 1e-10,
     #     "spectfactLog",
     #     spectfactLog)
 
-    l, Err
+    l
 end
