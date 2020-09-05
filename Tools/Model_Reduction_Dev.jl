@@ -36,7 +36,7 @@ function get_wf(signal, Psi;
         pred[:,n] = Psi(signal[:,n])
     end
 
-    h_wf = vector_wiener_filter_fft(pred, signal[:,1:end-1], M_out,
+    h_wf = vector_wiener_filter_fft(pred, sig, M_out,
             n = n, p = p, par = par, PI = PI, rtol = rtol)
 
     h_wf = rl ? real(h_wf) : h_wf
@@ -89,7 +89,7 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
         errK = norm(FL_RrhLt)
         errR = norm(hL_RrhLt)
         Err = [Err; errK errR]
-        i % update == 0 && println("err : $errK and $errR and i : $i" )
+        #i % update == 0 && println("err : $errK and $errR and i : $i" )
 
 
         K_new = K - FL_RrhLt
@@ -246,9 +246,9 @@ function vector_wiener_filter_fft(
     steps = minimum([stepsx stepsy])
     nfft = nextfastfft(steps)
     nffth = Int(floor(nfft/2))
-
+    L = par
     R_pred_smoothed = matrix_autocov_seq(pred,
-       L = 1500,
+       L = L,
        steps = steps,
        nu = nu,
        win = win

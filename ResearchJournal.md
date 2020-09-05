@@ -740,4 +740,73 @@ So, now I keep all I did with CKMS very close and go back to the Wiener filter a
 
 # Friday, September 4, 2020
 
-9:31 AM - Yesterday, I had some computer troubles. Today, I have the same goal. I control the factorization and cross-spectral estimation parameters to produce a good wiener filter. Something I did get from yesterday is that sans noise the reduced model did blow up. I am investigating that more now. 
+9:31 AM - Yesterday, I had some computer troubles. Today, I have the same goal. I control the factorization and cross-spectral estimation parameters to produce a good wiener filter. Something I did get from yesterday is that sans noise the reduced model did blow up. I am investigating that more now.
+
+2:40 PM - I ran the LSDE and computed the Wiener filter, the filter was unstable.
+
+3:35 PM - Also for some reason my machine is running julia very, very slowly. I think I will restart the kernel. Restart the kernel helped. Also, I took do the size of the series I was computing. They don't need to be the big for current purposes.
+3:49 PM - I noticed there was a big difference between the analytical and numerical cross spectra I am investigating this now. I found an Error in the code. Not in the functions themselves but in the ancillary code in the file `Scalar LinearSDE_ExplodedView.jl`
+The result of the error was that `sig` and `pred` rather than being off set by an index, as should be the case (`pred[:,n]` = `sig[:,n-1]`, since `Psi` is identity). The next problem was I reduced the stop time to 1e4 but and the real and imaginary parts of the crspect were matching up, so I increased the stop time to 1e5 and now these plots match beautifully. So, that is I went from roughly 4.99e3 effective samples to 5.01e4.
+
+The early problem with not mismatching the `sig` and `pred` makes sense because the output of the wiener filter was very close to 1 in the first component and zero after. Which is just what we would expect with no shift at all. There is another problem becasue for the following data
+```julia
+A = reshape([-0.05],1,1)
+σ = reshape([1],1,1)
+Xo = [1]
+t_disc = 1000
+gap = 10
+scheme = "EM"
+
+t_start = 0
+t_stop  = 1e6
+h       = 1e-2
+
+Δt      = h*gap
+M_out   = 100
+
+X = modgen_LSDE(t_start,t_stop,h,
+    A = A,
+    σ = σ,
+    Xo = Xo,
+    t_disc = t_disc,
+    gap = gap,
+    scheme = scheme)
+
+d, N = size(X)
+
+nfft = nextfastfft(N)
+X = [X zeros(d,nfft-N)]
+
+
+τ_exp, τ_int    = auto_times(X[:])*Δt
+N_eff           = N*Δt/τ_int
+
+Psi(x) = x
+
+@time h_wf = get_wf(X,Psi);
+```
+
+I got the following Wiener filter.
+
+```
+1×1×20 Array{Float64,3}:
+[:, :, 1] =
+ 0.0016677863376667796
+
+[:, :, 2] =
+ 0.9995543511979313
+
+[:, :, 3] =
+ -0.0004237206933257932
+
+...
+
+[:, :, 18] =
+ -0.00031437525459553626
+
+[:, :, 19] =
+ -0.00031135831703248747
+
+[:, :, 20] =
+ -0.0003042347678346185
+ ``` 

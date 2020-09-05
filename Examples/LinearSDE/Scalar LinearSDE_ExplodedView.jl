@@ -20,7 +20,7 @@ gap     = 10
 scheme  = "EM"
 d       = size(A,1)
 t_start = 0
-t_stop  = 1e6
+t_stop  = 1e5
 h       = 1e-2
 Δt      = h*gap
 M_out   = 100
@@ -72,8 +72,11 @@ end
 
 ## vector_wiener_filter_fft
 
-sig     = signal[:,1:end-1]
+sig     = sig
 pred    = pred
+
+
+
 M_out   = M_out
 par     = 2000
 win     = "Par"
@@ -159,17 +162,33 @@ z_crossspect_sigpred_num_fft = z_crossspect_fft(sig, pred,
                     nfft = nfft, n = n, p = p, win = "Par");
 
 ### Breaking in
+z_crossspect_sigpred_num_fft
+maximum(abs.(imag.(z_crossspect_sigpred_num_fft[:])))
+maximum(abs.(imag.(S_YX_ana[:])))
+
+crs_spect = z_crossspect_scalar(sig,pred; nfft = 0, n = 3, p=100, ty = "ave")
+N_temp = length(crs_spect)
+Θ_temp = 2π*(0:N_temp-1)/N_temp
+
+plot(Θ_temp,imag.(crs_spect))
+sig[1,2]
+pred[1,3]
+
+
+
 Nfft = 1000
 Θ = 2π*(0:Nfft-1)/Nfft
 Z = exp.(im*Θ)
 a = A[1,1]
 Δt
-S_YX_ana_fun(z) = Δt*z*σ^2/( (1 - (1+h*a)*z^(-1))*(1 - (1+h*a)*z) )
+S_YX_ana_fun(z) = (Δt*z*σ^2/( (1 - (1+Δt*a)*z^(-1))*(1 - (1+Δt*a)*z) ))[1]
 S_YX_ana = S_YX_ana_fun.(Z)
+S_YX_ana_fun(1)
+plot(2π*(0:100:nfft-1)/nfft,
+    imag.(z_crossspect_sigpred_num_fft[1,1,1:100:end]))
+plot(Θ,imag.(S_YX_ana))
+###
 
-semilogy(2π*(0:100:nfft-1)/nfft,
-    z_crossspect_sigpred_num_fft[1,1,1:100:end])
-semilogy(Θ,S_YX_ana)
 
 # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
 S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
@@ -208,7 +227,7 @@ h_wf = real(h_wf)
 
 
 ##Scratch
-Δt*(I+A)
+Δt*A + I
 
 N = size(X,2)
 X_hat = zeros(d,N); X_hat[:,1] = X[:,1]
@@ -220,10 +239,3 @@ X_hat
 for i = 1:100
     println(X_hat[:,i]')
 end
-
-ind = findall(x -> abs(x)>10^8, X_hat[:])[1]
-
-plot([X[1:8000] X_hat[1:8000]])
-
-h_wf_old = h_wf
-norm(h_wf[:] - h_wf_old[:])
