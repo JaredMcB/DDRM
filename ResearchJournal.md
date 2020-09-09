@@ -748,7 +748,8 @@ So, now I keep all I did with CKMS very close and go back to the Wiener filter a
 3:49 PM - I noticed there was a big difference between the analytical and numerical cross spectra I am investigating this now. I found an Error in the code. Not in the functions themselves but in the ancillary code in the file `Scalar LinearSDE_ExplodedView.jl`
 The result of the error was that `sig` and `pred` rather than being off set by an index, as should be the case (`pred[:,n]` = `sig[:,n-1]`, since `Psi` is identity). The next problem was I reduced the stop time to 1e4 but and the real and imaginary parts of the crspect were matching up, so I increased the stop time to 1e5 and now these plots match beautifully. So, that is I went from roughly 4.99e3 effective samples to 5.01e4.
 
-The early problem with not mismatching the `sig` and `pred` makes sense because the output of the wiener filter was very close to 1 in the first component and zero after. Which is just what we would expect with no shift at all. There is another problem becasue for the following data
+The early problem with not mismatching the `sig` and `pred` makes sense because the output of the wiener filter was very close to 1 in the first component and zero after. Which is just what we would expect with no shift at all. There is another problem because for the following data
+
 ```julia
 A = reshape([-0.05],1,1)
 σ = reshape([1],1,1)
@@ -809,4 +810,12 @@ I got the following Wiener filter.
 
 [:, :, 20] =
  -0.0003042347678346185
- ``` 
+ ```
+
+
+
+# Tuesday, September 8, 2020
+
+3:15 PM - Today I will look closely at the problem that I saw on Friday. First thing reproduce results. Then dive in. The strangeness of the solution, why it does not match what I expect, is because I am expecting the wrong thing. There is an observation gap that may be throwing things off.
+
+3:24 PM - I have reproduced the "strange" solution. 

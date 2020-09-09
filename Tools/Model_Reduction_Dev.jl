@@ -27,14 +27,17 @@ function get_wf(signal, Psi;
     # We would like a presample since we want the
     # times series to be offset by one.
 
-    sig = signal[:,2:end]
+    sig = signal[:,1:end] # sig is now one a head of signal
     d, steps = size(sig)
     nu = size(Psi(zeros(d,1)),1)
 
     pred = complex(zeros(nu, steps))
     for n = 1:steps
         pred[:,n] = Psi(signal[:,n])
-    end
+    end # pred is now even with signal and therefore one step
+        # step behind sig. I.e. pred[:,n] = Psi(sig[:,n-1])
+        # which is what we want so as to ensure the reduced
+        # model can run explicitly.
 
     h_wf = vector_wiener_filter_fft(pred, sig, M_out,
             n = n, p = p, par = par, PI = PI, rtol = rtol)
@@ -247,6 +250,7 @@ function vector_wiener_filter_fft(
     nfft = nextfastfft(steps)
     nffth = Int(floor(nfft/2))
     L = par
+
     R_pred_smoothed = matrix_autocov_seq(pred,
        L = L,
        steps = steps,
