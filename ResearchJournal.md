@@ -836,4 +836,6 @@ h_wf = rl ? real(h_wf) : h_wf
 
 Before the I changed it just now, the `sig` and the `pred` were switched, these are non-kw-arguments, so that made a difference! This mistake must have occurred as I was removing type assertion for the function. I must have copied and pasted it, from a function that had these in a different order. With this fix accomplished the LSDE reproduced model now seems to be stable.
 
-9:58 AM - I now put in the correct error term `sqrt(h)*σ*randn(d)` and find the statistics of the reproduced model. 
+9:58 AM - I now put in the correct error term `sqrt(h)*σ*randn(d)` and find the statistics of the reproduced model.
+
+4:17 PM - This worked pretty well, though not great. What worked better was when there were only 2 WF coefficint. Now that the code seems to be working the next step I think is tuning. So, tomorrow morning I will write out a script for thelio. 
