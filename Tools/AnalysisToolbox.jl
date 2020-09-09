@@ -195,3 +195,40 @@ function visual_test_ckms(P,l,nfft;semilog = false)
     end
     legend()
 end
+
+function emp_cdf(series;
+    plt = true)
+    l = length(series)
+    series = reshape(series,l)
+    sort!(series)
+
+    bw = 2*iqr(series)/l^(1/3)
+    bn = Int64(ceil((series[end] - series[1])/bw))
+    b_pts = bw*(0:bn) .+ series[1]
+
+    cdf = zeros(bn+1)
+    for i = 1:bn
+        cdf[i+1] = sum(series .< b_pts[i+1])
+    end
+    cdf /= l
+
+    plt ? [cdf,b_pts,plot(b_pts,cdf)] : [cdf,b_pts]
+end
+
+function emp_pdf(series;
+    plt = true)
+
+    cdf, b_pts = emp_cdf(series,plt = false)
+    bn = length(cdf) - 1
+    bw = b_pts[2] - b_pts[1]
+
+    pdf = zeros(bn)
+    b_midpts = zeros(bn)
+    for i=1:bn
+        pdf[i] = cdf[i+1] - cdf[i]
+        b_midpts[i] = (b_pts[i] + b_pts[i+1])/2 # Midpoint as bin location
+    end
+    pdf /= bw
+
+    plt ? [pdf,b_midpts,plot(b_midpts,pdf)] : [pdf,b_midpts]
+end

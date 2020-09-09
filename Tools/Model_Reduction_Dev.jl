@@ -27,7 +27,7 @@ function get_wf(signal, Psi;
     # We would like a presample since we want the
     # times series to be offset by one.
 
-    sig = signal[:,1:end] # sig is now one a head of signal
+    sig = signal[:,2:end] # sig is now one a head of signal
     d, steps = size(sig)
     nu = size(Psi(zeros(d,1)),1)
 
@@ -39,7 +39,7 @@ function get_wf(signal, Psi;
         # which is what we want so as to ensure the reduced
         # model can run explicitly.
 
-    h_wf = vector_wiener_filter_fft(pred, sig, M_out,
+    h_wf = vector_wiener_filter_fft(sig, pred, M_out,
             n = n, p = p, par = par, PI = PI, rtol = rtol)
 
     h_wf = rl ? real(h_wf) : h_wf

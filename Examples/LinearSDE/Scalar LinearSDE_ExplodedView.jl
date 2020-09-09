@@ -12,13 +12,13 @@ include("..\\..\\Tools\\Model_Reduction_Dev.jl")
 using JLD
 using PyPlot
 
-A       = reshape([-0.5],1,1)
+A       = reshape([-0.9],1,1)
 σ       = reshape([1],1,1)
 Xo      = [1]
 t_disc  = 1000
-gap     = 10
+gap     = 1
 scheme  = "EM"
-d       = size(A,1)
+
 t_start = 0
 t_stop  = 1e5
 h       = 1e-2
@@ -33,7 +33,7 @@ M_out   = 100
     gap = gap,
     scheme = scheme)
 
-N       = size(X,2)
+d, N    = size(X)
 nfft    = nextfastfft(N)
 X = [X zeros(d,nfft - N)]
 
@@ -74,16 +74,13 @@ end
 
 sig     = sig
 pred    = pred
-
-
-
 M_out   = M_out
 par     = 2000
 win     = "Par"
-n       = 3
-p       = 1500
-PI      = false
-rtol    = 1e-6
+n       = n
+p       = p
+PI      = PI
+rtol    = rtol
 
 d, stepsy = size(sig)
 nu, stepsx = size(pred)
@@ -229,13 +226,18 @@ h_wf = real(h_wf)
 ##Scratch
 Δt*A + I
 
-N = size(X,2)
-X_hat = zeros(d,N); X_hat[:,1] = X[:,1]
-for i=2:N
-    X_hat[:,i] = sum(h_wf[:,:,k]*X_hat[:,i-k] for k = 1:min(i-1,M_out),dims = 2)
-    isnan(X_hat[1,i]) && break
+d, N  = size(X)
+nu    = size(Psi(X[:,1]),1)
+M_out = size(h_wf,3)
+
+X_rm = zeros(d,N); X_rm[:,1:M_out] = X[:,1:M_out]
+
+PSI = zeros(nu,N);
+for i = 1:M_out
+    PSI[:,i] = Psi(X_rm[:,i])
 end
-X_hat
-for i = 1:100
-    println(X_hat[:,i]')
+
+for i = M_out + 1 : N
+    X_rm[:,i] = sum(h_wf[:,:,k]*PSI[:,i-k] for k = 1:M_out, dims = 2)
+    PSI[:,i] = Psi(X_rm[:,i])
 end

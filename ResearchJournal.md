@@ -818,4 +818,22 @@ I got the following Wiener filter.
 
 3:15 PM - Today I will look closely at the problem that I saw on Friday. First thing reproduce results. Then dive in. The strangeness of the solution, why it does not match what I expect, is because I am expecting the wrong thing. There is an observation gap that may be throwing things off.
 
-3:24 PM - I have reproduced the "strange" solution. 
+3:24 PM - I have reproduced the "strange" solution.
+
+
+# Wednesday, September 9, 2020
+
+8:16 AM - Yesterday I was unable to determine what is wrong with the solution. I will run a few more tests real quick.
+
+8:16 AM - I found a BIG bug in `get_wf` I don't know how long it was there. When it calls `vector_wiener_filter_fft` it now does it as follows:
+
+```julia
+h_wf = vector_wiener_filter_fft(sig, pred, M_out,
+            n = n, p = p, par = par, PI = PI, rtol = rtol)
+
+h_wf = rl ? real(h_wf) : h_wf
+```
+
+Before the I changed it just now, the `sig` and the `pred` were switched, these are non-kw-arguments, so that made a difference! This mistake must have occurred as I was removing type assertion for the function. I must have copied and pasted it, from a function that had these in a different order. With this fix accomplished the LSDE reproduced model now seems to be stable.
+
+9:58 AM - I now put in the correct error term `sqrt(h)*σ*randn(d)` and find the statistics of the reproduced model. 
