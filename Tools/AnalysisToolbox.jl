@@ -230,5 +230,6 @@ function emp_pdf(series;
     end
     pdf /= bw
 
-    plt ? [pdf,b_midpts,plot(b_midpts,pdf)] : [pdf,b_midpts]
+    plt ? [pdf,b_midpts,plot(b_midpts,pdf,label = "Emp pdf")] :
+          [pdf,b_midpts]
 end

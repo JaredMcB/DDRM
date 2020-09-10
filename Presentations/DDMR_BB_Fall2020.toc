@@ -1,0 +1,10 @@
+\babel@toc {english}{}
+\beamer@sectionintoc {1}{The Problem}{3}{0}{1}
+\beamer@sectionintoc {2}{Goal and Difficulties}{4}{0}{2}
+\beamer@sectionintoc {3}{Background}{5}{0}{3}
+\beamer@subsectionintoc {3}{1}{The Wiener Filter}{5}{0}{3}
+\beamer@subsectionintoc {3}{2}{Spectral Factorization}{11}{0}{3}
+\beamer@sectionintoc {4}{The Wiener Projection}{15}{0}{4}
+\beamer@sectionintoc {5}{Numerical Impimentation: Programing the Wiener-Hopf Technique}{17}{0}{5}
+\beamer@sectionintoc {6}{Examples}{17}{0}{6}
+\beamer@sectionintoc {7}{Conclusions}{33}{0}{7}

@@ -838,4 +838,14 @@ Before the I changed it just now, the `sig` and the `pred` were switched, these 
 
 9:58 AM - I now put in the correct error term `sqrt(h)*σ*randn(d)` and find the statistics of the reproduced model.
 
-4:17 PM - This worked pretty well, though not great. What worked better was when there were only 2 WF coefficint. Now that the code seems to be working the next step I think is tuning. So, tomorrow morning I will write out a script for thelio. 
+4:17 PM - This worked pretty well, though not great. What worked better was when there were only 2 WF coefficint. Now that the code seems to be working the next step I think is tuning. So, tomorrow morning I will write out a script for thelio.
+
+
+# Thursday, September 10, 2020
+
+1:08 PM - So, it looks like the code is ready for parameter tuning. That is I feel the code is preforming as it should.  So, I would like to run it on a few examples.
+
+###Experiment Table: Linear SDE
+| A | h   | `t_stop` |  `gap` | `M_out` | `N_eff` |
+|---|---  |---       |---     |---      |---      |
+|-.5|0.01 | 1e5      | 1      |20       |         |
