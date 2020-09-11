@@ -1,25 +1,35 @@
-sig1 = sig[1,:]; pred1 = pred[1,:]
+# Test save seed
+
+include("modgen_LSDE.jl")
+include("..\\..\\Tools\\Model_Reduction_Dev.jl")
+
+using Random
+
+A       = reshape([-0.5],1,1)
+σ       = reshape([1],1,1)
+Xo      = [1]
+t_disc  = 100
+gap     = 10
+d       = size(A,1)
+t_start = 0
+t_stop  = 1e3
+h       = 1e-2
+Δt      = h*gap
+M_out   = 100
+
+println("===========t_stop = $t_stop===========")
+println("Time to get data: ")
 
 
-μ = _smoother(n,p,ty = "ave")
+seed = Random.seed!(seed).seed
 
-l_sig1 = length(sig1)
-l_pred1 = length(pred1)
-l_sig1 == l_pred1 || println("sizes must be the same, taking min and truncating")
-l = min(l_sig1,l_pred1)
+@time X = modgen_LSDE(t_start,t_stop,h;
+    A,
+    σ,
+    Xo,
+    t_disc,
+    gap)
 
-nfft = nfft == 0 ? nfft = nextfastfft(l) : nfft
+X2 = copy(X)
 
-nfft == l || println("adjusted size from $l to $nfft")
-sig1_pad = l < nfft ? [sig1[1:l]; zeros(nfft - l)] : sig1[1:nfft]
-pred1_pad = l < nfft ? [pred1[1:l]; zeros(nfft - l)] : pred1[1:nfft]
-
-fftsig1 = fft(sig1_pad)
-fftpred1 = conj(fft(pred1_pad))
-
-peri = fftsig1 .* fftpred1 / nfft
-peri_pad = [peri[end - p*n + 1 : end]; peri; peri[1:p*n]]
-z_crsspect_smoothed = conv(μ,peri_pad)[n*p:n*p+nfft-1]
-
-z_crsspect_scalar(sig[1,:],pred[1,:],
-                                      nfft = nfft, n = n, p = p)
+X1 - X2

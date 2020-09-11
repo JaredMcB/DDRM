@@ -1,0 +1,9 @@
+add Statistics
+add LinearAlgebra
+add FFTW
+add Polynomials
+add StatsBase
+add SparseArrays
+add PyPlot
+add Dates
+add Random

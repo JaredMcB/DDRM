@@ -26,7 +26,7 @@ the parameters for the approximated solution are
 using LinearAlgebra
 
 function modgen_LSDE(t_start,t_stop,h;
-    A, σ, Xo, t_disc, gap, scheme)
+    A, σ, Xo, t_disc = 0, gap = 1)
 
     d, nu = size(σ)
 

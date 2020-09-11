@@ -5,7 +5,6 @@ include("../../Tools/Model_Reduction_Dev.jl")
 # include("..\\..\\Tools\\Model_Reduction_Dev.jl")
 
 using JLD
-# using PyPlot
 using DSP: nextfastfft
 
 function runner(;
@@ -14,13 +13,13 @@ function runner(;
     Xo      = [1],
     t_disc  = 1000,
     gap     = 10,
-    scheme  = "EM",
     d       = size(A,1),
     t_start = 0,
     t_stop  = 1e6,
     h       = 1e-2,
     Δt      = h*gap,
     M_out   = 100)
+
     println("===========t_stop = $t_stop===========")
     println("Time to get data: ")
     @time X = modgen_LSDE(t_start,t_stop,h,
@@ -28,8 +27,7 @@ function runner(;
         σ = σ,
         Xo = Xo,
         t_disc = t_disc,
-        gap = gap,
-        scheme = scheme)
+        gap = gap)
 
     N       = size(X,2)
     nfft    = nextfastfft(N)
@@ -37,27 +35,22 @@ function runner(;
 
     τ_exp, τ_int    = auto_times(X[:])*Δt
     N_eff           = N*Δt/τ_int
+    N_disc          = t_disc/Δt
+    N_disc_rec      = 20*τ_exp/Δt
 
+    println("About data: N_eff = $N_eff, tau_int = $τ_int, tau_exp = $τ_exp")
+    println("N_disc = $N_disc, tau_exp = $τ_exp, 20*tau_exp = $N_disc_rec")
+    println("-------------------------------")
     println("Time to get h_wf: ")
     Psi(x) = x
     @time h_wf_num = get_wf(X,Psi, M_out = M_out)
 
-    h_wf_ana = zeros(1,1,M_out)
-    h_wf_ana[1,1,1] = (1 .+ h*A)[1]
 
-    err     = abs.(h_wf_ana - h_wf_num)
-    comp1_err = err[1,1,1]
-    tail_err = maximum(err[:,:,2:end])
-    err_sum = sum(err)
 
-    println("======================")
-    println("N_eff : $N_eff")
-    println("comp1_err : $comp1_err")
-    println("tail_err : $tail_err")
-    println("======================")
-    [N_eff; comp1_err; tail_err]
+
 end
 
+seed = Random.seed!().seed
 
 T_stop = map(x -> 10^x, 4:.5:7)
 data = zeros(3,length(T_stop))
