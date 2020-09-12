@@ -845,6 +845,11 @@ Before the I changed it just now, the `sig` and the `pred` were switched, these 
 
 1:08 PM - So, it looks like the code is ready for parameter tuning. That is I feel the code is preforming as it should.  So, I would like to run it on a few examples.
 
+
+# Friday, September 11, 2020
+
+4:47 PM - Today the goal has been to get a big batch of scalar linear SDE's running do I can be sure the code works. And I have just barely done that. I am starting with a little thing that ran comfortably on Dell, this job is running now (job 134).
+
 ###Experiment Table: Linear SDE
 | A | h   | `t_stop` |  `gap` | `M_out` | `N_eff` |
 |---|---  |---       |---     |---      |---      |

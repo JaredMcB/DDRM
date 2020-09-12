@@ -15,7 +15,7 @@ t_disc  = 1000
 gap     = 10
 d       = size(A,1)
 t_start = 0
-t_stop  = 1e5
+t_stop  = 5e4
 h       = 1e-2
 Δt      = h*gap
 
@@ -85,7 +85,6 @@ end
 
 
 MM_out = [2,4,6,10,15,20,100]
-MM_out = [2,20]
 regs = length(MM_out)
 reps = 3
 its = regs*reps
@@ -117,5 +116,5 @@ data = Dict(
         "Seeds" => Seeds,
         "tm" => now())
 
-save("/u5/jaredm/data/LSDE_Data/WFCeofvAutocor.jld", "data", data)
+save("/u5/jaredm/data/LSDE_Data/WFCeofvAutocor_9-11.jld", "data", data)
 # save("c:\\Users\\JaredMcBride\\Desktop\\DDMR\\Examples\\LinearSDE\\LSDE_Data\\WFCeofvAutocor.jld", "data", data)
