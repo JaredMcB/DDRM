@@ -848,7 +848,7 @@ Before the I changed it just now, the `sig` and the `pred` were switched, these 
 
 # Friday, September 11, 2020
 
-4:47 PM - Today the goal has been to get a big batch of scalar linear SDE's running do I can be sure the code works. And I have just barely done that. I am starting with a little thing that ran comfortably on Dell, this job is running now (job 134).
+4:47 PM - Today the goal has been to get a big batch of scalar linear SDE's running do I can be sure the code works. And I have just barely done that. I am starting with a little thing that ran comfortably on Dell, this job is running now (job 134). This ran successfully so I went to the big job. And so far so good. I may need to work tomorrow to do analysis this and maybe start the higher dimensional linear model.  
 
 ###Experiment Table: Linear SDE
 | A | h   | `t_stop` |  `gap` | `M_out` | `N_eff` |
