@@ -853,6 +853,53 @@ Before the I changed it just now, the `sig` and the `pred` were switched, these 
 The thing to do will be to get the jupyter notebook up and running.  
 
 ###Experiment Table: Linear SDE
-| A | h   | `t_stop` |  `gap` | `M_out` | `N_eff` |
-|---|---  |---       |---     |---      |---      |
-|-.5|0.01 | 1e5      | 1      |20       |         |
+|gen| A | h   | `t_stop` |`gap`| `MM_out`           | `N_eff`|
+|---|---|---  |---       |---  |---                 |---   |
+|1  |-.5|0.01 | 1e5      | 10  |[2,4,6,10,15,20,100]|≃ 50k |
+
+
+# Monday, September 14, 2020
+
+8:14 AM - Today, I need to look over the data thelio made. So, I will open a notebook in thelio to do this I, in my thelio terminal type:
+
+```
+jaredm@thelio:~$ /usr/bin/jupyter notebook --port=8080 --no-browser
+```
+
+then in my windows command line I type
+
+```
+C:\Users\JaredMcBride>ssh -L 8080:Localhost:8080 jaredm@thelio.math.arizona.edu
+```
+
+Then I put the link from putty into a browser, and voil\`{a}!
+
+8:54 AM - I tried to get a plot by PyPlot.jl but it gave me an error. Here is a smaller preproducable example
+
+```julia
+A = rand(10)
+plot(A)
+```
+gave this
+```
+ArgumentError: hasproperty of NULL PyObject
+
+Stacktrace:
+ [1] pyhasproperty(::PyCall.PyObject, ::String) at /u5/jaredm/.julia/packages/PyCall/zqDXB/src/PyCall.jl:348
+ [2] hasproperty at /u5/jaredm/.julia/packages/PyCall/zqDXB/src/PyCall.jl:354 [inlined]
+ [3] plot(::Array{Float64,1}; kws::Base.Iterators.Pairs{Union{},Union{},Tuple{},NamedTuple{(),Tuple{}}}) at /u5/jaredm/.julia/packages/PyPlot/XHEG0/src/PyPlot.jl:174
+ [4] plot(::Array{Float64,1}) at /u5/jaredm/.julia/packages/PyPlot/XHEG0/src/PyPlot.jl:174
+ [5] top-level scope at In[14]:2
+ [6] include_string(::Function, ::Module, ::String, ::String) at ./loading.jl:1091
+```
+
+So, I just switched to
+```Julia
+using Plots; pyplot()
+```
+and restarted the kernel and that worked fine. Will need to get `PyPlot` working later though!
+
+###Experiment Table: Linear SDE
+|gen| A | h   | `t_stop` |`gap`| `MM_out`           | `N_eff`|
+|---|---|---  |---       |---  |---                 |---   |
+|1  |-.5|0.01 | 1e5      | 10  |[2,4,6,10,15,20,100]|≃ 50k |

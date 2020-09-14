@@ -7,6 +7,7 @@ include("../../Tools/Model_Reduction_Dev.jl")
 using JLD
 using Dates
 using Random
+gen     = 2
 
 A       = reshape([-0.5],1,1)
 σ       = reshape([1],1,1)
@@ -30,9 +31,15 @@ function runner(;
     t_stop  = 1e5,
     h       = 1e-2,
     Δt      = h*gap,
-    M_out   = 100)
+    M_out   = 100,
+    seed    = zeros(UInt32,4)
+    )
 
-    seed = Random.seed!().seed
+    if seed == zeros(UInt32,4)
+        seed = Random.seed!().seed
+    else
+        Random.seed!(seed)
+    end
 
     println("===========M_out = $M_out===========")
     println("Time to get data: ")
@@ -84,20 +91,24 @@ end
 ## Now for the repeated runs
 
 
-MM_out = [2,4,6,10,15,20,100]
+# MM_out = [2,4,6,10,15,20,100]
+MM_out = [4]
+
 regs = length(MM_out)
-reps = 3
+reps = 10
 its = regs*reps
 
 AA = AA_rm = zeros(its,1001)
-Seeds = zeros(UInt32,its,4)
+#Seeds = zeros(UInt32,its,4)
+Seeds = [0xe43ac335  0xc6346b7b  0x36ae43a6  0x79042ea4;
+ 0xe1f4c212  0x641141c3  0xcff9bd47  0xf8a66a85;
+ 0xd19e0e39  0x1aea1b7d  0xaaaeaaaf  0x4de4b6dc]
 
 for i in 1:regs
     for j in 1:reps
-        output = runner(M_out = MM_out[i])
+        output = runner(M_out = MM_out[i],seed = Seeds[j,:])
         AA[(i-1)*reps + j,:] = output[1]
         AA_rm[(i-1)*reps + j,:] = output[2]
-        Seeds[(i-1)*reps + j,:] = output[3]
     end
 end
 
@@ -108,7 +119,7 @@ data = Dict(
         "t_disc" => t_disc,
         "gap" => gap,
         "t_start" => t_start,
-        "t_stop" => t_start,
+        "t_stop" => t_stop,
         "h" => h,
         "MM_out" => MM_out,
         "AA" => AA,
@@ -116,5 +127,5 @@ data = Dict(
         "Seeds" => Seeds,
         "tm" => now())
 
-save("/u5/jaredm/data/LSDE_Data/WFCeofvAutocor_9-11.jld", "data", data)
+save("/u5/jaredm/data/LSDE_Data/WFCeofvAutocor_9-11_gen$gen.jld", "data", data)
 # save("c:\\Users\\JaredMcBride\\Desktop\\DDMR\\Examples\\LinearSDE\\LSDE_Data\\WFCeofvAutocor.jld", "data", data)
