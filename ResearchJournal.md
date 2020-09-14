@@ -903,3 +903,5 @@ and restarted the kernel and that worked fine. Will need to get `PyPlot` working
 |gen| A | h   | `t_stop` |`gap`| `MM_out`           | `N_eff`|
 |---|---|---  |---       |---  |---                 |---   |
 |1  |-.5|0.01 | 1e5      | 10  |[2,4,6,10,15,20,100]|≃ 50k |
+
+10:32 AM - Ran `gen=2` scritp on thelio here the param`t_stop` is small but I run `reps = 10` runs of each of the `regs = 7`.
