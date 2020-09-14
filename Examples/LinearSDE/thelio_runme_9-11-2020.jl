@@ -91,18 +91,16 @@ end
 ## Now for the repeated runs
 
 
-# MM_out = [2,4,6,10,15,20,100]
-MM_out = [4]
+MM_out = [2,4,6,10,15,20,100]
+
 
 regs = length(MM_out)
 reps = 10
 its = regs*reps
 
 AA = AA_rm = zeros(its,1001)
-#Seeds = zeros(UInt32,its,4)
-Seeds = [0xe43ac335  0xc6346b7b  0x36ae43a6  0x79042ea4;
- 0xe1f4c212  0x641141c3  0xcff9bd47  0xf8a66a85;
- 0xd19e0e39  0x1aea1b7d  0xaaaeaaaf  0x4de4b6dc]
+Seeds = zeros(UInt32,its,4)
+
 
 for i in 1:regs
     for j in 1:reps
