@@ -1,16 +1,16 @@
 include("modgen_LSDE.jl")
-include("../../Tools/Model_Reduction_Dev.jl")
+# include("../../Tools/Model_Reduction_Dev.jl")
 
-# include("..\\..\\Tools\\Model_Reduction_Dev.jl")
+include("..\\..\\Tools\\Model_Reduction_Dev.jl")
 
 using JLD
 using Dates
 using Random
 gen     = 2
 
-A       = reshape([-0.5],1,1)
-σ       = reshape([1],1,1)
-Xo      = [1]
+A       = [-0.5 0; 0 -0.1]
+σ       = I + zeros(2,2)
+Xo      = [1; 10]
 t_disc  = 1000
 gap     = 10
 d       = size(A,1)
@@ -82,7 +82,7 @@ function runner(;
 
     lags = 0:1000
 
-    A_rm = my_autocor(X_rm[:],lags)
+    A_rm = my_autocor(X_rm[ c:],lags)
     A    = my_autocor(X[:],lags)
     return A, A_rm, seed
 end
@@ -90,11 +90,11 @@ end
 ## Now for the repeated runs
 
 
-MM_out = [2,4,6,10,15,20,100]
+MM_out = [10]
 
 
 regs = length(MM_out)
-reps = 10
+reps = 1
 its = regs*reps
 
 AA = AA_rm = zeros(its,1001)
@@ -123,6 +123,8 @@ data = Dict(
         "AA_rm" => AA_rm,
         "Seeds" => Seeds,
         "tm" => now())
+file_loc = "WFCeofvAutocor_9-15_gen$gen.jld"
+# save("/u5/jaredm/data/LSDE_Data/"*file_loc, "data", data)
+save("c:\\Users\\JaredMcBride\\Desktop\\DDMR\\Examples\\LinearSDE\\LSDE_Data\\"*file_loc, "data", data)
 
-save("/u5/jaredm/data/LSDE_Data/WFCeofvAutocor_9-11_gen$gen.jld", "data", data)
-# save("c:\\Users\\JaredMcBride\\Desktop\\DDMR\\Examples\\LinearSDE\\LSDE_Data\\WFCeofvAutocor.jld", "data", data)
+plot
