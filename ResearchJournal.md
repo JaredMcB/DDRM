@@ -901,7 +901,12 @@ and restarted the kernel and that worked fine. Will need to get `PyPlot` working
 
 ###Experiment Table: Linear SDE
 |gen| A | h   | `t_stop` |`gap`| `MM_out`           | `N_eff`|
-|---|---|---  |---       |---  |---                 |---   |
-|1  |-.5|0.01 | 1e5      | 10  |[2,4,6,10,15,20,100]|≃ 50k |
+|---|---|---  |---       |---  |---                 |---     |
+|1  |-.5|0.01 | 1e5      | 10  |[2,4,6,10,15,20,100]|≃ 50k   |
 
 10:32 AM - Ran `gen=2` scritp on thelio here the param`t_stop` is small but I run `reps = 10` runs of each of the `regs = 7`.
+
+
+# Thursday, September 17
+
+1:15 PM - Today I worked on class Math 122B from 7:30 - 12:00 this morning. The top priority for the day is to work on getting data for and write up my brown bag presentation. I start by running on my computer here (home comp) the 2-d linear system (reproduction). 

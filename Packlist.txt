@@ -8,3 +8,5 @@ add PyPlot
 add Dates
 add Random
 add JLD
+add Random
+add DSP
