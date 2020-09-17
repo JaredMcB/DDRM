@@ -909,4 +909,6 @@ and restarted the kernel and that worked fine. Will need to get `PyPlot` working
 
 # Thursday, September 17
 
-1:15 PM - Today I worked on class Math 122B from 7:30 - 12:00 this morning. The top priority for the day is to work on getting data for and write up my brown bag presentation. I start by running on my computer here (home comp) the 2-d linear system (reproduction). 
+1:15 PM - Today I worked on class Math 122B from 7:30 - 12:00 this morning. The top priority for the day is to work on getting data for and write up my brown bag presentation. I start by running on my computer here (home comp) the 2-d linear system (reproduction).
+
+Looking at the data

@@ -1,29 +1,23 @@
-include("C:\\Users\\JaredMcBride\\Desktop\\Git Stuff"*
-    "\\Server_scripts\\Model_Reduction_Dev.jl")
-include("modgen_linearSDE.jl")
+include("..\\..\\Tools\\Model_Reduction_Dev.jl")
+include("modgen_LSDE.jl")
 
-A = -[0.1 10; 0 0.9]
-σ = [1 0; 0 1]
-Xo = [1; 1]
-t_disc = 1000
-gap = 1
-scheme = "EM"
-
+A       = - [1 1; 1 1.1]
+σ       = I + zeros(2,2)
+Xo      = [1; 10]
+t_disc  = 1000
+gap     = 10
+d       = size(A,1)
 t_start = 0
-t_stop = 1e5
-h = 0.01
+t_stop  = 5e4
+h       = 1e-2
+Δt      = h*gap
 
 F = I + h*A
 eigen(F)
 cond(F)
 
-X = modgen_LSDE(t_start,t_stop,h,
-    A = A,
-    σ = σ,
-    Xo = Xo,
-    t_disc = t_disc,
-    gap = gap,
-    scheme = scheme)
+X = modgen_LSDE(t_start,t_stop,h;
+    A, σ, Xo, t_disc, gap)
 
 Psi(x) = x
 
