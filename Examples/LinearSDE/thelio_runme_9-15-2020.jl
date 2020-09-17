@@ -132,18 +132,3 @@ data = Dict(
 file_loc = "WFCeofvAutocor_9-15_gen$gen.jld"
 # save("/u5/jaredm/data/LSDE_Data/"*file_loc, "data", data)
 save("c:\\Users\\JaredMcBride\\Desktop\\DDMR\\Examples\\LinearSDE\\LSDE_Data\\"*file_loc, "data", data)
-
-using PyPlot
-i = 1
-rang = ((i-1)*reps+1):i*reps
-A    = mean(AA[rang,:,:,:],dims = 1)[1,:,:,:]
-A_rm = mean(AA_rm[rang,:,:,:],dims = 1)[1,:,:,:]
-A_plot = A_rm_plot = zeros(binomial(d+1,2),501)
-for i =1:d
-    for j=i:d
-        A_plot[(i-1)*(d-1)+j,:] = A[i,j,:]
-        A_rm_plot[(i-1)*(d-1)+j,:] = A_rm[i,j,:]
-    end
-end
-plot(Δt*(0:500),A_plot')
-plot(Δt*(0:500),A_rm_plot')
