@@ -1,4 +1,4 @@
-include("C:\\Users\\jared\\Desktop\\Github Repos\\DDMR\\Tools\\Wiener Filtering\\Matrix Wiener Filter\\wiener_filter_Matrix_fft.jl")
+include("..\\..\\Tools\\Wiener Filtering\\Matrix Wiener Filter\\wiener_filter_Matrix_fft.jl")
 # include("C:\\Users\\jared\\Desktop\\Github Repos\\DDMR\\Tools\\Model_Reduction_Dev.jl")
 
 include("DataGen.jl")
@@ -6,7 +6,7 @@ include("RedModRun.jl")
 
 
 t_start = 0
-t_stop  = 150000
+t_stop  = 1500
 
 sig_init = [1.5]
 sigma = [.35]
@@ -21,7 +21,7 @@ dt = 10^-3
 Time = range(t_start,t_stop, step = dt)
 N_grid = range(t_start,t_stop, step = Δt)
 
-discard_N = 10^5
+discard_N = 10^3
 discard_T = gap*discard_N
 
 T = length(Time)
@@ -84,6 +84,7 @@ dat = Dict(
 save("Examples\\Nonlinear Langevin\\data\\full_model_run.jld",
     merge(parameters,dat))
 
+
 data_dict = load("Examples\\Nonlinear Langevin\\data\\full_model_run.jld")
 signal_N = data_dict["dat_signal_N"]
 
@@ -93,8 +94,26 @@ plot(N_grid,signal_N,
     yaxis = "position",
     leg = :none)
 
+Psi(x) = [x ; x.^3]
 
-Psi1(x) = [x ; x.^3]
+H_wf_en = Run_and_get_WF_DWOL(
+    Psi;
+    scheme,
+    steps = N,
+    t_start,
+    t_stop,
+    discard = discard_N,
+    sig_init,
+    sigma,
+    d,
+    V_prime = (x -> -x.*(x.^2 .- 1)),
+    Nen = 100,
+    M_out = 20,
+    rl = true # if ture output made REAL
+    )
+
+
+
 
 signal_N_vec = reshape(signal_N,1,:)
 h_wf = get_wf(signal_N, Psi1)
