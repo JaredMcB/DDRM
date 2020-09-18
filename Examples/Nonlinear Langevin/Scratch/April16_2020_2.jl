@@ -2,10 +2,10 @@ using Statistics
 using Plots
 pyplot()
 
-include("..\\..\\Matrix Wiener Filter\\wiener_filter_Matrix_fft.jl")
+include("C:\\Users\\jared\\Desktop\\Github Repos\\DDMR\\Tools\\Wiener Filtering\\Matrix Wiener Filter\\wiener_filter_Matrix_fft.jl")
 include("..\\DataGen.jl")
 include("..\\RedModRun.jl")
-
+include("C:\\Users\\jared\\Desktop\\Github Repos\\DDMR\\Tools\\Model_Reduction_Dev.jl")
 ## Preference parameters
 t_start = 0
 t_stop = 10^3
@@ -71,7 +71,7 @@ sum(h_wf[1,1,:])
 p1 = plot(real.([h_wf[1,1,:] h_old[1,1,:]]),
         marker = (2,[:h]),
         label = ["filter" "Predictor"])
-p2 = plot(real.([h_wf[1,2,:] h_old[1,2,:]]),
+p2 = plot(real.([h_wf[2,1,:] h_old[2,1,:]]),
         marker = (2,[:h]),
         label = ["filter" "Predictor"])
 

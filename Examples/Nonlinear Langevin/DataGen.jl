@@ -5,6 +5,7 @@ using StatsBase
 using Statistics
 using DSP
 using FFTW
+using Distributions
 
 include("DWOL_eqidist_sampler.jl")
 
@@ -128,6 +129,14 @@ end
 
 function DWOL_dist_samp(N::Int64 = 1, σ = [.35])
     # sampling
+    μ_pos = 1
+    μ_neg = -1
+    m = maximum(pdf_N)*1.05
+    σ = 1/(sqrt(2π)*m)
+
+    D_neg = Normal(μ_pos,σ)
+    D_pos = Normal(μ_neg,σ)
+
 
     μ = σ[1]^2/2
     p(z) =  exp(-(x^2-1)^2/μ)

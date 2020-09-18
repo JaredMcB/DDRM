@@ -8,7 +8,7 @@ pyplot()
 
 
 include("..\\DataGen.jl")
-include("..\\..\\Matrix Wiener Filter\\wiener_filter_Matrix_fft.jl")
+include("C:\\Users\\jared\\Desktop\\Github Repos\\DDMR\\Tools\\Wiener Filtering\\Matrix Wiener Filter\\wiener_filter_Matrix_fft.jl")
 
 t_start = 0
 t_stop = 100

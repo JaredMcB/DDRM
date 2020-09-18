@@ -6,7 +6,7 @@ pyplot()
 
 include("..\\DataGen.jl")
 include("..\\RedModRun.jl")
-include("..\\..\\Matrix Wiener Filter\\wiener_filter_Matrix_fft.jl")
+include("C:\\Users\\jared\\Desktop\\Github Repos\\DDMR\\Tools\\Wiener Filtering\\Matrix Wiener Filter\\wiener_filter_Matrix_fft.jl")
 
 
 t_start = 0
@@ -48,7 +48,7 @@ signal, e = DataGen_DWOL(steps,
     scheme = "FE",
     t_start = t_start,
     t_stop = t_stop,
-    discard = 0,
+    discard = discard,
     sig_init = sig_init,
     sigma = sigma,
     d = 1,
@@ -61,7 +61,7 @@ P = timeseries_plot(tim,signal[1,:],title = "Truth")
 ## test the other schemes with deltat = 10^-2
 
 deltat = 2^-2
-
+discard_N = floor(Int, discard*dt/deltat)
 steps_N = Int64(round( (t_stop - t_start)/deltat )) + 1
 tim_N = range(t_start,t_stop,length = steps_N)
 
@@ -74,7 +74,7 @@ signal_et = DataGen_DWOL(steps_N,
     scheme = "FE",
     t_start = t_start,
     t_stop = t_stop,
-    discard = 0,
+    discard = discard_N,
     sig_init = sig_init,
     sigma = sigma,
     d = 1,
