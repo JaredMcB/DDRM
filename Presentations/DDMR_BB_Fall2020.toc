@@ -6,4 +6,6 @@
 \beamer@subsectionintoc {3}{2}{Spectral Factorization}{7}{0}{3}
 \beamer@sectionintoc {4}{The Wiener Projection}{10}{0}{4}
 \beamer@sectionintoc {5}{Numerical Impimentation: Examples}{13}{0}{5}
-\beamer@sectionintoc {6}{Conclusions}{19}{0}{6}
+\beamer@sectionintoc {6}{KSE}{19}{0}{6}
+\beamer@sectionintoc {7}{Difficulties}{22}{0}{7}
+\beamer@sectionintoc {8}{Conclusions}{29}{0}{8}

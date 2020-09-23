@@ -912,3 +912,17 @@ and restarted the kernel and that worked fine. Will need to get `PyPlot` working
 1:15 PM - Today I worked on class Math 122B from 7:30 - 12:00 this morning. The top priority for the day is to work on getting data for and write up my brown bag presentation. I start by running on my computer here (home comp) the 2-d linear system (reproduction).
 
 Looking at the data
+
+
+# Wednesday, September 23, 2020
+
+Today I spent the morning on Math 122B and am now working on research.
+
+12:15 PM - I read a lot of:
+
+Zouzias, Anastasios, and Nikolaos M. Freris. **"Randomized extended Kaczmarz for solving least squares."** SIAM Journal on Matrix Analysis and Applications 34.2 (2013): 773-793.
+
+## UQ meeting notes
+First things to do for next time:
+* In order to more deeply investigate the reliability of my implementation of the CKMS factorization algorithm, I will investigate the one step prediction error and test if that is orthogonal to the predictors. I will do this for all the models I've looked at so far especially the KSE.
+* Test the WF for higher order ARMA models. 

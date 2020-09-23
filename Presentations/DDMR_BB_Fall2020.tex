@@ -357,6 +357,117 @@ We use the data to infer $h_{k}$ (WF) and $\xi_{n}$.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{KSE}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Karumoto-Sivashinsky Equation}
+	In one demnsional space is 
+	$$u_t + uu_x + u_{xx} + u_{xxxx} = 0,\qquad t \in [0,\infty), x \in [o,L]$$
+	 
+In Fourier coefficients this is 
+$$\dot{v}_k = -\frac{iq_k}{2}\sum_l v_l v_{k-l} + (q_k^2 - q^4_k)v_k, \qquad q_k = \frac{2\pi k}{L}$$
+this is now an ODE in the Fourier modes, we now use a numerical scheme to solve this ODE. 
+
+\end{frame}
+
+\begin{frame}{Karumoto-Sivashinsky Equation}
+	These ODE's tend to be stiff so we use an exponential time differencing (ETD) scheme to solve them. This scheme is paired up with an RK4 method.  
+	
+	 
+		\includegraphics[scale=.7]{fig/ETDRK41.png}
+\end{frame}
+
+\begin{frame}{Karumoto-Sivashinsky Equation}
+\begin{minipage}{.5\textwidth}
+	This introduces the full model of the form
+$$V_{n+1} = F(V_n)$$
+Where $F$ steps the vector $V_n = (v_k^n;\: n\in \mathbb{Z})$ forward in time. Generally, because of the decay of the Fourier modes we consider only the first so many modes, about 100.
+
+Displayed used 96 modes, $10^8$ I discarded half, The time step is $10^3.$ 
+	\end{minipage}\begin{minipage}{.5\textwidth}
+	\includegraphics[scale=.45]{fig/KSE_mine.png}
+\end{minipage}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Difficulties}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Difficulties}
+	The theoretically two ingredients are $S_{X\Psi}(z)$ and $S_{X}(z)$. Rather, $S_{X\Psi}(z)$ and $S^-_{X}(z)$ ($S^+_{X}(z)$ $S^-_{X}(z)$ derives from we need What we have is data. 
+	
+	These can be difficult to estimate. Here is an illustration: 
+	
+\end{frame}		
+
+\begin{frame}{WF: AR(2) Signal, Filtered, Ad. WN}{Estimating $S_{X\Psi}(z)$}
+	Observe that 
+	$$S_{\textbf{yx}}(z) = S_{\textbf{y}}(z)W^*(z^{-*}) \and S_{\textbf{x}} = W(z)S_{\textbf{y}}(z)W^*(z^{-*}) + \sigma_{\textbf{v}}^2.$$
+	So, 
+	\begin{align*}
+	S_{\textbf{yx}}(z) &= \frac{1 + w_1 z + w_2 z^{2}}{ (1 - r_1z^{-1})(1 - r_2z^{-1})(1 - r_1^*z)(1 - r_2^*z)}\\
+	\end{align*}
+	
+	Numerically this is processed in 
+	\begin{enumerate}
+		\item estimate cross covariances
+		\item smooth these
+		\item take $z$-transform (fft)
+	\end{enumerate}
+	
+\end{frame}
+	
+	
+\begin{frame}{WF: AR(2) Signal, Filtered, Ad. WN}{Estimating $S_{X\Psi}(z)$}
+Here's a snippet:
+
+
+\includegraphics[scale=.6]{fig/Spectsigpred_code.PNG}
+	
+\end{frame}
+	
+
+\begin{frame}{WF: AR(2) Signal, Filtered, Ad. WN}{Estimating $S_{X\Psi}(z)$}
+	Here's the result:
+	
+	
+	\includegraphics[scale=.6]{fig/spectsigpred.PNG}
+	
+\end{frame}
+
+\begin{frame}{WF: AR(2) Signal, Filtered, Ad. WN}{Estimating $S^-_{\Psi}(z)$}
+	For this, analytically we have we have 
+	\begin{align*}
+	S_{\textbf{x}}(z) &=\frac{w_2 + \sigma_{\textbf{v}}^2r^*_1r^*_2}{\rho_1^*\rho_2^*}\cdot \frac{(1 - \rho_1z^{-1})(1 - \rho_2z^{-1})(1 - \rho_1^*z)(1 - \rho_2^*z)}{(1 - r_1z^{-1})(1 - r_2z^{-1})(1 - r_1^*z)(1 - r_2^*z)}
+	\end{align*} 
+	
+	Numerically this is processed in 
+	\begin{enumerate}
+		\item estimate autocovariance
+		\item smooth this
+		\item feed it into factorizing script
+		\item take fft
+	\end{enumerate}
+	
+\end{frame}
+
+
+\begin{frame}{WF: AR(2) Signal, Filtered, Ad. WN}{Estimating $S_{X\Psi}(z)$}
+	Here's a snippet:
+	
+	
+	\includegraphics[scale=.6]{fig/spectpred_code.PNG}
+	
+\end{frame}
+
+
+\begin{frame}{WF: AR(2) Signal, Filtered, Ad. WN}{Estimating $S_{X\Psi}(z)$}
+	Here's the result:
+	
+	
+	\includegraphics[scale=.6]{fig/spectpred.PNG}
+	
+\end{frame}
+
+
 \section{Conclusions}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
