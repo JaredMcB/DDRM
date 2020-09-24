@@ -920,9 +920,29 @@ Today I spent the morning on Math 122B and am now working on research.
 
 12:15 PM - I read a lot of:
 
-Zouzias, Anastasios, and Nikolaos M. Freris. **"Randomized extended Kaczmarz for solving least squares."** SIAM Journal on Matrix Analysis and Applications 34.2 (2013): 773-793.
+Zouzias, Anastasios, and Nikolaos M. Freris. *"Randomized extended Kaczmarz for solving least squares."* SIAM Journal on Matrix Analysis and Applications 34.2 (2013): 773-793.
 
 ## UQ meeting notes
 First things to do for next time:
 * In order to more deeply investigate the reliability of my implementation of the CKMS factorization algorithm, I will investigate the one step prediction error and test if that is orthogonal to the predictors. I will do this for all the models I've looked at so far especially the KSE.
-* Test the WF for higher order ARMA models. 
+* Test the WF for higher order ARMA models.
+
+2:54 PM - Goal for the day: **Clean up examples and run them with new code**
+First I will try to get Julia 1.5 on Jupyter notebook
+
+4:01 PM - Applying the new code to the old wiener filter tests. These are all in
+`Tools\Wiener Filtering\Scalar Wiener Filter`.
+
+The first one I looked at was `Scalar Wiener filter Test AR2N Sig add WN.ipynb`.
+For this run I had: `r1, r2  = .99,-.5` Observe the zero very near the unit cirle.
+the parameter I played with was `par`
+
+Here's a little table
+| `par` | n | p  | Quantitative result |
+|---    |---|--- |---                  |
+|500    | 3 |1500|poorer that 'wiener_filter_fft.jl'|
+|1500   | 3 |1500| better |
+|2000   | 3 |1500| better still|
+|1500   | 2 |1500| same|
+|1500   | 3 |500| same|
+|1500   | 2 |500| same|
