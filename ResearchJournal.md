@@ -946,3 +946,14 @@ Here's a little table
 |1500   | 2 |1500| same|
 |1500   | 3 |500| same|
 |1500   | 2 |500| same|
+
+
+# Sept 29, 2020
+
+2:35 PM - listened in on RTG meeting. Very interesting.
+
+Today, I continue to clean up and run basic experiments.
+
+3:03 PM - The goal for the rest of the day is to write up a generator for general ARMA(p,q) processes. Compute it's wiener filter (tough).
+
+3:27 PM - I already wrote cod for the first bit I think I will dispense with writing code for the analytic solution and just test that the predictors and orthogonal to the errors.

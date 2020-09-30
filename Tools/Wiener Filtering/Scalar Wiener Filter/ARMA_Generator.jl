@@ -46,14 +46,14 @@ function ARMA_gen(  l = [1, -5/4, 3/8],
 
     if Poles != []
         p = length(Poles)
-        P = prod([Poly([1]); [Poly([1,-z]) for z in Poles]])
+        P = prod([Polynomial([1]); [Polynomial([1,-z]) for z in Poles]])
         # Produces a poly with roots: Poles.^(-1)
         l = coeffs(P);
     end
 
     if Zeros != []
         q = length(Zeros)
-        Q = prod([Poly([1]); [Poly([1,-z]) for z in Zeros]])
+        Q = prod([Polynomial([1]); [Polynomial([1,-z]) for z in Zeros]])
         w = coeffs(Q);
     end
     steps_tot = steps + discard
