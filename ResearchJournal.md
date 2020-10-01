@@ -969,3 +969,20 @@ Now, It is time to go to us this tool (covariance of observations and errors) to
 12:38 PM - *Nonlinear Langevin* I will do one example here and then go to KSE.
 
 **Note:** There is a problem with the rejection sampling algorithm. I will need to get back to that later.
+
+# October 1, 2020
+
+11:32 PM - Today the task will be to get the Wiener filtering code to work for the Double-welled, overdamped Langevin equation (DWOL) to work.  
+
+I am a bit suspicious of the time series generator so I will first verify that against the distribution derived by Fokker-Planck
+
+11:52 AM - I checked this and the data generator does produce a series that has the desired distribution.
+
+2:30 PM - Code is not working I found a little bug in the `dot` function from `LinearAlgebra.jl` small reproducable example is
+
+```julia
+x = randn(10^6) + im*rand(10^6)
+dot(x,x)
+```
+
+That seems to immediately kill julia. 

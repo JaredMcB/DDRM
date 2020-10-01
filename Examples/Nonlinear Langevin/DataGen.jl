@@ -395,8 +395,6 @@ function timeseries_plot(T,TS; title = "original plot")
         layout = (1,2))
 end
 
-T = range()
-
 function No_of_trans(series,ϵ)
     S = (series .> ϵ) - (series .< -ϵ)
     well = (series[1] .> 0) - (series[1] .< 0)

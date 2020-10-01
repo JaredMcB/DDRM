@@ -43,7 +43,8 @@ end
 function my_crosscov(x::AbstractVector{<:Number},
                      y::AbstractVector{<:Number},
                      lags)
-    length(lags) > 1000 ? _crosscov_con(x,y, lags) : _crosscov_dot(x,y, lags)
+    # length(lags) > 1000 ? _crosscov_con(x,y, lags) : _crosscov_dot(x,y, lags)
+    _crosscov_con(x,y, lags)
 end
 
 function my_crosscor(x::AbstractVector{<:Number},
@@ -54,7 +55,8 @@ end
 
 function my_autocov(x::AbstractVector{<:Number},
                      lags)
-    length(lags) > 1000 ? _crosscov_con(x,x, lags) : _crosscov_dot(x,x, lags)
+    # length(lags) > 1000 ? _crosscov_con(x,x, lags) : _crosscov_dot(x,x, lags)
+    _crosscov_con(x,x, lags)
 end
 
 function my_autocor(x::AbstractVector{<:Number},
