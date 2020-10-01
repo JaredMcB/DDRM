@@ -13,9 +13,11 @@ using DataFrames
 pyplot()
 
 
-include("..\\..\\Matrix Wiener Filter\\wiener_filter_Matrix_fft.jl")
+# include("..\\..\\..\\Tools\\Wiener Filtering\\Matrix Wiener Filter\\wiener_filter_Matrix_fft.jl")
 include("..\\DataGen.jl")
-include("..\\RedModRun.jl")
+include("../Wiener_Filter_analyzer.jl")
+include("../../../Tools/Model_Reduction_Dev.jl")
+# include("..\\RedModRun.jl")
 
 ## Preference parameters
 t_start = 0
@@ -33,9 +35,9 @@ Nen = 100
 
 dVdx(x) = -x.*(x.^2 .- 1) # Symetric Double well
 # dVdx(x) = -(6x.^5 - 8x.^3 + 2x)
-Psi(x) = [x; sin.(x)]
+Psi(x) = [x; (x).^3]
 
-simulator = DataGen_Langevin_FE
+# simulator = DataGen_Langevin_FE
 
 M_out = 20
 
@@ -47,17 +49,16 @@ tim = range(t_start,t_stop,length = steps)
 
 ## Code begins
 
-Nen = 100
+Nen = 10
 
-h_ens = Run_and_get_WF(
-    Psi,
-    simulator = simulator,
-    steps = steps,
-    t_start = t_start,
-    t_stop = t_stop,
-    discard = discard,
-    sig_init = sig_init,
-    sigma = sigma,
+h_ens = Run_and_get_WF_DWOL(
+    Psi;
+    steps,
+    t_start,
+    t_stop,
+    discard,
+    sig_init,
+    sigma,
     d = d,
     V_prime = dVdx,
     Nen = Nen,
@@ -75,16 +76,28 @@ h_m[1,:,1]'*Psi(5)
 
 plot(x,[x .- dt*(x.^3 .- x) map(x -> h_m[1,:,1]'*Psi(x),x)])
 
-signal = simulator(steps,
-    t_start = t_start,
-    t_stop = t_stop,
-    discard = discard,
-    sig_init = sig_init,
-    sigma = sigma,
-    d = d,
-    V_prime = dVdx,
-    SM1 = false,
-    Obs_noise = true)
+# signal = simulator(steps,
+#     t_start = t_start,
+#     t_stop = t_stop,
+#     discard = discard,
+#     sig_init = sig_init,
+#     sigma = sigma,
+#     d = d,
+#     V_prime = dVdx,
+#     SM1 = false,
+#     Obs_noise = true)
+
+SM1 = false
+Obs_noise = true
+d = 1
+e = randn(d,steps + discard)
+
+signal = DataGen_DWOL(
+    steps;
+    t_start, t_stop, discard,
+    sig_init , sigma, V_prime = dVdx,
+    SM1, Obs_noise, d, e
+    )
 
 obs_noise = signal[2]
 sig = signal[1]

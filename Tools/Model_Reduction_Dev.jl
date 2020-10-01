@@ -18,10 +18,13 @@ from the Weiner filter. And `rl` which if true just take the real part of the
 Wiener filter as the output.
 """
 
-function get_wf(signal, Psi;
+function get_wf(
+    signal, # Vector valued process
+    Psi; # column vector valued function
     M_out = 20,
     n = 3, p = 1500, par = 1500,
     rl = true,
+    Preds = false,
     PI = false,
     rtol = 1e-6)
     # We would like a presample since we want the
@@ -43,6 +46,7 @@ function get_wf(signal, Psi;
             n = n, p = p, par = par, PI = PI, rtol = rtol)
 
     h_wf = rl ? real(h_wf) : h_wf
+    Preds ? [h_wf, pred] : h_wf
 end
 
 

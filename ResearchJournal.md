@@ -925,7 +925,8 @@ Zouzias, Anastasios, and Nikolaos M. Freris. *"Randomized extended Kaczmarz for 
 ## UQ meeting notes
 First things to do for next time:
 * In order to more deeply investigate the reliability of my implementation of the CKMS factorization algorithm, I will investigate the one step prediction error and test if that is orthogonal to the predictors. I will do this for all the models I've looked at so far especially the KSE.
-* Test the WF for higher order ARMA models.
+* Test the WF for higher order ARMA models. *done: Sept 30, 2020*
+
 
 2:54 PM - Goal for the day: **Clean up examples and run them with new code**
 First I will try to get Julia 1.5 on Jupyter notebook
@@ -957,3 +958,14 @@ Today, I continue to clean up and run basic experiments.
 3:03 PM - The goal for the rest of the day is to write up a generator for general ARMA(p,q) processes. Compute it's wiener filter (tough).
 
 3:27 PM - I already wrote cod for the first bit I think I will dispense with writing code for the analytic solution and just test that the predictors and orthogonal to the errors.
+
+
+# September 30, 2020
+
+12:29 PM - This morning in have been testing the Wiener filtering code on general ARMA processes. And it has been working well so far. I am convince the code is working right. Issues in the performance of the WF are likely due to insufficient effective samples. Since I am using randomly chosen values the autocorrelation time of the process can get long.
+
+Now, It is time to go to us this tool (covariance of observations and errors) to test performance in model reduction settings
+
+12:38 PM - *Nonlinear Langevin* I will do one example here and then go to KSE.
+
+**Note:** There is a problem with the rejection sampling algorithm. I will need to get back to that later.
