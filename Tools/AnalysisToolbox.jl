@@ -64,6 +64,39 @@ function my_autocor(x::AbstractVector{<:Number},
     my_crosscov(x,x,lags)/my_crosscov(x,x,0:0)[1]
 end
 
+function _smoother(n=4,p=5; ty = "bin")
+    if ty == "bin"
+        μ = Polynomial(ones(p+1))
+        μ_sq = μ^(2n)/(p+1)^(2n)
+        μ_c = coeffs(μ_sq)
+    elseif ty == "ave"
+        μ = Polynomial(ones(2p+1))
+        μ_sq = μ^(n)/(2p+1)^(n)
+        μ_c = coeffs(μ_sq)
+    else
+        μ_c = ones(2n*p+1)/(2n*p+1)
+    end
+    μ_c
+end
+
+function _window(L; win = "Par",two_sided = true)
+    if win == "Bar"
+        lam = 1 .- (0:L)/L
+    elseif win == "Tuk"
+        lam = .5*(1 .+ cos.(pi/L*(0:L)))
+    elseif win == "Par"
+        LL = Int(floor(L/2))
+        lam1 = 1 .- 6*((0:LL)/L).^2 .+ 6*((0:LL)/L).^3
+        lam2 = 2*(1 .- (LL+1:L)/L).^3
+        lam = [lam1; lam2]
+    else
+        lam = ones(L+1)
+    end
+    two_sided ? [lam[L+1:-1:2]; lam] : lam
+end
+
+
+
 """
     z_crossspect_fft(sig::Array{Complex{Float64},2},pred::Array{Complex{Float64},2};
 n = 3, p = 2500, win = "Par")
@@ -76,7 +109,8 @@ function z_crossspect_fft(
     nfft = 0,
     n = 3,
     p = 2500,
-    win = "Par")
+    win = "Par",
+    ty = "bin")
 
     ## sig = d x steps, pred = nu x steps
     d, stepsx = size(sig)
@@ -91,15 +125,15 @@ function z_crossspect_fft(
     z_spect_mat = zeros(Complex, d, nu, nfft)
     for i = 1 : d
         for j = 1 : nu
-            z_spect_mat[i,j,:] = z_crossspect_scalar(sig[i,:],pred[j,:],
-                                                  nfft = nfft, n = n, p = p)
+            z_spect_mat[i,j,:] = z_crossspect_scalar(sig[i,:],pred[j,:];
+                                                  nfft, n, p,ty)
         end
     end
     z_spect_mat
 end
 
 function z_spect_scalar(sig; n = 3, p=100, ty = "ave")
-    μ = _smoother(n,p,ty = "ave")
+    μ = _smoother(n,p;ty)
 
     siz = length(sig)
     nfft = nextfastfft(siz)
@@ -114,7 +148,7 @@ end
 z_crsspect_scalar has output of size nfft
 """
 function z_crossspect_scalar(sig,pred; nfft = 0, n = 3, p=100, ty = "ave")
-    μ = _smoother(n,p,ty = "ave")
+    μ = _smoother(n,p;ty)
 
     l_sig = length(sig)
     l_pred = length(pred)
@@ -132,7 +166,7 @@ function z_crossspect_scalar(sig,pred; nfft = 0, n = 3, p=100, ty = "ave")
 
     peri = fftsig .* fftpred / nfft
     peri_pad = [peri[end - p*n + 1 : end]; peri; peri[1:p*n]]
-    z_crsspect_smoothed = conv(μ,peri_pad)[2n*p:2n*p+nfft-1]
+    z_crsspect_smoothed = conv(μ,peri_pad)[2n*p+1:2n*p+nfft]
 end
 
 function auto_times(x::AbstractVector{<:Real};plt = false)
