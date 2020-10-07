@@ -141,7 +141,7 @@ function z_spect_scalar(sig; n = 3, p=100, ty = "ave")
 
     peri = abs.(fft(sig_pad)).^2/nfft
     peri_pad = [peri[end - p*n + 1 : end]; peri; peri[1:p*n]]
-    z_spect_smoothed = conv(μ,peri_pad)[2n*p:2n*p+nfft-1]
+    z_spect_smoothed = conv(μ,peri_pad)[2n*p+1:2n*p+nfft]
 end
 
 """

@@ -985,4 +985,19 @@ x = randn(10^6) + im*rand(10^6)
 dot(x,x)
 ```
 
-That seems to immediately kill julia. 
+That seems to immediately kill julia.
+
+### Meeting with Dr. Lin
+* We discussed the issue with `dot` form `LinearAlgebra.jl` and how it seems to be a installation error as it only seems to occur on my machine.
+* The WF that the code is giving me is way off there must be a bug in the code. So, I looked at the estimated spectral density of the predictors first as recovered by multiplying the factorization and then by direct approximation using a smooth periodogram. There was a great discrepancy between the two.
+* Dr. Lin provided a big picture plan for the very near future. That is here an technique to implement:
+  1. we run Wiener Filtering code to get the approximate reduced model and use rational approximation to improve that as much as possible.
+  2. Then use that as the initial estimate for a time domain optimization algorithm where the loss function has measures the kth step prediction error with noise. The parameters and form of the noise is approximated using the one step predication error given by the approximate initial WF.
+  3. We use the time domain optimization step to improve the spectrally derived estimate.
+
+Yesterday, there were some very strange plots as I was comparing the recovers spectral density of the predictors and the spectral density of the predictors approximated by the smoothed periodogram. I have discovered why the plots were in fact so strange. First, I recovered the spectral density incorrectly. Rather than S_x(θ) = S_x^-(θ)S_x^+(θ) = S_x^-(θ)S_x^{-\*}(θ) as it should have been I had S_x(θ) = S_x^{-\*}(θ)S_x^+(θ) = S_x^{-\*}(θ)S_x^{-\*}(θ). The periodogram was also in error, now this doesn't bare directly on the performance of the WF since the spectra density of the predictors is never actually estimate. It does make me suspect the function `z_crossspect_fft` from `Model_reduction_dev.jl` which is used in the production of the WF to compute the cross spectral density of the signals and the predictors.
+
+The problem is in the smoothing.
+
+
+# October 7, 2020

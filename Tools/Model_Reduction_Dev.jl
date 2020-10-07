@@ -174,38 +174,6 @@ function spectfact_matrix_CKMS_pinv(P; N_ckms = 1500, rtol = 1e-6)
     l
 end
 
-
-function _smoother(n=4,p=5; ty = "bin")
-    if ty == "bin"
-        μ = Polynomial(ones(p+1))
-        μ_sq = μ^(2n)/(p+1)^(2n)
-        μ_c = coeffs(μ_sq)
-    elseif ty == "ave"
-        μ = Polynomial(ones(2p+1))
-        μ_sq = μ^(n)/(2p+1)^(n)
-        μ_c = coeffs(μ_sq)
-    else
-        μ_c = ones(2n*p+1)
-    end
-    μ_c
-end
-
-function _window(L; win = "Par",two_sided = true)
-    if win == "Bar"
-        lam = 1 .- (0:L)/L
-    elseif win == "Tuk"
-        lam = .5*(1 .+ cos.(pi/L*(0:L)))
-    elseif win == "Par"
-        LL = Int(floor(L/2))
-        lam1 = 1 .- 6*((0:LL)/L).^2 .+ 6*((0:LL)/L).^3
-        lam2 = 2*(1 .- (LL+1:L)/L).^3
-        lam = [lam1; lam2]
-    else
-        lam = ones(L+1)
-    end
-    two_sided ? [lam[L+1:-1:2]; lam] : lam
-end
-
 function matrix_autocov_seq(pred;
     L = 1500,
     steps = size(pred,2),
