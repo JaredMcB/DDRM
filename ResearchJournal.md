@@ -1026,10 +1026,11 @@ Some great suggestions:
   3. General state spaces models
   4. KSE
   5. Lorenz ('63 and '96)
-
-Then I'll make a short notebook for each in which I call a model simulator, run my model reduction algorithm, then generate the reduced model and compare various aspects of them with the original timeseries. Aspects to compare include
+  Then I'll make a short notebook for each in which I call a model simulator, run my model reduction algorithm, then generate the reduced model and compare various aspects of them with the original timeseries. Aspects to compare include
   - Autocorrelation
   - Spectral Density
   - Are the errors orthogonal to the predictors?
   - distribution of the marginals
 * We talked about how the old code is working but the new code is not. By working I mean with regard to the DWOL. So, he suggested I swap out some of the new parts for the old and see if I can get it working again. This may be facilitated by creating a branch in git.
+
+4:11 PM - Now, I'm going to work on teaching duties and write the code testers tomorrow when I start researching at 12:30.
