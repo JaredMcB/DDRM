@@ -1026,6 +1026,7 @@ Some great suggestions:
   3. General state spaces models
   4. KSE
   5. Lorenz ('63 and '96)
+
   Then I'll make a short notebook for each in which I call a model simulator, run my model reduction algorithm, then generate the reduced model and compare various aspects of them with the original timeseries. Aspects to compare include
   - Autocorrelation
   - Spectral Density
