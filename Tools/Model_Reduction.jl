@@ -217,7 +217,8 @@ end
 function my_crosscov(x::AbstractVector{<:Number},
                      y::AbstractVector{<:Number},
                      lags::UnitRange{Int})
-    length(lags) > 1000 ? _crosscov_con(x,y, lags) : _crosscov_dot(x,y, lags)
+    # length(lags) > 1000 ? _crosscov_con(x,y, lags) : _crosscov_dot(x,y, lags)
+    _crosscov_con(x,y, lags)
 end
 
 function my_crosscor(x::AbstractVector{<:Number},
@@ -227,8 +228,8 @@ function my_crosscor(x::AbstractVector{<:Number},
 end
 
 function z_crossspect_fft(
-    sig::Array{Complex{Float64},2},
-    pred::Array{Complex{Float64},2};
+    sig,
+    pred;
     L = 50,
     Nex = 2^10,
     win = "Par")
@@ -312,7 +313,7 @@ end
     vector_wiener_filter_fft
 
 """
-function vector_wiener_filter_fft(pred::Array{Complex{Float64},2}, sig,
+function vector_wiener_filter_fft(pred, sig,
     M_out = 20;
     par::Int64 = 55,
     Nex::Int64 = 1024,

@@ -935,7 +935,7 @@ First I will try to get Julia 1.5 on Jupyter notebook
 `Tools\Wiener Filtering\Scalar Wiener Filter`.
 
 The first one I looked at was `Scalar Wiener filter Test AR2N Sig add WN.ipynb`.
-For this run I had: `r1, r2  = .99,-.5` Observe the zero very near the unit cirle.
+For this run I had: `r1, r2  = .99,-.5` Observe the zero very near the unit circle.
 the parameter I played with was `par`
 
 Here's a little table
@@ -1001,3 +1001,34 @@ The problem is in the smoothing.
 
 
 # October 7, 2020
+
+3:00 PM - Getting back into it. I am investigating how the current code preforms on the Linear SDE. The problem does seem to be in the smoothing parameters of the periodogram. I sometimes the `_smoother` function from `AnalysisToolbox.jl` would give bad smoother function (have negative values, an artifact of the `Polynomial.jl` package I suspect) this occurs only when I am asking for too much smoothing anyway.
+
+I wrote a little smoother plotter function.
+```julia
+function smoother_plot(n,p,ty)
+    μ = _smoother(n,p; ty)
+    round(sum(μ);digits = 5) == 1.0 || println("bad smoother")
+    plot(-n*p:n*p,μ)
+end
+```
+
+
+# October 8, 2020
+
+11:45 AM - I am still working on m=understand the affects of smoothing (both in the autocov of preds and the crossspectrum).
+
+### Meeting with Dr. Lin
+Some great suggestions:
+* Automate the testing process. Ideally after I get the code working for one example some modifications may be necessary to run it on a different example. After those modifications are mad it is crucial that the code still works for the first example. So testing the old examples frequently is an important thing to do. So, I think what I will do is (1) make a list of examples that I feel are important for the code to work on:
+  1. Linear SDE's ( of various dimensions and various numerical schemes)
+  2. General ARMA and VRMA processes
+  3. General state spaces models
+  4. KSE
+  5. Lorenz ('63 and '96)
+Then I'll make a short notebook for each in which I call a model simulator, run my model reduction algorithm, then generate the reduced model and compare various aspects of them with the original timeseries. Aspects to compare include
+  - Autocorrelation
+  - Spectral Density
+  - Are the errors orthogonal to the predictors?
+  - distribution of the marginals
+* We talked about how the old code is working but the new code is not. By working I mean with regard to the DWOL. So, he suggested I swap out some of the new parts for the old and see if I can get it working again. This may be facilitated by creating a branch in git. 

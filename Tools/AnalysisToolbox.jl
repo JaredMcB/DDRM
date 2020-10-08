@@ -79,6 +79,12 @@ function _smoother(n=4,p=5; ty = "bin")
     μ_c
 end
 
+function smoother_plot(n,p,ty)
+    μ = _smoother(n,p; ty)
+    round(sum(μ);digits = 5) == 1.0 || println("bad smoother")
+    plot(-n*p:n*p,μ)
+end
+
 function _window(L; win = "Par",two_sided = true)
     if win == "Bar"
         lam = 1 .- (0:L)/L
@@ -109,7 +115,6 @@ function z_crossspect_fft(
     nfft = 0,
     n = 3,
     p = 2500,
-    win = "Par",
     ty = "bin")
 
     ## sig = d x steps, pred = nu x steps
@@ -134,6 +139,7 @@ end
 
 function z_spect_scalar(sig; n = 3, p=100, ty = "ave")
     μ = _smoother(n,p;ty)
+    round(sum(μ);digits = 5) == 1.0 || println("bad smoother")
 
     siz = length(sig)
     nfft = nextfastfft(siz)

@@ -23,6 +23,7 @@ function get_wf(
     Psi; # column vector valued function
     M_out = 20,
     n = 3, p = 1500, par = 1500,
+    ty = "bin",
     rl = true,
     Preds = false,
     PI = false,
@@ -42,8 +43,8 @@ function get_wf(
         # which is what we want so as to ensure the reduced
         # model can run explicitly.
 
-    h_wf = vector_wiener_filter_fft(sig, pred, M_out,
-            n = n, p = p, par = par, PI = PI, rtol = rtol)
+    h_wf = vector_wiener_filter_fft(sig, pred; M_out,
+            n, p, par, ty, PI, rtol)
 
     h_wf = rl ? real(h_wf) : h_wf
     Preds ? [h_wf, pred] : h_wf
@@ -178,7 +179,7 @@ function matrix_autocov_seq(pred;
     L = 1500,
     steps = size(pred,2),
     nu = size(pred,1),
-    win = "par"
+    win = "Par"
     )
 
     lags = -L:L
@@ -204,12 +205,13 @@ end
 """
 function vector_wiener_filter_fft(
     sig,
-    pred::Array{T,2} where T <: Number,
-    M_out = 20;
+    pred::Array{T,2} where T <: Number;
+    M_out = 20,
     par::Int64 = 1500,
     win = "Par",
     n = 3,
     p = 1500,
+    ty = "bin",
     PI = true,
     rtol = 1e-6
     )
@@ -244,8 +246,8 @@ function vector_wiener_filter_fft(
     end
 
     # Compute z-cross-spectrum of sigpred
-    z_crossspect_sigpred_num_fft = z_crossspect_fft(sig, pred,
-                        nfft = nfft, n = n, p = p, win = "Par");
+    z_crossspect_sigpred_num_fft = z_crossspect_fft(sig, pred;
+                        nfft, n, p, ty);
 
     # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
     S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
