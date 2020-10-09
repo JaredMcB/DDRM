@@ -1040,3 +1040,5 @@ Some great suggestions:
 # October 9, 2020
 
 12:48 PM - Today I will get the automated testers ready. This should not take long and I expect to be done with the Linear SDE's by 2:00 PM (at least for the forward Euler scheme, the other scheme will not be hard to introduce later.) After that I will create a tester notebook for the DWOL model. Then I will go from there.
+
+4:25 PM - worked on LSDE tester. It was a nice exercise one thing I learned was that when I changed `get_wf` to include the functionality of outputing the predictor process I didn't realize that it was **not offset** with the input signal as it out to be in our implementation of Data-drive model reduction. The wiener filter I have programed does not build in the offset it creates the estimator straight across. Including `X_n` in the causal prediction of `Y_n`. Anyway I have not yet finished the tester notebook yet. Now I am going to work on my CV which is due Monday. 
