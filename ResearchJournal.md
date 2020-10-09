@@ -1035,3 +1035,8 @@ Some great suggestions:
 * We talked about how the old code is working but the new code is not. By working I mean with regard to the DWOL. So, he suggested I swap out some of the new parts for the old and see if I can get it working again. This may be facilitated by creating a branch in git.
 
 4:11 PM - Now, I'm going to work on teaching duties and write the code testers tomorrow when I start researching at 12:30.
+
+
+# October 9, 2020
+
+12:48 PM - Today I will get the automated testers ready. This should not take long and I expect to be done with the Linear SDE's by 2:00 PM (at least for the forward Euler scheme, the other scheme will not be hard to introduce later.) After that I will create a tester notebook for the DWOL model. Then I will go from there.
