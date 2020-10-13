@@ -68,13 +68,16 @@ function one_step_pred(X_sig, h_wf, pred)
     # then we need to discard the first signal point(after it has been included
     # into the predictors series. This way the series are the same length.
     d, nu, M_out = size(h_wf)
+    steps = size(X_sig,2)
 
-    X_hat = complex(zeros(d,steps-1))
+    X_hat = complex(zeros(d,steps))
     X_hat[:,1:M_out] = X_sig[:,1:M_out]
 
-    for i = M_out+1:steps-1
+    for i = M_out+1:steps
         X_hat[:,i] = sum(h_wf[:,:,k]*pred[:,i-k+1]
             for k = 1:M_out,dims = 2)
+        # The '+1' in the pred is important to make sure
+        # These the preds and sigs line up. In the
     end
     X_hat
 end
