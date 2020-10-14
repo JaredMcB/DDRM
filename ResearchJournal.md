@@ -1052,4 +1052,12 @@ Then after that has been accomplished and I can account for the error and fix it
 
 4:44 PM - I set up two notebooks that ran the new and old code respectively the old code out preformed the new code by a lot (said differently the new code did not produce a Wiener filter while the old code did). So, I decided to open these
 
-5:27 PM - Done for the day. Here is my report. I changed the new code (stuff in `Model_Reduction_Dev.jl` very slightly to all nfft to be a tunable parameter (as it was in the old code under the guise of `Nex`) Then I moved the old cross spectral denity estimator into `AnalysisToolbox.jl` and modified `vector_wiener_filter_fft` (in new code) to include this old estimator. I ran it and it worked. More on this tomorrow. 
+5:27 PM - Done for the day. Here is my report. I changed the new code (stuff in `Model_Reduction_Dev.jl` very slightly to all nfft to be a tunable parameter (as it was in the old code under the guise of `Nex`) Then I moved the old cross spectral denity estimator into `AnalysisToolbox.jl` and modified `vector_wiener_filter_fft` (in new code) to include this old estimator. I ran it and it worked. More on this tomorrow.
+
+One more thing I want to add. I had truoble pulling the remote repository to thelio becuase I had change stuff on thelio and on my machine with out committing first. Anyway, there were a number of merge conflicts and it would let me pull to thelio. I didn't care about what was on thelio I don't use that for developement just testing. Developement always occures on my machine. So, I just wanted the things on the remote repository to overwrite any conflict on thelio. As it turns out the thing to do was the following: (on thelio)
+
+```
+jaredm@thelio:~/DDMR$ git fetch
+jaredm@thelio:~/DDMR$ git reset --hard origin/master
+HEAD is now at 6d20134 Done for the day.
+```
