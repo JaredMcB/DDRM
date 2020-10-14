@@ -24,6 +24,7 @@ function get_wf(
     M_out = 20,
     n = 3, p = 1500, par = 1500,
     ty = "bin",
+    nfft = 0,
     rl = true,
     Preds = false,
     PI = false,
@@ -44,7 +45,7 @@ function get_wf(
         # model can run explicitly.
 
     h_wf = vector_wiener_filter_fft(sig, pred; M_out,
-            n, p, par, ty, PI, rtol)
+            n, p, par, nfft, ty, PI, rtol)
 
     h_wf = rl ? real(h_wf) : h_wf
     Preds ? [h_wf, pred] : h_wf
@@ -208,6 +209,7 @@ function vector_wiener_filter_fft(
     pred::Array{T,2} where T <: Number;
     M_out = 20,
     par::Int64 = 1500,
+    nfft = 0,
     win = "Par",
     n = 3,
     p = 1500,
@@ -221,7 +223,7 @@ function vector_wiener_filter_fft(
 
     stepsx == stepsy || print("X and Y are not the same length. Taking min.")
     steps = minimum([stepsx stepsy])
-    nfft = nextfastfft(steps)
+    nfft = nfft == 0 ? nfft = nextfastfft(steps) : nfft
     nffth = Int(floor(nfft/2))
     L = par
 
