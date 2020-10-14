@@ -1048,4 +1048,8 @@ Some great suggestions:
 
 1:33 PM - Today I want to finally discover what can account for the poor performance of the of Wiener filter with the new code. I will do as Dr. Lin suggested and interchange the algorithms for the various estimators.
 
-Then after that has been accomplished and I can account for the error and fix it, I will continue to write the tester notebooks. And start to cover some good ground. The goal is still to submit a paper by thanksgiving. 
+Then after that has been accomplished and I can account for the error and fix it, I will continue to write the tester notebooks. And start to cover some good ground. The goal is still to submit a paper by thanksgiving.
+
+4:44 PM - I set up two notebooks that ran the new and old code respectively the old code out preformed the new code by a lot (said differently the new code did not produce a Wiener filter while the old code did). So, I decided to open these
+
+5:27 PM - Done for the day. Here is my report. I changed the new code (stuff in `Model_Reduction_Dev.jl` very slightly to all nfft to be a tunable parameter (as it was in the old code under the guise of `Nex`) Then I moved the old cross spectral denity estimator into `AnalysisToolbox.jl` and modified `vector_wiener_filter_fft` (in new code) to include this old estimator. I ran it and it worked. More on this tomorrow. 
