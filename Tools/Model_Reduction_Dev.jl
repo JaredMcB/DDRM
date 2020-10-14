@@ -248,8 +248,9 @@ function vector_wiener_filter_fft(
     end
 
     # Compute z-cross-spectrum of sigpred
-    z_crossspect_sigpred_num_fft = z_crossspect_fft(sig, pred;
-                        nfft, n, p, ty);
+#     z_crossspect_sigpred_num_fft = z_crossspect_fft(sig, pred;
+#                         nfft, n, p, ty);
+    z_crossspect_sigpred_num_fft = z_crossspect_fft_old(sig, pred; L, Nex = nfft);
 
     # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
     S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
