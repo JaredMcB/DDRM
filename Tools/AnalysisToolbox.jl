@@ -208,6 +208,54 @@ function auto_times(x::AbstractVector{<:Real};plt = false)
     plt ? [τ_exp, τ_int, P] : [τ_exp, τ_int]
 end
 
+function z_crossspect_fft_old(
+    sig,
+    pred;
+    L = 50,
+    Nex = 2^10,
+    win = "Par")
+
+    ## sig = d x steps, pred = nu x steps
+    d, stepsx = size(sig)
+    nu, stepsy = size(pred)
+
+    Nexh = Int(floor(Nex/2))
+    lags = -L:L;
+
+    stepsx == stepsy || print("sig and pred are not the same length. Taking min.")
+    steps = minimum([stepsx stepsy])
+
+    # Smoothed viewing window
+    if win == "Bar"
+        lam = 1 .- (0:L)/L
+    elseif win == "Tuk"
+        lam = .5*(1 .+ cos.(pi/L*(0:L)))
+    elseif win == "Par"
+        LL = Int(floor(L/2))
+        lam1 = 1 .- 6*((0:LL)/L).^2 .+ 6*((0:LL)/L).^3
+        lam2 = 2*(1 .- (LL+1:L)/L).^3
+        lam = [lam1; lam2]
+    else
+        lam = ones(L+1)
+    end
+    Lam = [lam[L+1:-1:2]; lam]
+
+    C_smoothed = complex(zeros(d,nu,length(lags)))
+    for i = 1 : d
+        for j = 1 : nu
+            C_smoothed[i,j,:] = Lam .* my_crosscov(sig[i,1:steps],pred[j,1:steps],lags)
+        end
+    end
+
+    ## C_smoothed = d x nu x 2L+1
+
+    ## Pad with zeros in preparation for fft
+    C_padded = cat(dims = 3, zeros(d,nu,Nex - Nexh - L), C_smoothed, zeros(d,nu,Nexh - L - 1))
+    C = fftshift(C_padded,3)
+
+    z_crossspect_num_fft = fft(C,3);
+end
+
 function visual_test_ckms(P,l,nfft;semilog = false)
     d  = size(P,1)
     lp = size(P,3)
