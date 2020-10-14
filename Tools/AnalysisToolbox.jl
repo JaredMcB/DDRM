@@ -1,4 +1,10 @@
-using DSP, Statistics, LinearAlgebra
+using Statistics
+using FFTW
+using LinearAlgebra
+using DSP: conv, nextfastfft
+using Polynomials
+using StatsBase
+using SparseArrays
 
 """
     my_crosscov

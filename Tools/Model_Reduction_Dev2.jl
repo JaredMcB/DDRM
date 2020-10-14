@@ -1,10 +1,3 @@
-using FFTW
-using LinearAlgebra
-using DSP: conv, nextfastfft
-using Polynomials
-using StatsBase
-using SparseArrays
-
 include("AnalysisToolbox.jl")
 
 """
