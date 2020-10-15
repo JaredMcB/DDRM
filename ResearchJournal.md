@@ -922,7 +922,7 @@ Today I spent the morning on Math 122B and am now working on research.
 
 Zouzias, Anastasios, and Nikolaos M. Freris. *"Randomized extended Kaczmarz for solving least squares."* SIAM Journal on Matrix Analysis and Applications 34.2 (2013): 773-793.
 
-## UQ meeting notes
+## UQ Meeting Notes
 First things to do for next time:
 * In order to more deeply investigate the reliability of my implementation of the CKMS factorization algorithm, I will investigate the one step prediction error and test if that is orthogonal to the predictors. I will do this for all the models I've looked at so far especially the KSE.
 * Test the WF for higher order ARMA models. *done: Sept 30, 2020*
@@ -1048,16 +1048,73 @@ Some great suggestions:
 
 1:33 PM - Today I want to finally discover what can account for the poor performance of the of Wiener filter with the new code. I will do as Dr. Lin suggested and interchange the algorithms for the various estimators.
 
-Then after that has been accomplished and I can account for the error and fix it, I will continue to write the tester notebooks. And start to cover some good ground. The goal is still to submit a paper by thanksgiving.
+Then after that has been accomplished and I can account for the error and fix it, I will continue to write the tester notebooks. And start to cover some good ground. The goal is still to submit a paper by Thanksgivingg.
 
-4:44 PM - I set up two notebooks that ran the new and old code respectively the old code out preformed the new code by a lot (said differently the new code did not produce a Wiener filter while the old code did). So, I decided to open these
+4:44 PM - I set up two notebooks that ran the new and old code respectively the old code out preformed the new code by a lot (said differently the new code did not produce a Wiener filter while the old code did). So, I decided to open these up and look under the hood.
 
-5:27 PM - Done for the day. Here is my report. I changed the new code (stuff in `Model_Reduction_Dev.jl` very slightly to all nfft to be a tunable parameter (as it was in the old code under the guise of `Nex`) Then I moved the old cross spectral denity estimator into `AnalysisToolbox.jl` and modified `vector_wiener_filter_fft` (in new code) to include this old estimator. I ran it and it worked. More on this tomorrow.
+5:27 PM - Done for the day. Here is my report. I changed the new code (stuff in `Model_Reduction_Dev.jl`) very slightly to make `nfft` a tunable parameter (as it was in the old code under the guise of `Nex`). Then I moved the old cross spectral density estimator into `AnalysisToolbox.jl` and modified `vector_wiener_filter_fft` (in new code) to include this old estimator. I ran it and it worked. More on this tomorrow.
 
-One more thing I want to add. I had truoble pulling the remote repository to thelio becuase I had change stuff on thelio and on my machine with out committing first. Anyway, there were a number of merge conflicts and it would let me pull to thelio. I didn't care about what was on thelio I don't use that for developement just testing. Developement always occures on my machine. So, I just wanted the things on the remote repository to overwrite any conflict on thelio. As it turns out the thing to do was the following: (on thelio)
+One more thing I want to add. I had trouble pulling the remote repository to thelio because I had change stuff on thelio and on my machine with out committing first. Anyway, there were a number of merge conflicts and it would let me pull to thelio. I didn't care about what was on thelio I don't use that for development just testing. Development always occurs on my machine. So, I just wanted the things on the remote repository to overwrite any conflict on thelio. As it turns out the thing to do was the following: (on thelio)
 
 ```
 jaredm@thelio:~/DDMR$ git fetch
 jaredm@thelio:~/DDMR$ git reset --hard origin/master
 HEAD is now at 6d20134 Done for the day.
 ```
+
+
+# October 14, 2020
+
+1:01 PM - Today the goals today are as follows:
+1. Does the current code ( the "new" code with the "old" xspectral estimate) work for Langevin (DWOL)?
+2. Set up the poles analysis. What is happening with the poles.
+3. How can I improve the xspectral estimator?
+
+1:29 PM - code seems to be working for DWOL again. It is using the "old" xspectral estimator which I will refer to as the direct estimator as opposed to the smoothed periodogram.
+
+## UQ Meeting Notes
+
+Today I showed how the direct estimator when used in the wiener filtering function improved the overall preformance of the function. What I had done is described above. Now, this caused a little concerna dn so Dr. Lin has suggested I compare side by side these two estimators. They are stand alone functions so I can put in some time series of know spectral density, such as white noise and ARMA processes, as compare the out put. So, that is what I would like to do first. Here is the list.
+1. Compare performance of the xspectral estimators. (This also goal 3 from today above.)
+2. Run a study varying the parameters `nfft` the `par` to get a feel for what they can do.
+3.
+
+3:14 PM - Starting on comparing the old and new spectral estimators.
+#### Experiment:
+The experiment is housed in Jupyter on my laptop. here is the code used. First we have
+```julia
+using PyPlot
+include("../AnalysisToolbox.jl")
+
+steps = 10^6
+W = randn(1,steps)
+```
+then after running this one I run:
+```julia
+L    = 50
+Nex  = 2^10
+win  = "Par"
+
+nfft = 0
+n    = 3
+p    = 1500
+ty   = "ave"
+
+spect_D  = z_crossspect_fft_old(W,W;
+    L, Nex, win);
+F_D = 2π*(0:Nex-1)/Nex
+
+spect_SP = z_crossspect_fft(W, W;
+    nfft, n, p, ty) ;
+F_SP = 2π*(0:steps-1)/steps;
+
+μ = _smoother(n,p;ty)
+println("sum of μ: ",sum(μ))
+
+plot(F_SP,spect_SP[1,1,:])
+plot(F_D,spect_D[1,1,:])
+
+plot([0, 2π],[1, 1])
+```
+
+5:07 PM - The results proved difficult to investigate I think I need to plot a bunch at a time. Anyway, that is what I have been doing. 
