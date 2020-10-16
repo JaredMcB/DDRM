@@ -1117,4 +1117,99 @@ plot(F_D,spect_D[1,1,:])
 plot([0, 2π],[1, 1])
 ```
 
-5:07 PM - The results proved difficult to investigate I think I need to plot a bunch at a time. Anyway, that is what I have been doing. 
+5:07 PM - The results proved difficult to investigate I think I need to plot a bunch at a time. Anyway, that is what I have been doing.
+
+
+# October 15, 2020
+
+1:51 PM - I had a few thoughts last night.
+1. The first was to subtract the analytic cross spectral density from the estimated one so I can see the noise better, this gives a visualization of the absolute error rather than relative error. This morning I thought about analytically computing the variance of the error of each estimator.
+2. See how this error scales with sample size.
+3. Vary the time step of the DWOL and see if the Wiener filter matches it. This is just what Dr. Lin suggested yesterday.
+4. See how the err in the Wiener filter scales with effective sample size.
+
+As for now, I will work on the first, so that I can compare the estimators.
+
+### Meeting with Dr. Lin
+
+In our meeting today we looked at the performance of the spectral estimators. It is inexplicable why the smoothed periodogram did not do well. I am thinking about setting a functionality that allows me to chose the which spectral estimator I want. to use. Either way It looks like I can get this thing to work now. Which much greater confidence.
+
+#### Experiment
+```julia
+t_stop = 10^4
+
+Random.seed!(2015)
+X = DataGen_DWOL(
+    steps;
+    scheme, t_start, t_stop, discard,
+    sig_init , sigma, V_prime,
+    SM1, Obs_noise, d
+    )
+
+# Model reduction Parameters
+M_out = 100
+n = 2
+p = 500
+par = 5000 # 55
+ty = "bin"
+rl = true
+Preds = true
+PI = false
+rtol = 1e-6
+
+nfft = par*10 # 1024
+
+@time h_wf, pred = get_wf(X, Psi;
+    M_out, n, p, par, ty, nfft, rl, Preds, PI, rtol);
+
+X_sig = X[:,2:end];
+
+h_wf
+```
+Conpare these at large. as it is the commented values seemed to be beter because the tail decayed quick.
+```1×2×100 Array{Float64,3}:
+[:, :, 1] =
+ 1.01214  -0.0104821
+
+[:, :, 2] =
+ -0.00577268  0.00140345
+
+[:, :, 3] =
+ 0.00251975  -0.0003896
+
+...
+
+[:, :, 98] =
+ 1.9403e-6  -4.75491e-7
+
+[:, :, 99] =
+ -4.8148e-6  1.1799e-6
+
+[:, :, 100] =
+ -7.86683e-6  1.92763e-6
+ ```
+ as opposed to
+ ```
+ 1×2×100 Array{Float64,3}:
+[:, :, 1] =
+ 1.01316  -0.0107767
+
+[:, :, 2] =
+ -0.00614669  0.0014868
+
+[:, :, 3] =
+ 0.00276786  -0.000444076
+
+...
+
+[:, :, 98] =
+ 0.00172214  -0.000271382
+
+[:, :, 99] =
+ 0.00129058  -0.000175618
+
+[:, :, 100] =
+ -0.00617988  0.00166548
+ ```
+
+The commented one took 2.70 sec and the other took 15.38 sec. 
