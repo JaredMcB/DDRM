@@ -329,3 +329,77 @@ function emp_pdf(series;
     plt ? [pdf,b_midpts,plot(b_midpts,pdf,label = "Emp pdf")] :
           [pdf,b_midpts]
 end
+
+"""
+Title: ARNA_Generator.jl
+Author: Jared McBride (Nov 13, 2019)
+
+Given the inputs it produces a realization of an ARMA(p,q) process of length
+steps.
+
+The inputs are
+  l the list autoregressive coefficients (a_0, a_1, a_2, ... a_p)
+  w the list of moving average coefficinets (b_0, b_1, b_2, ... b_q)
+  r the variance of the white noise process
+The kwargs are
+  steps the length of the output time series
+  Zeros the set of zeros for the tranfer function. This may be used in place
+      w, so it prescribes the moving avearge behavior.
+  Poles the set of poles for the tranfer function. This may be used in place
+      l, so it prescribes the autoregressive behavior.
+  e is a input signal if desired, if e is a generale time series the result
+      this filtered by H(z) = (b_0 + b_1*z^(-1) + b_2*z^(-2) + ... + b_q*z^(-q))
+                              /(1 + a_1*z^(-1) + a_2*z^(-2) + ... + a_p*z^(-p)).
+
+ To ensure the stability of the AR part the roots of
+      (1 + a_1*z^(1) + a_2*z^(2) + ... + a_p*z^(p))
+      need to be outside of the unit circle. So, The roots input above are
+      actually the roots of
+      (1 + a_1*z^(-1) + a_2*z^(-2) + ... + a_p*z^(-p))
+
+The output is just the time series x
+"""
+
+
+function ARMA_gen(; l = [1, -5/4, 3/8],
+                    w = [1],
+                    r::Float64 = 1.0,
+                    steps::Int64 = 10^4,
+                    Zeros = [],
+                    Poles = [],
+                    e = [],
+                    discard::Int64 = 10^3)
+
+    p, q = length(l) - 1, length(w) - 1
+
+    if Poles != []
+        p = length(Poles)
+        P = prod([Polynomial([1]); [Polynomial([1,-z]) for z in Poles]])
+        # Produces a poly with roots: Poles.^(-1)
+        l = coeffs(P);
+    end
+
+    if Zeros != []
+        q = length(Zeros)
+        Q = prod([Polynomial([1]); [Polynomial([1,-z]) for z in Zeros]])
+        w = coeffs(Q);
+    end
+    steps_tot = steps + discard
+
+    x = complex(zeros(steps_tot));
+    if e == []
+        e = sqrt(r) * randn(steps_tot);
+    end
+
+    pvq = maximum([p q])
+    if length(l) == 0
+        for i = pvq + 1 : steps_tot
+            x[i] = dot(reverse(w),e[i - q:i])
+        end
+    else
+        for i = pvq + 1 : steps_tot
+            x[i] = dot(-reverse(l)[1:p],x[i - p:i-1]) + dot(reverse(w),e[i - q:i])
+        end
+    end
+    x[discard + 1:end]
+end
