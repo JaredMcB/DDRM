@@ -1077,7 +1077,7 @@ HEAD is now at 6d20134 Done for the day.
 Today I showed how the direct estimator when used in the wiener filtering function improved the overall preformance of the function. What I had done is described above. Now, this caused a little concerna dn so Dr. Lin has suggested I compare side by side these two estimators. They are stand alone functions so I can put in some time series of know spectral density, such as white noise and ARMA processes, as compare the out put. So, that is what I would like to do first. Here is the list.
 1. Compare performance of the xspectral estimators. (This also goal 3 from today above.)
 2. Run a study varying the parameters `nfft` the `par` to get a feel for what they can do.
-3.
+
 
 3:14 PM - Starting on comparing the old and new spectral estimators.
 #### Experiment:
@@ -1117,4 +1117,4 @@ plot(F_D,spect_D[1,1,:])
 plot([0, 2π],[1, 1])
 ```
 
-5:07 PM - The results proved difficult to investigate I think I need to plot a bunch at a time. Anyway, that is what I have been doing. 
+5:07 PM - The results proved difficult to investigate I think I need to plot a bunch at a time. Anyway, that is what I have been doing.
