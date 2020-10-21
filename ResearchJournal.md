@@ -1118,3 +1118,8 @@ plot([0, 2π],[1, 1])
 ```
 
 5:07 PM - The results proved difficult to investigate I think I need to plot a bunch at a time. Anyway, that is what I have been doing.
+
+
+# October 20, 2020
+
+4:56 PM - Just now getting to research.I ran the code on a 2-D LSDE and it looks good. The autocovariances look pretty close. Tomorrow I would like to do model reduction. 
