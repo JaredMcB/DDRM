@@ -293,13 +293,19 @@ function visual_test_ckms(P,l,nfft;semilog = false)
 end
 
 function emp_cdf(series;
+    bn = 0,
     plt = true)
     l = length(series)
     series = reshape(series,l)
     sort!(series)
 
-    bw = 2*iqr(series)/l^(1/3)
-    bn = Int64(ceil((series[end] - series[1])/bw))
+    if bn != 0
+        bw = (series[end] - series[1])/bn
+    else
+        bw = 2*iqr(series)/l^(1/3)
+        bn = Int64(ceil((series[end] - series[1])/bw))
+    end
+
     b_pts = bw*(0:bn) .+ series[1]
 
     cdf = zeros(bn+1)
@@ -312,9 +318,10 @@ function emp_cdf(series;
 end
 
 function emp_pdf(series;
+    bn = 0,
     plt = true)
 
-    cdf, b_pts = emp_cdf(series,plt = false)
+    cdf, b_pts = emp_cdf(series; bn, plt = false)
     bn = length(cdf) - 1
     bw = b_pts[2] - b_pts[1]
 
