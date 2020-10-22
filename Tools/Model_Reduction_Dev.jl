@@ -45,11 +45,11 @@ function get_wf(
         # which is what we want so as to ensure the reduced
         # model can run explicitly.
 
-    h_wf = vector_wiener_filter_fft(sig, pred; M_out,
-            n, p, par, nfft, ty, xspec_est, PI, rtol)
+    h_wf,matlog1,matlog2 = vector_wiener_filter_fft(sig, pred; M_out,
+            n, p, par, nfft, ty, xspec_est, PI, rtol) ###
 
     h_wf = rl ? real(h_wf) : h_wf
-    Preds ? [h_wf, pred] : h_wf
+    Preds ? [h_wf, pred, matlog1, matlog2] : h_wf ###
 end
 
 function get_pred(sig, Psi)
