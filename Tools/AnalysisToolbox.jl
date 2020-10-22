@@ -82,12 +82,12 @@ function _smoother(n=4,p=5; ty = "bin")
     else
         μ_c = ones(2n*p+1)/(2n*p+1)
     end
+    round(sum(μ_c);digits = 5) == 1.0 || println("bad smoother")
     μ_c
 end
 
 function smoother_plot(n,p,ty)
     μ = _smoother(n,p; ty)
-    round(sum(μ);digits = 5) == 1.0 || println("bad smoother")
     plot(-n*p:n*p,μ)
 end
 
@@ -145,7 +145,6 @@ end
 
 function z_spect_scalar(sig; n = 3, p=100, ty = "ave")
     μ = _smoother(n,p;ty)
-    round(sum(μ);digits = 5) == 1.0 || println("bad smoother")
 
     siz = length(sig)
     nfft = nextfastfft(siz)
