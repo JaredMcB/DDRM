@@ -24,6 +24,7 @@ function get_wf(
     M_out = 20,
     n = 3, p = 1500, par = 1500,
     ty = "bin",
+    xspec_est = "old",
     nfft = 0,
     rl = true,
     Preds = false,
@@ -45,13 +46,22 @@ function get_wf(
         # model can run explicitly.
 
     h_wf = vector_wiener_filter_fft(sig, pred; M_out,
-            n, p, par, nfft, ty, PI, rtol)
+            n, p, par, nfft, ty, xspec_est, PI, rtol)
 
     h_wf = rl ? real(h_wf) : h_wf
     Preds ? [h_wf, pred] : h_wf
 end
 
+function get_pred(sig, Psi)
+    d, steps = size(sig)
+    nu = size(Psi(zeros(d,1)),1)
 
+    pred = zeros(nu, steps)
+    for n = 1:steps
+        pred[:,n] = Psi(sig[:,n])
+    end
+    pred
+end
 
 """
     spectfact_matrix_CKMS take in m+1 coefficents of a (d x d)-matrix-values Laurent
@@ -214,6 +224,7 @@ function vector_wiener_filter_fft(
     n = 3,
     p = 1500,
     ty = "bin",
+    xspec_est = "old",
     PI = true,
     rtol = 1e-6
     )
@@ -248,9 +259,8 @@ function vector_wiener_filter_fft(
     end
 
     # Compute z-cross-spectrum of sigpred
-#     z_crossspect_sigpred_num_fft = z_crossspect_fft(sig, pred;
-#                         nfft, n, p, ty);
-    z_crossspect_sigpred_num_fft = z_crossspect_fft_old(sig, pred; L, Nex = nfft);
+    z_crossspect_sigpred_num_fft = xspec_est == "SP" ? z_crossspect_fft(sig, pred;
+                        nfft, n, p, ty) : z_crossspect_fft_old(sig, pred; L, Nex = nfft);
 
     # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
     S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
