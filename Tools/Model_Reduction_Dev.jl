@@ -265,7 +265,9 @@ function vector_wiener_filter_fft(
     # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
     S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
 
+    mat_log1 = zeros(nu,nfft) ###
     for i = 1 : nfft
+        mat_log1[:,i] = svd(z_spect_pred_plus_num_fft[:,:,i]).S ###
         S_sigpred_overS_plus_fft_num[:,:,i] = z_crossspect_sigpred_num_fft[:,:,i]/
                                               z_spect_pred_plus_num_fft[:,:,i]
     end
@@ -281,9 +283,10 @@ function vector_wiener_filter_fft(
     S_sigpred_overS_plus_plus_num_fft = fft(S_sigpred_overS_plus_fft_plus_num_fft,3);
 
     # Obtain transfer function H by dividing {S_{yx}/S_x^+}_+ by S_x^-
-
+    mat_log2 = zeros(nu,nfft) ###
     H_num = complex(zeros(d,nu,nfft))
     for i = 1: nfft
+        mat_log2[:,i] = svd(z_spect_pred_minus_num_fft[:,:,i]).S ###
         H_num[:,:,i] = S_sigpred_overS_plus_plus_num_fft[:,:,i]/
                        z_spect_pred_minus_num_fft[:,:,i]
     end
@@ -294,5 +297,5 @@ function vector_wiener_filter_fft(
     # Truncate
     M_out > nfft && println("M_out > nfft, taking min")
     M = min(M_out, nfft)
-    h_num_fft = h_num_raw[:,:,1:M]
+    h_num_fft = [h_num_raw[:,:,1:M], matlog1, matlog2] ###
 end
