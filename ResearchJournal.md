@@ -1122,4 +1122,63 @@ plot([0, 2π],[1, 1])
 
 # October 20, 2020
 
-4:56 PM - Just now getting to research.I ran the code on a 2-D LSDE and it looks good. The autocovariances look pretty close. Tomorrow I would like to do model reduction. 
+4:56 PM - Just now getting to research.I ran the code on a 2-D LSDE and it looks good. The autocovariances look pretty close. Tomorrow I would like to do model reduction.
+
+
+# October 21, 2020
+
+1:24 PM - I am happy to report that the current WF code (with the old xspectral estimator, the "direct estimator") *seems* to work well in model reduction for the liner SDE. Here is what I did (in a nut shell):
+1. Set up the full model
+   - B = -[-0.5 1; 0 -0.2]*[-0.5 1; 0 -0.2]'/1.5`
+   - then called `modgen_LSDE` from `Examples/LinearSDE/modgen_LSDE.jl` as follows:
+   ```julia
+   # Model run Parameters
+    t_start = 0
+    t_stop  = 1e4
+    h       = 1e-2
+
+    A       = B
+    σ       = [1 0; 0 1]
+    Xo      = [1; 1]
+    t_disc  = 100
+    gap     = 1
+
+    # Get full model run
+    Random.seed!(2016)
+    Y = modgen_LSDE(t_start,t_stop,h;
+        A, σ, Xo, t_disc, gap)
+    ```
+    - This gave me the full model.
+2. Then I reduced the model to only the first and then second variable variables.
+'''julia
+@time h_wf_1, pred = get_wf(Y[1:1,:], Psi;
+  M_out, n, p, par, ty, nfft, rl, Preds, PI, rtol);
+
+noise_dist = MvNormal(h*I + zeros(1,1))
+Y_rm_1 = redmodrun(real(Y[1:1,:]), h_wf_1, Psi; noise_dist)
+
+
+@time h_wf_2, pred = get_wf(Y[2:2,:], Psi;
+  M_out, n, p, par, ty, nfft, rl, Preds, PI, rtol);
+
+noise_dist = MvNormal(h*I + zeros(1,1))
+Y_rm_1 = redmodrun(real(Y[2:2,:]), h_wf_2, Psi; noise_dist)
+'''    
+
+I then ran all the usual tests
+1. plot time series
+2. plot distribution
+3. plot autocovariance
+4. plot spectral densities
+
+The spectral densities were pretty much right on top of each other, in both cases. The autocovariances in the first variables diverged around 80 lags. In the second variable they were parallel though numerically off by about 20% the actual starting near 100 the reduced model around 80. These stayed roughly parallel through out. The distributions crudely approximated each other and the timeseries bore no red flags.
+
+## UQ Meeting Notes
+
+Dr. Lin and I ran through what we talked about last week about the different spectral density estimators with Will. I demonstrated a little and we looked at the performance of the WF in the double well Langevin case. We discussed the oddness of the estimators them selves being so close and yet the resulting Wiener filters so different. It was noted that the wiener filter with a (potentially) "better" spectral density approximation (i.e. `par` = 1000, `Nex` = 10^6) decayed slower (or experienced greater noise) than that of one with a "sloppier" spectral estimator (`par` = 55, `Nex` = 1024). The fact is that the sloppier WF decayed to ≈1e-8 at the 100th term, where the tighter WF decayed to only ≈1e-4, around the same order of magnitude of the third coefficient. (while writing this I wonder if that is attributed to the noise, I wonder if that will scale with the number of samples and how it may scale). It was suggested that I do these two things.
+1. Update the function `get_wf` from `tools\Model_reduction_Dev.jl` to be able to switch which spectral estimator it is using. This will allow me a little more ease in investigating what is making the difference.
+2. Investigate the singular values of the matrices used in the division of the S_yx by S_x^+ and the later division by S_y^-. It was speculated that small singular values in the denominator may exacerbate the difference in the cross-spectral estimations.
+
+5:02 PM - I will try and finish the first before dinner and test it a little.
+
+6:08 PM - Done for the day. I added the DWOL processes to *Cross Spectral Density Estimator notebook* that line up with the *Tester DWOL Notebook* in the `Examples/Tester`.  
