@@ -45,11 +45,11 @@ function get_wf(
         # which is what we want so as to ensure the reduced
         # model can run explicitly.
 
-    h_wf,matlog1,matlog2 = vector_wiener_filter_fft(sig, pred; M_out,
-            n, p, par, nfft, ty, xspec_est, PI, rtol) ###
+    h_wf = vector_wiener_filter_fft(sig, pred; M_out,
+            n, p, par, nfft, ty, xspec_est, PI, rtol)
 
     h_wf = rl ? real(h_wf) : h_wf
-    Preds ? [h_wf, pred, matlog1, matlog2] : h_wf ###
+    Preds ? [h_wf, pred] : h_wf
 end
 
 function get_pred(sig, Psi)
@@ -265,9 +265,9 @@ function vector_wiener_filter_fft(
     # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
     S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
 
-    mat_log1 = zeros(nu,nfft) ###
+    matlog1 = zeros(nu,nfft) ###
     for i = 1 : nfft
-        mat_log1[:,i] = svd(z_spect_pred_plus_num_fft[:,:,i]).S ###
+        # matlog1[:,i] = svd(z_spect_pred_plus_num_fft[:,:,i]).S ###
         S_sigpred_overS_plus_fft_num[:,:,i] = z_crossspect_sigpred_num_fft[:,:,i]/
                                               z_spect_pred_plus_num_fft[:,:,i]
     end
@@ -283,10 +283,10 @@ function vector_wiener_filter_fft(
     S_sigpred_overS_plus_plus_num_fft = fft(S_sigpred_overS_plus_fft_plus_num_fft,3);
 
     # Obtain transfer function H by dividing {S_{yx}/S_x^+}_+ by S_x^-
-    mat_log2 = zeros(nu,nfft) ###
+    matlog2 = zeros(nu,nfft) ###
     H_num = complex(zeros(d,nu,nfft))
     for i = 1: nfft
-        mat_log2[:,i] = svd(z_spect_pred_minus_num_fft[:,:,i]).S ###
+        # matlog2[:,i] = svd(z_spect_pred_minus_num_fft[:,:,i]).S ###
         H_num[:,:,i] = S_sigpred_overS_plus_plus_num_fft[:,:,i]/
                        z_spect_pred_minus_num_fft[:,:,i]
     end
@@ -297,5 +297,12 @@ function vector_wiener_filter_fft(
     # Truncate
     M_out > nfft && println("M_out > nfft, taking min")
     M = min(M_out, nfft)
-    h_num_fft = [h_num_raw[:,:,1:M], matlog1, matlog2] ###
+    h_num_fft = [h_num_raw[:,:,1:M],
+                 matlog1,
+                 matlog2,
+                 z_spect_pred_minus_num_fft,
+                 z_spect_pred_plus_num_fft,
+                 S_sigpred_overS_plus_fft_num,
+                 S_sigpred_overS_plus_plus_num_fft,
+                 H_num] ###
 end
