@@ -1208,3 +1208,8 @@ h_num_fft = [h_num_raw[:,:,1:M],
              S_sigpred_overS_plus_plus_num_fft,
              H_num] ###
 ```
+
+
+# October 23, 2020
+
+9:44 AM -
