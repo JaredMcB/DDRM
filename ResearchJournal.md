@@ -1182,3 +1182,29 @@ Dr. Lin and I ran through what we talked about last week about the different spe
 5:02 PM - I will try and finish the first before dinner and test it a little.
 
 6:08 PM - Done for the day. I added the DWOL processes to *Cross Spectral Density Estimator notebook* that line up with the *Tester DWOL Notebook* in the `Examples/Tester`.  
+
+
+# October 22, 2020
+
+2:27 PM - Today I finidhed the investigative code for the xspectal estimators with the DWOL data. this notebook is labeled *Cross Spectral Density Estimator notebook* and is in the folder `Tools/ToolBoxTest`. I found that  
+
+|`L`|`Nex`|`n`|`p`|'ty'|xspect  |WFDM|WFSP|
+|---|---  |---|---|--- |---     |--- |--- |
+|100|2^16 |3  |200|bin |close   |yes |no  |
+|500|2^16 |3  |200|bin |v. close|yes |no  |
+
+### Meeting with Dr. Lin
+
+The last line in the table is very unusual. The estimates should not be so close with all other things being equal and their resulting WF so different. So, I will look at each step after the cross spectral estimate is used.
+
+4:00 PM - I added some outputs to the `vecter_wiener_filter_fft` code:
+```julia
+h_num_fft = [h_num_raw[:,:,1:M],
+             matlog1,
+             matlog2,
+             z_spect_pred_minus_num_fft,
+             z_spect_pred_plus_num_fft,
+             S_sigpred_overS_plus_fft_num,
+             S_sigpred_overS_plus_plus_num_fft,
+             H_num] ###
+```
