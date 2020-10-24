@@ -1212,4 +1212,23 @@ h_num_fft = [h_num_raw[:,:,1:M],
 
 # October 23, 2020
 
-9:44 AM -
+8:18 PM - Today I did a lot of exploration. A bit of time was spent in understand the current landscape of the problem. For instance when I ran the WF with the direct estimator with `L = 55` the xspectral estimator of the xspect of the signal and predictors.
+The plot showed a fairly course estimate near θ = 0. This was opposed to the estimte (on the same data) with `L = 10000` (`Nex = 2^16`).
+This estimate was more smooth and more closely agreed the SP estimate (`p=300`, `n=3`, `ty = "bin"`).
+However there was very little difference in the WF that resulted using the same data and these parameters. I conclude that methods enjoys an insensitivity to the xspectral estimation.
+Which is a little enigmatic since it preforms very poorly under the smoothed periodogram method. The issue though I thing is that the larger the number of points used in the xspectral estimation the greater the error.
+This is the error scales at a slightly higher power with the number `nfft`, at some point getting worse as `nfft` increases beyond some point. This is something I would like to investigate more later (future work).  
+
+The Direct method WF was observed to be highly reproducible while the smoothed periodogram WF was more fickle. There were times when I put in the same parameters as before and use the same data but got different wiener filters. I suspect my julia installation has a problem.
+
+So, I when I ran the SPWF on thelio it got closer even within the margins of error. So, now I did a few tests to verify that this is working. So, I made an uneven double well overdamped Langevin simulation and the DMWF passed that test. This test cane be found in the following notebook:
+
+`Examples\Testers\Tester DWOL.ipynb`
+
+The spectral estimator comparisons can be found in the notebook:
+
+`Tools\ToolBoxTest\Cross Spectral Density Estimator Comparison.ipynb`
+
+The model worked on the ovrdamped uneven langevin. It got the anylitically computed values. 
+
+Anyway,
