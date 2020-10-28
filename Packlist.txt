@@ -10,3 +10,4 @@ add Random
 add JLD
 add Random
 add DSP
+add IJulia
