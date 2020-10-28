@@ -1229,6 +1229,6 @@ The spectral estimator comparisons can be found in the notebook:
 
 `Tools\ToolBoxTest\Cross Spectral Density Estimator Comparison.ipynb`
 
-The model worked on the ovrdamped uneven langevin. It got the anylitically computed values. 
+The model worked on the overdamped uneven Langevin. It got the analytically computed values.
 
-Anyway,
+#   

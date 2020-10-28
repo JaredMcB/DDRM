@@ -226,7 +226,8 @@ function vector_wiener_filter_fft(
     ty = "bin",
     xspec_est = "old",
     PI = true,
-    rtol = 1e-6
+    rtol = 1e-6,
+    info = false
     )
 
     d, stepsy = size(sig)
@@ -238,12 +239,7 @@ function vector_wiener_filter_fft(
     nffth = Int(floor(nfft/2))
     L = par
 
-    R_pred_smoothed = matrix_autocov_seq(pred,
-       L = L,
-       steps = steps,
-       nu = nu,
-       win = win
-       )
+    R_pred_smoothed =  
 
     # Compute coefficients of spectral factorization of z-spect-pred
     l = PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed,rtol = rtol) :
@@ -297,7 +293,9 @@ function vector_wiener_filter_fft(
     # Truncate
     M_out > nfft && println("M_out > nfft, taking min")
     M = min(M_out, nfft)
-    h_num_fft = [h_num_raw[:,:,1:M],
+
+    if info
+        h_num_fft = [h_num_raw[:,:,1:M],
                  matlog1,
                  matlog2,
                  z_spect_pred_minus_num_fft,
@@ -305,4 +303,8 @@ function vector_wiener_filter_fft(
                  S_sigpred_overS_plus_fft_num,
                  S_sigpred_overS_plus_plus_num_fft,
                  H_num] ###
+    else
+        h_num_fft = h_num_raw[:,:,1:M]
+    end
+    h_num_fft
 end
