@@ -239,7 +239,12 @@ function vector_wiener_filter_fft(
     nffth = Int(floor(nfft/2))
     L = par
 
-    R_pred_smoothed =  
+    R_pred_smoothed = matrix_autocov_seq(pred,
+       L = L,
+       steps = steps,
+       nu = nu,
+       win = win
+       )
 
     # Compute coefficients of spectral factorization of z-spect-pred
     l = PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed,rtol = rtol) :
