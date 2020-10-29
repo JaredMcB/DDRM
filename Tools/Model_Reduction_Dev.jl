@@ -29,7 +29,8 @@ function get_wf(
     rl = true,
     Preds = false,
     PI = false,
-    rtol = 1e-6)
+    rtol = 1e-6,
+    info = false)
     # We would like a presample since we want the
     # times series to be offset by one.
 
@@ -44,6 +45,11 @@ function get_wf(
         # step behind sig. I.e. pred[:,n] = Psi(sig[:,n-1])
         # which is what we want so as to ensure the reduced
         # model can run explicitly.
+
+    if info
+        return vector_wiener_filter_fft(sig, pred; M_out,
+                n, p, par, nfft, ty, xspec_est, PI, rtol,info)
+    end
 
     h_wf = vector_wiener_filter_fft(sig, pred; M_out,
             n, p, par, nfft, ty, xspec_est, PI, rtol)
