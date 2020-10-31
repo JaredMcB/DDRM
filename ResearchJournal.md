@@ -632,7 +632,7 @@ P[1,1,1] = 10
 P[1,1,2] = 3
 
 L = spectfact_matrix_CKMS(P)
-```
+ ```
 and got
 ```1×1×2 Array{Complex{Float64},3}:
 [:, :, 1] =
@@ -810,7 +810,7 @@ I got the following Wiener filter.
 
 [:, :, 20] =
  -0.0003042347678346185
- ```
+```
 
 
 
@@ -1147,12 +1147,12 @@ plot([0, 2π],[1, 1])
     Random.seed!(2016)
     Y = modgen_LSDE(t_start,t_stop,h;
         A, σ, Xo, t_disc, gap)
-    ```
+   ```
     - This gave me the full model.
 2. Then I reduced the model to only the first and then second variable variables.
 '''julia
 @time h_wf_1, pred = get_wf(Y[1:1,:], Psi;
-  M_out, n, p, par, ty, nfft, rl, Preds, PI, rtol);
+    M_out, n, p, par, ty, nfft, rl, Preds, PI, rtol);
 
 noise_dist = MvNormal(h*I + zeros(1,1))
 Y_rm_1 = redmodrun(real(Y[1:1,:]), h_wf_1, Psi; noise_dist)
@@ -1231,4 +1231,57 @@ The spectral estimator comparisons can be found in the notebook:
 
 The model worked on the overdamped uneven Langevin. It got the analytically computed values.
 
-#   
+# Wednesday, October 28, 2020
+
+4:13 PM - Now I am going to investigate the variations I get in the xspectral estimators.
+
+
+# Friday, October 30, 2020
+
+10:41 AM - Today I will rewrite the smoothed periodogram estimator. I will make it so that the grid on which the xspectral density is evaluated is user defined. This will be done by segmenting the data into subseries of length defined by the user, computing the periodogram of each subseries and then averaging all the segment periodograms.
+
+4:48 PM - Here is the code (so far)
+
+```julia
+function z_crossspect_scalar_ASP(
+    sig,
+    pred;
+    nfft = 2^10, # The length of each subseries
+    n = 3,
+    p = 10,
+    ty = "bin",
+    L = nfft,
+    win = "Par"
+    )
+
+    # Check length of series
+    l_sig = length(sig)
+    l_pred = length(pred)
+    l_sig == l_pred || println("sizes must be the same, taking min and truncating")
+    l = min(l_sig,l_pred)
+
+    # The total nuber of subseries
+    R = floor(Int,l/nfft)
+    # The windowing function
+    lam = win == "none" ? ones(nfft) : _window(nfft; win, two_sided = false)
+    # Computation of the average periodogram
+    aperi = complex(zeros(nfft))
+    for r = 1:R
+        fftsig = fft(lam .* sig[(r-1)*nfft+1:r*nfft])
+        fftpred = conj(fft(lam .* pred[(r-1)*nfft+1:r*nfft]))
+        aperi .+= fftsig .* fftpred
+    end
+    aperi ./= nfft*R
+
+    # Smoothing it too.
+    if ty != "none"
+        aperi_pad = [aperi[end - p*n + 1 : end]; aperi; aperi[1:p*n]]
+        μ = _smoother(n,p; ty)
+        aperi = conv(μ,aperi_pad)[2n*p+1:2n*p+nfft]
+    end
+    aperi
+end
+
+```
+
+  It should be noted that at this point I have included functionality for booth smoothing (by means of convolution after `fft` and windowing by means of multiplication in the time domain) I plan on removing one of these once I figure out which one to remove. 
