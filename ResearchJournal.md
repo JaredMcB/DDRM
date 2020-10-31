@@ -1263,7 +1263,7 @@ function z_crossspect_scalar_ASP(
     # The total nuber of subseries
     R = floor(Int,l/nfft)
     # The windowing function
-    lam = win == "none" ? ones(nfft) : _window(nfft; win, two_sided = false)
+    lam = win == "none" ? ones(nfft) : _window(nfft-1; win, two_sided = false)
     # Computation of the average periodogram
     aperi = complex(zeros(nfft))
     for r = 1:R
@@ -1285,3 +1285,7 @@ end
 ```
 
   It should be noted that at this point I have included functionality for booth smoothing (by means of convolution after `fft` and windowing by means of multiplication in the time domain) I plan on removing one of these once I figure out which one to remove. 
+
+5:28 PM - Smoothing is working well, the windowing is not correct since I am off by a factor, I need to divide something to do with the windowing function. I think I need to divide by the sum of it's `dft`.
+
+So far my tests have consisted of checking the estimated spectral density of a AR(2) process against it's now spectral density. The ASP is showing promise as it is much cleaner (smother and estimate)  

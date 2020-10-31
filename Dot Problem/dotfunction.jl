@@ -72,6 +72,8 @@ function dot(x::AbstractArray, y::AbstractArray)
     s
 end
 
+
+
 foo(n) = randn(n) + im*randn(n)
 
 dot(foo(10^7),foo(10^7))
