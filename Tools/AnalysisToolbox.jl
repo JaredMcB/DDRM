@@ -208,7 +208,8 @@ function z_crossspect_scalar_ASP(
         fftpred = conj(fft(lam .* pred[(r-1)*nfft+1:r*nfft]))
         aperi .+= fftsig .* fftpred
     end
-    aperi ./= nfft*R
+    W = sum(lam.^2)/nfft
+    aperi ./= nfft*R*W
 
     # Smoothing it too.
     if ty != "none"
