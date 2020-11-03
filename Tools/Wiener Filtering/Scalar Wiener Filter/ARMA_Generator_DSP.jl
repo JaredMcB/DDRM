@@ -74,7 +74,7 @@ function ARMA_gen(  l = [1, -5/4, 3/8],
             x[i] = dot(-reverse(l)[1:p],x[i - p:i-1]) + dot(reverse(w),e[i - q:i])
         end
     end
-    x[discard + 1:end]
+    out_poly ? [x[discard + 1:end], P, Q] : x[discard + 1:end]
 end
 
 function z_spect(x,L; win = "Bart")
@@ -97,7 +97,6 @@ function z_spect(x,L; win = "Bart")
 
     z_spect_num(z) = sum([lam[i+1]*(A[i+1]'*z^(-i) +
                         A[i+1]*z^(i)) for i = 0 : L])
-    out_poly ? [z_spect_num, P, Q] : z_spect_num
 end
 
 dB(s) = 10*log.(s)./log(10)
