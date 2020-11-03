@@ -180,6 +180,45 @@ function z_crossspect_scalar(sig,pred; nfft = 0, n = 3, p=100, ty = "ave")
     z_crsspect_smoothed = conv(μ,peri_pad)[2n*p+1:2n*p+nfft]
 end
 
+function z_crossspect_scalar_ASP(
+    sig,
+    pred;
+    nfft = 2^10, # The length of each subseries
+    n = 3,
+    p = 10,
+    ty = "bin",
+    L = nfft,
+    win = "Par"
+    )
+
+    # Check length of series
+    l_sig = length(sig)
+    l_pred = length(pred)
+    l_sig == l_pred || println("sizes must be the same, taking min and truncating")
+    l = min(l_sig,l_pred)
+
+    # The total nuber of subseries
+    R = floor(Int,l/nfft)
+    # The windowing function
+    lam = win == "none" ? ones(nfft) : _window(nfft-1; win, two_sided = false)
+    # Computation of the average periodogram
+    aperi = complex(zeros(nfft))
+    for r = 1:R
+        fftsig = fft(lam .* sig[(r-1)*nfft+1:r*nfft])
+        fftpred = conj(fft(lam .* pred[(r-1)*nfft+1:r*nfft]))
+        aperi .+= fftsig .* fftpred
+    end
+    aperi ./= nfft*R
+
+    # Smoothing it too.
+    if ty != "none"
+        aperi_pad = [aperi[end - p*n + 1 : end]; aperi; aperi[1:p*n]]
+        μ = _smoother(n,p; ty)
+        aperi = conv(μ,aperi_pad)[2n*p+1:2n*p+nfft]
+    end
+    aperi
+end
+
 function auto_times(x::AbstractVector{<:Real};plt = false)
     lx = size(x,1)
     L = minimum([lx - 1, 10^6])
