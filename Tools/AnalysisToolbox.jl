@@ -186,10 +186,7 @@ function z_crossspect_scalar_ASP(
     nfft = 2^10, # The length of each subseries
     n = 3,
     p = 10,
-    ty = "bin",
-    L = nfft,
-    win = "Par"
-    )
+    ty = "bin")
 
     # Check length of series
     l_sig = length(sig)
@@ -199,17 +196,14 @@ function z_crossspect_scalar_ASP(
 
     # The total nuber of subseries
     R = floor(Int,l/nfft)
-    # The windowing function
-    lam = win == "none" ? ones(nfft) : _window(nfft-1; win, two_sided = false)
     # Computation of the average periodogram
     aperi = complex(zeros(nfft))
     for r = 1:R
-        fftsig = fft(lam .* sig[(r-1)*nfft+1:r*nfft])
-        fftpred = conj(fft(lam .* pred[(r-1)*nfft+1:r*nfft]))
+        fftsig = fft(sig[(r-1)*nfft+1:r*nfft])
+        fftpred = conj(fft(pred[(r-1)*nfft+1:r*nfft]))
         aperi .+= fftsig .* fftpred
     end
-    W = sum(lam.^2)/nfft
-    aperi ./= nfft*R*W
+    aperi ./= nfft*R
 
     # Smoothing it too.
     if ty != "none"
