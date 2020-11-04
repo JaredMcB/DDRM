@@ -59,7 +59,7 @@ function ARMA_gen(  l = [1, -5/4, 3/8],
     end
     steps_tot = steps + discard
 
-    x = zeros(steps_tot);
+    x = complex(zeros(steps_tot));
     if e == []
         e = sqrt(r) * randn(steps_tot);
     end
