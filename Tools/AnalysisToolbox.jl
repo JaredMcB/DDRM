@@ -136,7 +136,7 @@ function z_crossspect_fft(
     z_spect_mat = zeros(Complex, d, nu, nfft)
     for i = 1 : d
         for j = 1 : nu
-            z_spect_mat[i,j,:] = z_crossspect_scalar(sig[i,:],pred[j,:];
+            z_spect_mat[i,j,:] = z_crossspect_scalar_ASO(sig[i,:],pred[j,:];
                                                   nfft, n, p,ty)
         end
     end
