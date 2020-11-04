@@ -188,6 +188,10 @@ function z_crossspect_scalar_ASP(
     p = 10,
     ty = "bin")
 
+    # Of cousre we need these to be mean zero
+    sig .-= mean(sig)
+    pred .-= mean(pred)
+
     # Check length of series
     l_sig = length(sig)
     l_pred = length(pred)
