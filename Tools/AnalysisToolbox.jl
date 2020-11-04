@@ -161,6 +161,10 @@ z_crsspect_scalar has output of size nfft
 function z_crossspect_scalar(sig,pred; nfft = 0, n = 3, p=100, ty = "ave")
     μ = _smoother(n,p;ty)
 
+    # Of cousre we need these to be mean zero
+    sig .-= mean(sig)
+    pred .-= mean(pred)
+
     l_sig = length(sig)
     l_pred = length(pred)
     l_sig == l_pred || println("sizes must be the same, taking min and truncating")
