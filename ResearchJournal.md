@@ -1284,8 +1284,40 @@ end
 
 ```
 
-  It should be noted that at this point I have included functionality for booth smoothing (by means of convolution after `fft` and windowing by means of multiplication in the time domain) I plan on removing one of these once I figure out which one to remove. 
+  It should be noted that at this point I have included functionality for booth smoothing (by means of convolution after `fft` and windowing by means of multiplication in the time domain) I plan on removing one of these once I figure out which one to remove.
 
 5:28 PM - Smoothing is working well, the windowing is not correct since I am off by a factor, I need to divide something to do with the windowing function. I think I need to divide by the sum of it's `dft`.
 
 So far my tests have consisted of checking the estimated spectral density of a AR(2) process against it's now spectral density. The ASP is showing promise as it is much cleaner (smother and estimate)  
+
+
+
+# Tuesday, November 3, 2020
+
+12:59 PM - Taught and grade all morning. Now I will continue testing the averaged smoothed periodogram (ASP) cross spectral density estimate. Here's the agenda:
+
+1. ARMA(p,q) processes. These are good because they have analytically computable spectral density. Cross spectral densities will need to be tested.
+2. Double-welled overdamped Langevin processes. These will be compared to the two other forms of estimation I have available (he direct method and the full, smoothed periodogram method).
+3. KSE and Lorenz '63. These will again just be compared to the other estimators. I will also compare the with what I may be able to find in the literature.
+
+All of the tests will be conducted in the file `xspect_SP_new_dev.jl` in `Tools/ToolBoxTest`.
+
+### Experiment Notes
+
+#### ARMA
+
+1:20 PM - Generated the following timeseries
+
+```julia
+steps = 10^6
+l = [1, -.9, .5]
+
+X = ARMA_gen(l; steps)
+```
+
+| `nn` | `pp` | `tty` | SP    | `L`  | `Nex` | `win` | DM        | `nfft` | `n`  | `p`  | `ty`   | `win`  | ASP                                   |
+| :--: | ---- | ----- | ----- | ---- | ----- | ----- | :-------- | ------ | ---- | ---- | ------ | ------ | ------------------------------------- |
+|  2   | 500  | "bin" | fuzzy | 100  | 2^11  | "Par" | Very good | 10^15  | 2    | 50   | "none" | "Par"  | Very poor off by a factor.            |
+|  2   | 500  | "bin" | fuzzy | 100  | 2^11  | "Par" | Very good | 10^15  | 2    | 50   | "bin"  | "none" | very good little fuzzy better than SP |
+
+I need to fix the windowing I think I need to divide by the sum of the `dft` of the window. I fixed the scaling of the windowing procedure. It turned out I need to divide the mean square to the window function. The estimate though is still **very** noisy. If fact when I did both windowing and smoothing the it was not as good (as in it varied further from the theoretic xspectral density) than when I just smoothed it. The support of the window function is `nfft`, that is, it is nonnegative on `-nfft:nfft`. I can imagine why it would be a good idea take that any smaller since it would be eliminating data. Perhaps if there was sufficent overlap in the intervals this might be OK and yield some benefit. I don't plan on exploring that now though, and for the moment would just as soon remove the windeowing functionality.
