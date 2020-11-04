@@ -16,11 +16,28 @@ include("../../Examples/Nonlinear Langevin/DataGen.jl")
 include("../../Tools/Wiener Filtering/Scalar Wiener Filter/ARMA_Generator_DSP.jl")
 include("../../Tools/AnalysisToolbox.jl")
 
+###
+
+
+### generic spectral plotter
+function spect_plot(S;
+        plotter = plot,
+        label = "unlabled")
+    plotter(2pi*(0:length(S)-1)/length(S),S,
+            label = label)
+    legend()
+end
+
+##########################################################
+### ARMA Testing #########################################
+##########################################################
+
+### Run 1 ################################################
 ### Get Data
 steps = 10^6
 l = [1, -.9, .5]
 
-X = ARMA_gen([1, -.9, .5]; steps)
+X = ARMA_gen(l; steps)
 
 ### Plot analytic Solution
 S_ana_poly = Polynomial(l)
@@ -28,208 +45,169 @@ S_ana_fun(z) = 1/(S_ana_poly(z^(-1))*S_ana_poly(z')')
 Theta = 2pi*(0:1000-1)/1000
 plot(Theta,S_ana_fun.(exp.(im*Theta)))
 
-### Plot other solutions
-spect_plot(S) = plot(2pi*(0:length(S)-1)/length(S),S)
-
-n = 2
-p = 50
-ty = "bin"
-S_X_sp = z_crossspect_scalar(X,X;n,p,ty)
+nn = 2
+pp = 500
+tty = "bin"
+S_X_sp = z_crossspect_scalar(X,X;n = nn ,p = pp ,ty = tty)
 spect_plot(S_X_sp)
 
 X_vec = reshape(X,1,:)
-
 L = 100
 Nex = 2^11
 win = "Par"
 S_X_dm = z_crossspect_fft_old(X_vec,X_vec;L,Nex,win)[:]
 spect_plot(S_X_dm)
 
-### Work on new averaged periodogram
-function z_crossspect_scalar_ASP(
-    sig,
-    pred;
-    nfft = 2^10, # The length of each subseries
-    n = 3,
-    p = 10,
-    ty = "bin",
-    L = nfft,
-    win = "Par"
-    )
+nfft = 2^15
+n = 2
+p = 50
+ty = "bin"
+win = "none"
+S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
+spect_plot(S_X_asp)
 
-    # Check length of series
-    l_sig = length(sig)
-    l_pred = length(pred)
-    l_sig == l_pred || println("sizes must be the same, taking min and truncating")
-    l = min(l_sig,l_pred)
 
-    # The total nuber of subseries
-    R = floor(Int,l/nfft)
-    # The windowing function
-    lam = win == "none" ? ones(nfft) : _window(nfft-1; win, two_sided = false)
-    # Computation of the average periodogram
-    aperi = complex(zeros(nfft))
-    for r = 1:R
-        fftsig = fft(lam .* sig[(r-1)*nfft+1:r*nfft])
-        fftpred = conj(fft(lam .* pred[(r-1)*nfft+1:r*nfft]))
-        aperi .+= fftsig .* fftpred
-    end
-    aperi ./= nfft*R
 
-    # Smoothing it too.
-    if ty != "none"
-        aperi_pad = [aperi[end - p*n + 1 : end]; aperi; aperi[1:p*n]]
-        μ = _smoother(n,p; ty)
-        aperi = conv(μ,aperi_pad)[2n*p+1:2n*p+nfft]
-    end
-    aperi
-end
+### Run 2 ################################################
+### Get Data
+steps = 10^6
+l = [1, -.9, .5]
+w = randn(3)
+
+X = ARMA_gen(l,w; steps)
+
+### Plot analytic Solution
+S_ana_poly_d = Polynomial(l)
+S_ana_poly_n = Polynomial(w)
+S_ana_fun(z) = (S_ana_poly_n(z^(-1))*S_ana_poly_n(z')')/
+        (S_ana_poly_d(z^(-1))*S_ana_poly_d(z')')
+Theta = 2pi*(0:1000-1)/1000
+plot(Theta,S_ana_fun.(exp.(im*Theta)))
+
+nn = 2
+pp = 500
+tty = "bin"
+S_X_sp = z_crossspect_scalar(X,X;n = nn ,p = pp ,ty = tty)
+spect_plot(S_X_sp)
+
+X_vec = reshape(X,1,:)
+L = 100
+Nex = 2^11
+win = "Par"
+S_X_dm = z_crossspect_fft_old(X_vec,X_vec;L,Nex,win)[:]
+spect_plot(S_X_dm)
 
 nfft = 2^15
 n = 2
 p = 50
-ty = "none"
-win = "Par"
-S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n ,p ,ty ,win)
-
+ty = "bin"
+win = "none"
+S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
 spect_plot(S_X_asp)
 
-_window(50;win,two_sided = false)
 
 
-
-
-
-
-sig = X
-pred = X
-n = 3
-p = 10
-ty = "bin"
-L = nfft
-win = "Par",
-nfft = 2^10
-
-# Check length of series
-l_sig = length(sig)
-l_pred = length(pred)
-l_sig == l_pred || println("sizes must be the same, taking min and truncating")
-l = min(l_sig,l_pred)
-
-# The total nuber of subseries
-R = floor(Int,l/nfft)
-# The windowing function
-lam = win == "none" ? ones(nfft) : _window(nfft; win, two_sided = false)
-# Computation of the average periodogram
-aperi = complex(zeros(nfft))
-for r = 1:R
-    fftsig = fft(lam .* sig[(r-1)*nfft+1:r*nfft])
-    fftpred = conj(fft(lam .* pred[(r-1)*nfft+1:r*nfft]))
-    aperi .+= fftsig .* fftpred
-end
-aperi ./= nfft*R
-
-# Smoothing it too.
-if ty != "none"
-    aperi_pad = [aperi[end - p*n + 1 : end]; aperi; aperi[1:p*n]]
-    μ = _smoother(n,p; ty)
-    aperi = conv(μ,aperi_pad)[2n*p+1:2n*p+nfft]
-end
-aperi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-plot(μ)
-μ_hat = ifft(μ)
-plot(μ_hat)
-
-wind = _window(50,win = "gigi")
-plot(wind)
-plot(fft(wind))
-
-
-
-
-
-
-
-
-function z_crossspect_scalar_ASP(sig,pred;
-    nfft = 0,
-    n    = 3,
-    p    = 100,
-    ty   = "ave",
-    win  = "par")
-
-    μ = _smoother(n,p;ty)
-
-    l_sig = length(sig)
-    l_pred = length(pred)
-    l_sig == l_pred || println("sizes must be the same, taking min and truncating")
-    l = min(l_sig,l_pred)
-
-    nfft = nfft == 0 ?
-
-
-
-    R = floor(Int,l/nfft)
-    aperi = complex(zeros(nfft))
-    for r = 1:R
-        fftsig = fft(sig[(r-1)*nfft+1:r*nfft])
-        fftpred = conj(fft(pred[(r-1)*nfft+1:r*nfft]))
-        aperi .+= fftsig .* fftpred
-    end
-
-    aperi_pad = [aperi[end - p*n + 1 : end]; aperi; aperi[1:p*n]]
-
-    μ = _smoother(n,p; ty)
-    z_crsspect_smoothed = conv(μ,aperi_pad)[2n*p+1:2n*p+nfft]
-
-
-
-
-
-    # nfft == l || println("adjusted size from $l to $nfft")
-    sig_pad = l < nfft ? [sig[1:l]; zeros(nfft - l)] : sig[1:nfft]
-    pred_pad = l < nfft ? [pred[1:l]; zeros(nfft - l)] : pred[1:nfft]
-
-    fftsig = fft(sig_pad)
-    fftpred = conj(fft(pred_pad))
-
-    peri = fftsig .* fftpred / nfft
-    peri_pad = [peri[end - p*n + 1 : end]; peri; peri[1:p*n]]
-    z_crsspect_smoothed = conv(μ,peri_pad)[2n*p+1:2n*p+nfft]
-end
-
-
-
-
-
-
-
+### Run 3 ################################################
+### Get Data
+steps = 10^6
+discard = 10^4
+
+p = rand(1:9)
+q = rand(1:9)
+
+Zeros_sig = 1 .- rand(q)*2
+Poles_sig = 1 .- rand(p)*2
+
+X, P, Q = ARMA_gen(;
+    Zeros = Zeros_sig,
+    Poles = Poles_sig,
+    steps,
+    discard,
+    out_poly = true)
+
+### Plot analytic Solution
+S_ana_fun(z) = (Q(z^(-1))*Q(z')')/
+        (P(z^(-1))*P(z')')
+Theta = 2pi*(0:1000-1)/1000
+plot(Theta,
+    S_ana_fun.(exp.(im*Theta)),
+    label = "analytic")
+
+nn = 2
+pp = 500
+tty = "bin"
+S_X_sp = z_crossspect_scalar(X,X;n = nn ,p = pp ,ty = tty)
+spect_plot(S_X_sp,label = "S_X_sp")
+
+X_vec = reshape(X,1,:)
+L = 1000
+Nex = 2^11
+win = "Par"
+S_X_dm = z_crossspect_fft_old(X_vec,X_vec;L,Nex,win)[:]
+spect_plot(S_X_dm,label = "S_X_dm")
+
+nfft = 2^15
+n = 2
+p = 100
+ty = "ave"
+win = "none"
+S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
+spect_plot(S_X_asp,label = "S_X_asp")
+
+
+### Run 4 ################################################
+### Get Data
+steps = 10^6
+discard = 10^4
+
+p1 = rand(1:9)
+p2 = rand(1:4)
+q1 = rand(1:9)
+p2 = rand(1:4)
+
+Zeros_sig_real = 1 .- rand(q1)*2
+com_zeros = rand(p2) .* exp.(2pi*im*rand(p2))
+Zeros_sig = [Zeros_sig_real; com_zeros; conj(com_zeros)]
+Poles_sig_real = 1 .- rand(p1)*2
+com_poles = rand(p2) .* exp.(2pi*im*rand(p2))
+Poles_sig = [Poles_sig_real; com_poles; conj(com_poles)]
+
+
+X, P, Q = ARMA_gen(;
+    Zeros = Zeros_sig,
+    Poles = Poles_sig,
+    steps,
+    discard,
+    out_poly = true)
+
+### Plot analytic Solution
+S_ana_fun(z) = (Q(z^(-1))*Q(z')')/
+        (P(z^(-1))*P(z')')
+Theta = 2pi*(0:1000-1)/1000
+plot(Theta,
+    S_ana_fun.(exp.(im*Theta)),
+    label = "analytic")
+
+nn = 2
+pp = 500
+tty = "bin"
+S_X_sp = z_crossspect_scalar(X,X;n = nn ,p = pp ,ty = tty)
+spect_plot(S_X_sp,label = "S_X_sp")
+
+X_vec = reshape(X,1,:)
+L = 500
+Nex = 2^10
+win = "Par"
+S_X_dm = z_crossspect_fft_old(X_vec,X_vec;L,Nex,win)[:]
+spect_plot(S_X_dm,label = "S_X_dm")
+
+nfft = 2^16
+n = 2
+p = 50
+ty = "ave"
+win = "none"
+S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
+spect_plot(S_X_asp,label = "S_X_asp")
 
 
 
@@ -238,8 +216,10 @@ end
 
 
 ## Testing
+##########################################################
+### DWOL Testing #########################################
+##########################################################
 
-### DWOL ###########################################
 # Model run Parameters
 steps = 10^7 + 1
 scheme = "FE"
@@ -275,6 +255,28 @@ Psi(x) = [x; x.^3]
 X_pred = get_pred(X,Psi) # Notice it is just
                          # X get_pred assigns
                          # psi straight across
+
+
+ nn = 2
+ pp = 500
+ tty = "bin"
+ S_X_sp = z_crossspect_scalar(X,X;n = nn ,p = pp ,ty = tty)
+ spect_plot(S_X_sp,label = "S_X_sp")
+
+ X_vec = reshape(X,1,:)
+ L = 500
+ Nex = 2^10
+ win = "Par"
+ S_X_dm = z_crossspect_fft_old(X_vec,X_vec;L,Nex,win)[:]
+ spect_plot(S_X_dm,label = "S_X_dm")
+
+ nfft = 2^16
+ n = 2
+ p = 50
+ ty = "ave"
+ win = "none"
+ S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
+ spect_plot(S_X_asp,label = "S_X_asp")
 
 ### General ARMA #############################################
 X = ARMA_gen(  l = [1, -5/4, 3/8],
