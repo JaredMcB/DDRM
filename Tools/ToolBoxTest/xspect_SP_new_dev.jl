@@ -214,8 +214,7 @@ spect_plot(S_X_asp,label = "S_X_asp")
 
 
 
-
-## Testing
+##
 ##########################################################
 ### DWOL Testing #########################################
 ##########################################################
@@ -256,27 +255,27 @@ X_pred = get_pred(X,Psi) # Notice it is just
                          # X get_pred assigns
                          # psi straight across
 
+plotter = semilogy
+nn = 2
+pp = 500
+tty = "bin"
+S_X_sp = z_crossspect_scalar(X,X;n = nn ,p = pp ,ty = tty)
+spect_plot(S_X_sp;label = "S_X_sp",plotter)
 
- nn = 2
- pp = 500
- tty = "bin"
- S_X_sp = z_crossspect_scalar(X,X;n = nn ,p = pp ,ty = tty)
- spect_plot(S_X_sp,label = "S_X_sp")
+X_vec = reshape(X,1,:)
+L = 500
+Nex = 2^10
+win = "Par"
+S_X_dm = z_crossspect_fft_old(X_vec,X_vec;L,Nex,win)[:]
+spect_plot(S_X_dm;label = "S_X_sp",plotter)
 
- X_vec = reshape(X,1,:)
- L = 500
- Nex = 2^10
- win = "Par"
- S_X_dm = z_crossspect_fft_old(X_vec,X_vec;L,Nex,win)[:]
- spect_plot(S_X_dm,label = "S_X_dm")
-
- nfft = 2^16
- n = 2
- p = 50
- ty = "ave"
- win = "none"
- S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
- spect_plot(S_X_asp,label = "S_X_asp")
+nfft = 2^16
+n = 2
+p = 50
+ty = "ave"
+win = "none"
+S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
+spect_plot(S_X_asp,label = "S_X_asp")
 
 ### General ARMA #############################################
 X = ARMA_gen(  l = [1, -5/4, 3/8],
