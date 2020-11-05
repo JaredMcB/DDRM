@@ -307,8 +307,7 @@ function vector_wiener_filter_fft(
 
     if info
         h_num_fft = [h_num_raw[:,:,1:M],
-                 matlog1,
-                 matlog2,
+                 z_crossspect_sigpred_num_fft,
                  z_spect_pred_minus_num_fft,
                  z_spect_pred_plus_num_fft,
                  S_sigpred_overS_plus_fft_num,
