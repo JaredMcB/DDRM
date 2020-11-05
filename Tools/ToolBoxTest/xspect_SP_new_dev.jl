@@ -15,6 +15,7 @@ using JLD
 include("../../Examples/Nonlinear Langevin/DataGen.jl")
 include("../../Tools/Wiener Filtering/Scalar Wiener Filter/ARMA_Generator_DSP.jl")
 include("../../Tools/AnalysisToolbox.jl")
+include("../../Examples/KSE/Model_KSE.jl")
 
 ###
 
@@ -45,26 +46,26 @@ S_ana_fun(z) = 1/(S_ana_poly(z^(-1))*S_ana_poly(z')')
 Theta = 2pi*(0:1000-1)/1000
 plot(Theta,S_ana_fun.(exp.(im*Theta)))
 
+plotter = plot
 nn = 2
 pp = 500
 tty = "bin"
 S_X_sp = z_crossspect_scalar(X,X;n = nn ,p = pp ,ty = tty)
-spect_plot(S_X_sp)
+spect_plot(S_X_sp;label = "S_X_sp",plotter)
 
 X_vec = reshape(X,1,:)
-L = 100
-Nex = 2^11
+L = 500
+Nex = 2^10
 win = "Par"
 S_X_dm = z_crossspect_fft_old(X_vec,X_vec;L,Nex,win)[:]
-spect_plot(S_X_dm)
+spect_plot(S_X_dm;label = "S_X_sp",plotter)
 
-nfft = 2^15
+nfft = 2^10
 n = 2
-p = 50
-ty = "bin"
-win = "none"
-S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
-spect_plot(S_X_asp)
+p = 5
+ty = "ave"
+S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty)
+spect_plot(S_X_asp,label = "S_X_asp")
 
 
 
@@ -84,26 +85,26 @@ S_ana_fun(z) = (S_ana_poly_n(z^(-1))*S_ana_poly_n(z')')/
 Theta = 2pi*(0:1000-1)/1000
 plot(Theta,S_ana_fun.(exp.(im*Theta)))
 
+plotter = plot
 nn = 2
 pp = 500
 tty = "bin"
 S_X_sp = z_crossspect_scalar(X,X;n = nn ,p = pp ,ty = tty)
-spect_plot(S_X_sp)
+spect_plot(S_X_sp;label = "S_X_sp",plotter)
 
 X_vec = reshape(X,1,:)
-L = 100
-Nex = 2^11
+L = 500
+Nex = 2^10
 win = "Par"
 S_X_dm = z_crossspect_fft_old(X_vec,X_vec;L,Nex,win)[:]
-spect_plot(S_X_dm)
+spect_plot(S_X_dm;label = "S_X_sp",plotter)
 
-nfft = 2^15
+nfft = 2^10
 n = 2
-p = 50
-ty = "bin"
-win = "none"
-S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
-spect_plot(S_X_asp)
+p = 5
+ty = "ave"
+S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty)
+spect_plot(S_X_asp,label = "S_X_asp")
 
 
 
@@ -148,10 +149,9 @@ spect_plot(S_X_dm,label = "S_X_dm")
 
 nfft = 2^15
 n = 2
-p = 100
+p = 50
 ty = "ave"
-win = "none"
-S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
+S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty)
 spect_plot(S_X_asp,label = "S_X_asp")
 
 
@@ -172,6 +172,8 @@ Poles_sig_real = 1 .- rand(p1)*2
 com_poles = rand(p2) .* exp.(2pi*im*rand(p2))
 Poles_sig = [Poles_sig_real; com_poles; conj(com_poles)]
 
+Ps_saved = Poles_sig
+Zs_saved = Zeros_sig
 
 X, P, Q = ARMA_gen(;
     Zeros = Zeros_sig,
@@ -201,12 +203,11 @@ win = "Par"
 S_X_dm = z_crossspect_fft_old(X_vec,X_vec;L,Nex,win)[:]
 spect_plot(S_X_dm,label = "S_X_dm")
 
-nfft = 2^16
+nfft = 2^10
 n = 2
-p = 50
+p = 5
 ty = "ave"
-win = "none"
-S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
+S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty)
 spect_plot(S_X_asp,label = "S_X_asp")
 
 
@@ -220,13 +221,13 @@ spect_plot(S_X_asp,label = "S_X_asp")
 ##########################################################
 
 # Model run Parameters
-steps = 10^7 + 1
+steps = 10^6 + 1
 scheme = "FE"
 t_start = 0
-t_stop = 10^5
+t_stop = 10^4
 discard = 100000
 sig_init = [1.5]
-sigma = [.5]
+sigma = [.3]
 V_prime = x -> -x.*(x.^2 .- 1)
 SM1 = false
 Obs_noise = false
@@ -254,6 +255,52 @@ Psi(x) = [x; x.^3]
 X_pred = get_pred(X,Psi) # Notice it is just
                          # X get_pred assigns
                          # psi straight across
+i = 1
+plotter = semilogx
+nn = 2
+pp = 500
+tty = "bin"
+S_X_sp = z_crossspect_scalar(X_sig,X_pred[i,:];n = nn ,p = pp ,ty = tty)
+spect_plot(S_X_sp;label = "S_X_sp",plotter)
+
+X_sig_vec = reshape(X_sig,1,:)
+X_pred_vec = reshape(X_pred[i,:],1,:)
+L = 10000
+Nex = 2^17
+win = "Par"
+S_X_dm = z_crossspect_fft_old(X_sig_vec,X_pred_vec;L,Nex,win)[:]
+spect_plot(S_X_dm;label = "S_X_dm",plotter)
+
+nfft = 2^17
+n = 2
+p = 10
+ty = "ave"
+S_X_asp = z_crossspect_scalar_ASP(X_sig,X_pred[i,:]; nfft, n, p,ty)
+spect_plot(S_X_asp;label = "S_X_asp",plotter)
+# axis([1,5,-3e-4,1e-2])
+
+norm(S_X_dm - S_X_asp)^2/nfft
+
+plot(S_X_dm - S_X_asp)
+##
+##########################################################
+### KSE Testing ##########################################
+##########################################################
+
+T = 10000
+T_disc = 5000
+P = 21.55
+N = 96
+h = 1e-3
+f(x) = cos(x*2/P)*(1+sin(x*2/P))
+obs_gap = 100
+
+uu, vv, tt =  my_KSE_solver(T;
+       T_disc, P, N, h,
+       g = f,
+       n_gap = obs_gap)
+
+X = vv[2,:]
 
 plotter = semilogy
 nn = 2
@@ -267,60 +314,11 @@ L = 500
 Nex = 2^10
 win = "Par"
 S_X_dm = z_crossspect_fft_old(X_vec,X_vec;L,Nex,win)[:]
-spect_plot(S_X_dm;label = "S_X_sp",plotter)
+spect_plot(S_X_dm;label = "S_X_dm",plotter)
 
-nfft = 2^16
+nfft = 50000
 n = 2
 p = 50
 ty = "ave"
-win = "none"
-S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty, win)
+S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty)
 spect_plot(S_X_asp,label = "S_X_asp")
-
-### General ARMA #############################################
-X = ARMA_gen(  l = [1, -5/4, 3/8],
-                    w = [1];
-                    r::Float64 = 1.0,
-                    steps::Int64 = 10^4,
-                    Zeros = [],
-                    Poles = [],
-                    e = [],
-                    discard::Int64 = 10^3)
-
-X_sig = X[:,2:end];
-
-Psi(x) = [x; x.^3]
-X_pred = get_pred(X,Psi) # Notice it is just
-                         # X get_pred assigns
-                         # psi straight across
-
-
-
-
-
-### KSE #######################################################
-gen = gen
-T = 3000 # Length (in seconds) of time of run
-T_disc = 1000 # Length (in seconds) of time discarded
-P = 32π  # Period
-N = 128  # Number of fourier modes used
-h = 1e-3 # Timestep
-g = x -> cos(π*x/16)*(1 + sin.(π*x/16))
-obs_gap = 100
-
-uu, vv, tt =  my_KSE_solver(T,
-       T_disc  = T_disc,
-       P = P,
-       N = N,
-       h = h,
-       g = g,
-       n_gap = obs_gap)
-
-
-
-
-
-
-
-
-### Write the test first
