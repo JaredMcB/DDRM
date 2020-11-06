@@ -249,14 +249,14 @@ X = DataGen_DWOL(
 ### predictors They have to me off set so
 ### that pred is one index behind signal
 ### i.e. pre(n) = psi(sig(n-1))
-X_sig = X[:,2:end];
+X_sig = X[:,2:end]
 
 Psi(x) = [x; x.^3]
 X_pred = get_pred(X,Psi) # Notice it is just
                          # X get_pred assigns
                          # psi straight across
-i = 1
-plotter = semilogx
+i = 2
+plotter = semilogy
 nn = 2
 pp = 500
 tty = "bin"
@@ -265,7 +265,7 @@ spect_plot(S_X_sp;label = "S_X_sp",plotter)
 
 X_sig_vec = reshape(X_sig,1,:)
 X_pred_vec = reshape(X_pred[i,:],1,:)
-L = 10000
+L = 5000
 Nex = 2^17
 win = "Par"
 S_X_dm = z_crossspect_fft_old(X_sig_vec,X_pred_vec;L,Nex,win)[:]
@@ -273,8 +273,8 @@ spect_plot(S_X_dm;label = "S_X_dm",plotter)
 
 nfft = 2^17
 n = 2
-p = 10
-ty = "ave"
+p = 5
+ty = "bin"
 S_X_asp = z_crossspect_scalar_ASP(X_sig,X_pred[i,:]; nfft, n, p,ty)
 spect_plot(S_X_asp;label = "S_X_asp",plotter)
 # axis([1,5,-3e-4,1e-2])

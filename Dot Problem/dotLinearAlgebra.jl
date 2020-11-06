@@ -1,5 +1,5 @@
-using LinearAlgebra: dot
-
+using LinearAlgebra
+LinearAlgebra.BLAS.set_num_threads(1)
 foo(n) = randn(n) + im*randn(n)
 
 dot(foo(10001),foo(10001))

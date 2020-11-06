@@ -1332,3 +1332,8 @@ For now I will leave it in and continued testing different ARMA
 
 6:07 PM - I made it so `z_crossspect_fft`calls `z_crossspect_ASP` and ran the Wiener filter 
 
+
+
+# Thursday, November 5, 2020
+
+12:28 PM - I am going over the plots of the various elements used in the construction of the WF. I think this is a matter of the direct method varying with in bounds in an acceptable dimension which bounds the periodogram estimate violates. For instance, the WF code has very little sensitivity, it seems, to how the xspectral is approximated at 0. 
