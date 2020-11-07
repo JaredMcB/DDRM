@@ -76,7 +76,7 @@ Parms = [["DM"       , 5000  , 2^17    , 2    , 5],
 
 nfft      = Parms[1][3]
 
-P = length(Parms)
+P = 2#length(Parms)
 
 h_wf_packs  = []
 times = zeros(P)
@@ -98,60 +98,6 @@ h_wf_sp = h_wf_packs[8]
 
 h_wf_dm[1,:,1]
 h_wf_sp[1,:,1]
-
-N=10
-H_num_from_wf_dm = [fill(real(h_wf_dm[1,1,1]),N) fill(real(h_wf_dm[1,2,1]),N)]
-plot(2pi*(0:N-1)/(N-1),H_num_from_wf_dm)
-H_num_from_wf_sp = [fill(real(h_wf_sp[1,1,1]),N) fill(real(h_wf_sp[1,2,1]),N)]
-plot(2pi*(0:N-1)/(N-1),H_num_from_wf_sp)
-
-
-
-
-function spect_plot(S;
-        plotter = plot,
-        label = "unlabled")
-    plotter(2pi*(0:length(S)-1)/length(S),S,
-            label = label)
-    legend()
-end
-
-H_num_dm = h_wf_packs[7]
-H_num_sp = h_wf_packs[14]
-
-nfft      = Parms[1][3]
-plot(2pi*(0:nfft-1)/nfft,H_num_dm[1,1,:],label = "dm1")
-plot(2pi*(0:nfft-1)/nfft,H_num_dm[1,2,:],label = "dm2")
-plot(2pi*(0:nfft-1)/nfft,H_num_sp[1,1,:],label = "sp1")
-plot(2pi*(0:nfft-1)/nfft,H_num_sp[1,2,:],label = "sp2")
-legend()
-
-
-S_sigpred_overS_plus_plus_num_fft_dm = h_wf_packs[6]
-S_sigpred_overS_plus_plus_num_fft_sp = h_wf_packs[13]
-
-nfft      = Parms[1][3]
-loglog(2pi*(0:nfft-1)/nfft,(real(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:])),label = "dm1")
-loglog(2pi*(0:nfft-1)/nfft,(real(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:])),label = "dm2")
-loglog(2pi*(0:nfft-1)/nfft,(real(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:])),label = "sp1")
-loglog(2pi*(0:nfft-1)/nfft,(real(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:])),label = "sp2")
-legend()
-axis([.5, 5.5,-1,1e1])
-
-plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:]),label = "sp1")
-plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:]),label = "sp2")
-plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:]),label = "dm1")
-plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:]),label = "dm2")
-legend()
-axis([.5, 5.5,0,2.5e-2])
-
-plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:]),label = "dm1")
-plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:]),label = "dm2")
-plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:]),label = "sp1")
-plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:]),label = "sp2")
-legend()
-axis([.5, 5.5,0,2.5e-2])
-
 
 
 ## Extimated Spectral Densities
@@ -180,21 +126,28 @@ plot(2pi*(0:nfft-1)/nfft,imag(z_crossspect_sigpred_num_fft_sp[1,2,:]),label = "s
 legend()
 axis([.5, 5.5,-2.5e-2,2.5e-2])
 
+fig, axs = subplots(1,2,sharey = true)
+axs[1].semilogy(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_dm[1,1,:]),label = "dm1")
+axs[1].semilogy(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_dm[1,2,:]),label = "dm2")
+axs[1].set_title("Direct Method")
+axs[1].set_xlabel("frequencies")
+axs[1].set_ylabel("Spectral density")
+axs[1].grid("on")
+axs[1].legend()
 
-subplot(131);loglog(2pi*(0:nfft-1)/nfft,
-    (real(z_crossspect_sigpred_num_fft_dm[1,1,:])),label = "dm1");loglog(2pi*(0:nfft-1)/nfft,
-    (real(z_crossspect_sigpred_num_fft_dm[1,2,:])),label = "dm2");loglog(2pi*(0:nfft-1)/nfft,
-    (real(z_crossspect_sigpred_num_fft_sp[1,1,:])),label = "sp1");loglog(2pi*(0:nfft-1)/nfft,
-    (real(z_crossspect_sigpred_num_fft_sp[1,2,:])),label = "sp2");legend()
-subplot(132);loglog(2pi*(0:nfft-1)/nfft,[SVD1s SVD2s])
-subplot(133);loglog(2pi*(0:nfft-1)/nfft,(real(S_sigpred_overS_plus_fft_num_sp[1,1,:])),label = "sp1");loglog(
-                2pi*(0:nfft-1)/nfft,(real(S_sigpred_overS_plus_fft_num_sp[1,2,:])),label = "sp2");loglog(
-                2pi*(0:nfft-1)/nfft,(real(S_sigpred_overS_plus_fft_num_dm[1,1,:])),label = "dm1");loglog(
-                2pi*(0:nfft-1)/nfft,(real(S_sigpred_overS_plus_fft_num_dm[1,2,:])),label = "dm2");legend()
-
+axs[2].semilogy(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_sp[1,1,:]),label = "sp1")
+axs[2].semilogy(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_sp[1,2,:]),label = "sp2")
+axs[2].set_title("Periodogram")
+axs[2].set_xlabel("frequencies")
+axs[2].set_ylabel("Spectral density")
+axs[2].grid("on")
+axs[2].legend()
+fig.suptitle("Cross spectral density estimates")
 
 SVD1s = [svd(S_pred_plus[:,:,n]).S[1] for n = 1:nfft]
 SVD2s = [svd(S_pred_plus[:,:,n]).S[2] for n = 1:nfft]
+
+
 
 ## Estimated spectral densities over S_pred_plus
 
@@ -213,14 +166,261 @@ plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_sp[1,2,:]),label = "s
 plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,1,:]),label = "dm1")
 plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "dm2")
 legend()
-axis([.5, 5.5,-2.5e-2,2.5e-2])
+title("Estimated spectral densities over S_pred_plus")
+axis([.25, 6,-2.5e-2,2.5e-2])
 
-plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_dm[1,1,:]),label = "dm1")
-plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "dm2")
 plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_sp[1,1,:]),label = "sp1")
 plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_sp[1,2,:]),label = "sp2")
+plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_dm[1,1,:]),label = "dm1")
+plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "dm2")
 legend()
 axis([.5, 5.5,-2.5e-2,2.5e-2])
+
+# Dr. Lin
+fig, axs = subplots(1,2,sharey = true)
+axs[1].semilogy(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,1,:]),label = "dm1")
+axs[1].semilogy(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "dm2")
+axs[1].set_title("Direct Method")
+axs[1].set_xlabel("frequencies")
+axs[1].set_ylabel("Spectral density")
+axs[1].grid("on")
+axs[1].legend()
+
+axs[2].semilogy(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_sp[1,1,:]),label = "sp1")
+axs[2].semilogy(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "sp2")
+axs[2].set_title("Periodogram")
+axs[2].set_xlabel("frequencies")
+axs[2].set_ylabel("Spectral density")
+axs[2].grid("on")
+axs[2].legend()
+fig.suptitle(" Estimated spectral densities over S_pred_plus")
+
+
+## Causaul projection
+
+
+S_sigpred_overS_plus_plus_num_fft_dm = h_wf_packs[6]
+S_sigpred_overS_plus_plus_num_fft_sp = h_wf_packs[13]
+
+nfft      = Parms[1][3]
+plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:]),label = "sp1")
+plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:]),label = "sp2")
+plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:]),label = "dm1")
+plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:]),label = "dm2")
+legend()
+title("Causal projection of Estimated spectral densities over S_pred_plus")
+axis([.25, 6,-2.5e-2,2.5e-2])
+
+fig, axs = subplots(1,2,sharey = true)
+axs[1].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:]),label = "dm1")
+axs[1].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:]),label = "dm2")
+axs[1].set_title("Direct Method")
+axs[1].set_xlabel("frequencies")
+axs[1].set_ylabel("Spectral density")
+axs[1].grid("on")
+axs[1].axis([.25, 6,-2.5e-2,2.5e-2])
+axs[1].legend()
+
+axs[2].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:]),label = "sp1")
+axs[2].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:]),label = "sp2")
+axs[2].set_title("Periodogram")
+axs[2].set_xlabel("frequencies")
+axs[2].set_ylabel("Spectral density")
+axs[2].grid("on")
+axs[2].axis([.25, 6,-2.5e-2,2.5e-2])
+axs[2].legend()
+fig.suptitle("Causal projection of Estimated spectral densities over S_pred_plus")
+
+
+
+## Where things go wrong
+
+fig, axs = subplots(2,2,sharey = true)
+
+axs[1].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,1,:]),label = "dm1")
+axs[1].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "dm2")
+axs[1].set_title("Direct Method")
+axs[1].set_ylabel("Spectral density over S_pred_plus")
+axs[1].grid("on")
+axs[1].legend()
+
+axs[3].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_sp[1,1,:]),label = "sp1")
+axs[3].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_sp[1,2,:]),label = "sp2")
+axs[3].set_title("Periodogram")
+axs[3].grid("on")
+axs[3].legend()
+#fig.suptitle(" Estimated spectral densities over S_pred_plus")
+
+axs[2].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:]),label = "dm1")
+axs[2].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:]),label = "dm2")
+axs[2].set_xlabel("frequencies")
+axs[2].set_ylabel("Causal Projection of Spectral density over S_pred_plus")
+axs[2].grid("on")
+axs[2].axis([.25, 6,-2.5e-2,2.5e-2])
+axs[2].legend()
+
+axs[4].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:]),label = "sp1")
+axs[4].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:]),label = "sp2")
+axs[4].set_xlabel("frequencies")
+axs[4].set_ylabel("Spectral density")
+axs[4].grid("on")
+axs[4].axis([.25, 6,-2.5e-2,2.5e-2])
+axs[4].legend()
+fig.suptitle("Causal projection of Estimated spectral densities over S_pred_plus")
+
+
+## Where things go wrong
+
+fig, axs = subplots(4,2,sharey = "row",sharex = true)
+
+axs[1].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,1,:]),label = "dm1")
+axs[1].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "dm2")
+axs[1].set_title("Direct Method")
+axs[1].set_ylabel("S_XY/S_X^+ (real)")
+axs[1].axis([0, 6.28,-5e-2,2e-1])
+axs[1].grid("on")
+axs[1].legend()
+
+axs[2].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_dm[1,1,:]),label = "dm1")
+axs[2].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "dm2")
+axs[2].set_ylabel("S_XY/S_X^+  (lmag)")
+axs[2].grid("on")
+axs[2].axis([0, 6.28,-2e-1,2e-1])
+
+axs[3].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:]),label = "dm1")
+axs[3].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:]),label = "dm2")
+axs[3].set_ylabel("{S_XY/S_X^+}_+  (real)")
+axs[3].grid("on")
+axs[3].axis([0, 6.28,-1e-2,2e-1])
+
+axs[4].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:]),label = "dm1")
+axs[4].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:]),label = "dm2")
+axs[4].set_ylabel("{S_XY/S_X^+}_+  (imag)")
+axs[4].grid("on")
+axs[4].axis([0, 6.28,-2e-1,2e-1])
+axs[4].set_xlabel("frequencies")
+
+
+axs[5].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_sp[1,1,:]),label = "sp1")
+axs[5].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_sp[1,2,:]),label = "sp2")
+axs[5].set_title("Periodogram")
+axs[5].grid("on")
+axs[5].legend()
+
+axs[6].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_sp[1,1,:]),label = "sp1")
+axs[6].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_sp[1,2,:]),label = "sp2")
+axs[6].grid("on")
+
+axs[7].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:]),label = "sp1")
+axs[7].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:]),label = "sp2")
+axs[7].grid("on")
+
+axs[8].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:]),label = "sp1")
+axs[8].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:]),label = "sp2")
+axs[8].grid("on")
+axs[8].set_xlabel("frequencies")
+fig.suptitle("Causal projection of Estimated spectral densities over S_pred_plus")
+
+## For Dr. Lin
+
+fig, axs = subplots(4,2,sharey = true,sharex = true)
+
+axs[1].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,1,:]),label = "dm1")
+axs[1].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "dm2")
+axs[1].set_title("Direct Method")
+axs[1].set_ylabel("Spectral density over S_pred_plus (real)")
+axs[1].axis([.1, 6.2,-1e-1,1e-1])
+axs[1].grid("on")
+axs[1].legend()
+
+axs[2].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_dm[1,1,:]),label = "dm1")
+axs[2].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "dm2")
+axs[2].set_ylabel("Spectral density over S_pred_plus (lmag)")
+axs[2].grid("on")
+axs[2].legend()
+
+axs[3].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:]),label = "dm1")
+axs[3].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:]),label = "dm2")
+axs[3].set_ylabel("Causal Projection of Spectral density over S_pred_plus (real)")
+axs[3].grid("on")
+axs[3].legend()
+
+axs[4].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:]),label = "dm1")
+axs[4].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:]),label = "dm2")
+axs[4].set_ylabel("Causal Projection of Spectral density over S_pred_plus (imag)")
+axs[4].grid("on")
+axs[4].set_xlabel("frequencies")
+axs[4].legend()
+
+
+axs[5].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_sp[1,1,:]),label = "sp1")
+axs[5].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_sp[1,2,:]),label = "sp2")
+axs[5].set_title("Periodogram")
+axs[5].grid("on")
+axs[5].legend()
+
+axs[6].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_sp[1,1,:]),label = "sp1")
+axs[6].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_sp[1,2,:]),label = "sp2")
+axs[6].grid("on")
+axs[6].legend()
+
+axs[7].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:]),label = "sp1")
+axs[7].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:]),label = "sp2")
+axs[7].grid("on")
+axs[7].legend()
+
+axs[8].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:]),label = "sp1")
+axs[8].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:]),label = "sp2")
+axs[8].grid("on")
+axs[8].set_xlabel("frequencies")
+axs[8].legend()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+N=10
+H_num_from_wf_dm = [fill(real(h_wf_dm[1,1,1]),N) fill(real(h_wf_dm[1,2,1]),N)]
+plot(2pi*(0:N-1)/(N-1),H_num_from_wf_dm)
+H_num_from_wf_sp = [fill(real(h_wf_sp[1,1,1]),N) fill(real(h_wf_sp[1,2,1]),N)]
+plot(2pi*(0:N-1)/(N-1),H_num_from_wf_sp)
+
+
+
+
+function spect_plot(S;
+        plotter = plot,
+        label = "unlabled")
+    plotter(2pi*(0:length(S)-1)/length(S),S,
+            label = label)
+    legend()
+end
+
+H_num_dm = h_wf_packs[7]
+H_num_sp = h_wf_packs[14]
+
+nfft      = Parms[1][3]
+plot(2pi*(0:nfft-1)/nfft,H_num_dm[1,1,:],label = "dm1")
+plot(2pi*(0:nfft-1)/nfft,H_num_dm[1,2,:],label = "dm2")
+plot(2pi*(0:nfft-1)/nfft,H_num_sp[1,1,:],label = "sp1")
+plot(2pi*(0:nfft-1)/nfft,H_num_sp[1,2,:],label = "sp2")
+legend()
+
 
 
 
