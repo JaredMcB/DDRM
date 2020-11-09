@@ -7,7 +7,7 @@ powerspec(x; flags...) = powerspec(x,x;flags...)
 function powerspec(x::Union{Vector{T},SubArray{T}},
                    y::Union{Vector{T},SubArray{T}};
                    blks  = 100,
-                   nrows = 0
+                   nrows = 0,
                    err   = false,
                    ) where {T}
 
