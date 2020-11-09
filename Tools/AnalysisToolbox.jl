@@ -6,6 +6,10 @@ using Polynomials
 using StatsBase
 using SparseArrays
 
+include("KLPowerSpec.jl")
+
+import .KLPowerSpec
+
 """
     my_crosscov
 I don't remember why I wrote this or if it has any advantage over some builtin
@@ -131,13 +135,18 @@ function z_crossspect_fft(
     steps = minimum([stepsx stepsy])
     nfft = nfft == 0 ? nextfastfft(steps) : nfft
     # steps == nfft || println("adjusted no. of steps from $steps to $nfft")
-    steps = nfft
+
+    blks = ceil(Int, steps/nfft)
 
     z_spect_mat = zeros(Complex, d, nu, nfft)
     for i = 1 : d
         for j = 1 : nu
-            z_spect_mat[i,j,:] = z_crossspect_scalar_ASP(sig[i,:],pred[j,:];
-                                                  nfft, n, p,ty)
+            # z_spect_mat[i,j,:] = z_crossspect_scalar_ASP(sig[i,:],pred[j,:];
+            #                                       nfft, n, p,ty)
+
+            z_spect_mat[i,j,:] = KLPowerSpec.powerspec(sig[i,:],pred[j,:];
+                                               blks)
+
         end
     end
     z_spect_mat
