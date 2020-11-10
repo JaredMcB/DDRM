@@ -1337,3 +1337,9 @@ For now I will leave it in and continued testing different ARMA
 # Thursday, November 5, 2020
 
 12:28 PM - I am going over the plots of the various elements used in the construction of the WF. I think this is a matter of the direct method varying with in bounds in an acceptable dimension which bounds the periodogram estimate violates. For instance, the WF code has very little sensitivity, it seems, to how the xspectral is approximated at 0. 
+
+
+
+# Monday, November 9, 2020
+
+11:56 AM - Since I finished teaching at around 9:30 AM I have been investigating differences between my implementation and the `powerspect`estimator Dr. Lin supplied over the weekend. It's performance is comparable to the ones already being used. When I feed it in to the WFing program `get_WF` it preforms similarly to the my own periodogram estimates.  

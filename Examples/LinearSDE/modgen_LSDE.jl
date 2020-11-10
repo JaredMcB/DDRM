@@ -33,9 +33,9 @@ function modgen_LSDE(t_start,t_stop,h;
     size(A,1) == size(A,2) || throw(DimensionMismatch("A must be square"))
     d == size(A,1) || throw(DimensionMismatch("A and σ are noncompatable"))
 
-    steps_tot = floor(Int,(t_stop - t_start)/h) + 1
-    steps_disc = floor(Int,(t_disc - t_start)/h) + 1
-    steps = steps_tot - steps_disc
+    steps = floor(Int,(t_stop - t_start)/h)
+    steps_disc = floor(Int,(t_disc - t_start)/h)
+    steps_tot = steps + steps_disc
 
     num_obs = floor(Int, steps/gap) + 1
 

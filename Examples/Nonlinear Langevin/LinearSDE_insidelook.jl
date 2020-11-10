@@ -1,48 +1,43 @@
 using PyPlot
 using Random
+using JLD
 
 
-include("DataGen.jl") # This has many packages in it's preamble
+# Get software to generate model
+include("../LinearSDE/modgen_LSDE.jl") # This has many packages in it's preamble
 include("../../Tools/Model_Reduction_Dev.jl")
 
-steps = 10^6 + 1
-scheme = "FE"
+# Model run Parameters
 t_start = 0
-t_stop = 10^4
-discard = 100000
-sig_init = [1.5]
-sigma = [.3]
-V_prime = x -> -x.*(x.^2 .- 1)
-SM1 = false
-Obs_noise = false
-d = 1
-#e = randn(d,steps + discard)
+t_stop  = 1e4
+h       = 1e-2
+
+
+A       = -[-0.5 1; 0 -0.2]*[-0.5 1; 0 -0.2]'/1.5 #reshape([-0.5],1,1)
+σ       = I + 0*A
+Xo      = [1; 1.5]
+t_disc  = 1e3
+gap     = 1
 
 # Get full model run
 Random.seed!(2014)
-X = DataGen_DWOL(
-    steps;
-    scheme, t_start, t_stop, discard,
-    sig_init , sigma, V_prime,
-    SM1, Obs_noise, d
-    )
-
-T = range(t_start,stop = t_stop, length = steps)
-X
+X = modgen_LSDE(t_start,t_stop,h;
+    A, σ, Xo, t_disc, gap)
+steps = floor(Int,(t_stop - t_start)/(h*gap)) +1
 
 data = Dict("steps" => steps,
             "t_stop" => t_start,
-            "sigma" => sigma,
+            "sigma" => σ,
             "X" => X)
-save("Examples/Nonlinear Langevin/data/data_10_23_2020.jld",data)
+save("Examples/Nonlinear Langevin/data/data_10_23_2020Linear.jld",data)
 
-data = load("Examples/Nonlinear Langevin/data/data_10_23_2020.jld")
+data = load("Examples/Nonlinear Langevin/data/data_10_23_2020Linear.jld")
 X = data["X"]
 
 auto_times(X[1,:])
 
 # Put in Psi functions
-Psi(x) = [x; x.^3]
+Psi(x) = x
 
 # Model reduction Parameters
 M_out = 50
@@ -60,9 +55,9 @@ rtol = 1e-6
 ### Varing parameters
 ###            xspect_est, par    , nfft    , n    , p
 #
-Parms = [["DM"       , 5000  , 2^17    , 2    , 5],
-         ["SP"       , 5000  , 2^17    , 2    , 5],
-         ["DM"       , 10000    , 2^17    , 3    , 500],
+Parms = [["DM"       , 500  , 2^10    , 2    , 5],
+         ["SP"       , 500  , 2^10    , 2    , 5],
+         ["DM"       , 100    , 2^10    , 3    , 500],
          ["DM"       , 500    , 2^16    , 3    , 500],
          ["DM"       , 1000   , 2^16    , 3    , 500],
          ["DM"       , 5000   , 2^16    , 3    , 500],
@@ -76,7 +71,7 @@ Parms = [["DM"       , 5000  , 2^17    , 2    , 5],
 
 nfft      = Parms[1][3]
 
-P = 3#length(Parms)
+P = 2#length(Parms)
 
 h_wf_packs  = []
 times = zeros(P)
@@ -93,38 +88,125 @@ for i = 1:P
     times[i]      = Out.time
 end
 
-
 h_wf_dm = h_wf_packs[1]
 h_wf_sp = h_wf_packs[8]
-h_wf_dm = h_wf_packs[15]
 
-h_wf_dm[1,:,1]
-h_wf_sp[1,:,1]
+h_wf_dm[:,:,1]
+h_wf_sp[:,:,1]
+
+I +h*A
+
+z_crossspect_sigpred_num_fft_dm = h_wf_packs[2]
+z_crossspect_sigpred_num_fft_sp = h_wf_packs[9]
+
+S_sigpred_overS_plus_fft_num_dm = h_wf_packs[5]
+S_sigpred_overS_plus_fft_num_sp = h_wf_packs[12]
+
+S_sigpred_overS_plus_plus_num_fft_dm = h_wf_packs[6]
+S_sigpred_overS_plus_plus_num_fft_sp = h_wf_packs[13]
+
+H_num_dm = h_wf_packs[7]
+H_num_sp = h_wf_packs[14]
+
+fig, axs = subplots(4,2,sharey = "row",sharex = true)
+
+axs[1].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,1,:]),label = "dm1")
+axs[1].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "dm1")
+axs[1].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_dm[2,2,:]),label = "dm1")
+
+axs[1].set_title("Direct Method")
+axs[1].set_ylabel("S_XY/S_X^+ (real)")
+axs[1].axis([0, 6.28,-5e-2,2e-1])
+axs[1].grid("on")
+axs[1].legend()
+
+axs[2].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_dm[1,1,:]),label = "dm1")
+axs[2].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_dm[1,2,:]),label = "dm1")
+axs[2].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_dm[2,2,:]),label = "dm1")
+axs[2].set_ylabel("S_XY/S_X^+  (lmag)")
+axs[2].grid("on")
+axs[2].axis([0, 6.28,-2e-1,2e-1])
+
+axs[3].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:]),label = "dm1")
+axs[3].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:]),label = "dm1")
+axs[3].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_dm[2,2,:]),label = "dm1")
+axs[3].set_ylabel("{S_XY/S_X^+}_+  (real)")
+axs[3].grid("on")
+axs[3].axis([0, 6.28,-1e-2,2e-1])
+
+axs[4].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_dm[1,1,:]),label = "dm1")
+axs[4].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_dm[1,2,:]),label = "dm1")
+axs[4].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_dm[2,2,:]),label = "dm1")
+axs[4].set_ylabel("{S_XY/S_X^+}_+  (imag)")
+axs[4].grid("on")
+axs[4].axis([0, 6.28,-2e-1,2e-1])
+axs[4].set_xlabel("frequencies")
+
+
+axs[5].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_sp[1,1,:]),label = "sp1")
+axs[5].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_sp[1,2,:]),label = "sp1")
+axs[5].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_fft_num_sp[2,2,:]),label = "sp1")
+axs[5].set_title("Periodogram")
+axs[5].grid("on")
+axs[5].legend()
+
+axs[6].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_sp[1,1,:]),label = "sp1")
+axs[6].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_sp[1,2,:]),label = "sp1")
+axs[6].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_fft_num_sp[2,2,:]),label = "sp1")
+axs[6].grid("on")
+
+axs[7].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:]),label = "sp1")
+axs[7].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:]),label = "sp1")
+axs[7].plot(2pi*(0:nfft-1)/nfft,real(S_sigpred_overS_plus_plus_num_fft_sp[2,2,:]),label = "sp1")
+axs[7].grid("on")
+
+axs[8].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_sp[1,1,:]),label = "sp1")
+axs[8].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_sp[1,2,:]),label = "sp1")
+axs[8].plot(2pi*(0:nfft-1)/nfft,imag(S_sigpred_overS_plus_plus_num_fft_sp[2,2,:]),label = "sp1")
+axs[8].grid("on")
+axs[8].set_xlabel("frequencies")
+fig.suptitle("Causal projection of Estimated spectral densities over S_pred_plus")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 ## Extimated Spectral Densities
 z_crossspect_sigpred_num_fft_dm = h_wf_packs[2]
 z_crossspect_sigpred_num_fft_sp = h_wf_packs[9]
-z_crossspect_sigpred_num_fft_dm1 = h_wf_packs[16]
 
 semilogy(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_dm[1,1,:])),label = "dm1")
-semilogy(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_dm[1,2,:])),label = "dm2")
 semilogy(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_sp[1,1,:])),label = "sp1")
-semilogy(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_sp[1,2,:])),label = "sp2")
-semilogy(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_dm1[1,1,:])),label = "dm11")
 legend()
 axis([.5, 5.5,-1e-1,1e1])
 
-nfft = 2^14
-semilogx(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_sp[1,1,1:nfft]),label = "sp1",".-")
-semilogx(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_sp[1,2,:]),label = "sp2")
-semilogx(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_dm[1,1,1:nfft]),label = "dm1",".-")
-semilogx(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_dm[1,2,:]),label = "dm2")
-semilogx(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_dm1[1,1,:])),label = "dm11",".-")
+nfft = 2^17
+plot(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_dm[1,1,:]),label = "dm1")
+plot(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_sp[1,1,:]),label = "sp1")
 legend()
-
-axis([0, 5.5,-1e-3,2.5e-3])
+axis([.5, 5.5,-1e-2,2.5e-2])
 
 plot(2pi*(0:nfft-1)/nfft,imag(z_crossspect_sigpred_num_fft_dm[1,1,:]),label = "dm1")
 plot(2pi*(0:nfft-1)/nfft,imag(z_crossspect_sigpred_num_fft_dm[1,2,:]),label = "dm2")
