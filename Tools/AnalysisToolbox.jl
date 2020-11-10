@@ -119,8 +119,8 @@ function z_crossspect_fft(
     sig,
     pred::Array{T,2} where T <: Number;
     nfft = 0,
-    n = 3,
-    p = 2500,
+    n = 2,
+    p = 5,
     ty = "bin")
 
     ## sig = d x steps, pred = nu x steps
@@ -188,8 +188,8 @@ function z_crossspect_scalar_ASP(
     sig,
     pred;
     nfft = 2^10, # The length of each subseries
-    n = 3,
-    p = 10,
+    n = 2,
+    p = 5,
     ty = "bin")
 
     # Of cousre we need these to be mean zero
