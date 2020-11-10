@@ -16,7 +16,9 @@ include("../../Examples/Nonlinear Langevin/DataGen.jl")
 include("../../Tools/Wiener Filtering/Scalar Wiener Filter/ARMA_Generator_DSP.jl")
 include("../../Tools/AnalysisToolbox.jl")
 include("../../Examples/KSE/Model_KSE.jl")
+include("../../Tools/KLPowerSpec.jl")
 
+import .KLPowerSpec
 ###
 
 
@@ -67,7 +69,10 @@ ty = "ave"
 S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty)
 spect_plot(S_X_asp,label = "S_X_asp")
 
-
+nfft = 2^10
+blks = ceil(Int, steps/nfft)
+S_X_klasp = KLPowerSpec.powerspec(X; blks)
+spect_plot(S_X_klasp,label = "S_X_klasp")
 
 ### Run 2 ################################################
 ### Get Data
@@ -210,7 +215,10 @@ ty = "ave"
 S_X_asp = z_crossspect_scalar_ASP(X,X; nfft, n, p,ty)
 spect_plot(S_X_asp,label = "S_X_asp")
 
-
+nfft = 2^10
+blks = ceil(Int, steps/nfft)
+S_X_klasp = KLPowerSpec.powerspec(X; blks)
+spect_plot(S_X_klasp,label = "S_X_klasp")
 
 
 
@@ -278,6 +286,11 @@ ty = "bin"
 S_X_asp = z_crossspect_scalar_ASP(X_sig,X_pred[i,:]; nfft, n, p,ty)
 spect_plot(S_X_asp;label = "S_X_asp",plotter)
 # axis([1,5,-3e-4,1e-2])
+
+nfft = 2^17
+blks = ceil(Int, steps/nfft)
+S_X_klasp = KLPowerSpec.powerspec(X_sig[:],X_pred[i,:]; nrows = nfft)
+spect_plot(S_X_klasp,label = "S_X_klasp")
 
 norm(S_X_dm - S_X_asp)^2/nfft
 
