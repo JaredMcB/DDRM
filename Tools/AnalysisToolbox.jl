@@ -136,16 +136,16 @@ function z_crossspect_fft(
     nfft = nfft == 0 ? nextfastfft(steps) : nfft
     # steps == nfft || println("adjusted no. of steps from $steps to $nfft")
 
-    blks = ceil(Int, steps/nfft)
+    # blks = ceil(Int, steps/nfft)
 
     z_spect_mat = zeros(Complex, d, nu, nfft)
     for i = 1 : d
         for j = 1 : nu
-            # z_spect_mat[i,j,:] = z_crossspect_scalar_ASP(sig[i,:],pred[j,:];
-            #                                       nfft, n, p,ty)
+            z_spect_mat[i,j,:] = z_crossspect_scalar_ASP(sig[i,:],pred[j,:];
+                                                  nfft, n, p,ty)
 
-            z_spect_mat[i,j,:] = KLPowerSpec.powerspec(sig[i,:],pred[j,:];
-                                               blks)
+            # z_spect_mat[i,j,:] = KLPowerSpec.powerspec(sig[i,:],pred[j,:];
+            #                                    blks)
 
         end
     end
