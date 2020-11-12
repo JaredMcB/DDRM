@@ -5,11 +5,10 @@ using Random
 include("DataGen.jl") # This has many packages in it's preamble
 include("../../Tools/Model_Reduction_Dev.jl")
 
-steps = 10^6 + 1
+steps = 10^8
 scheme = "FE"
 t_start = 0
 t_stop = 10^4
-discard = 100000
 sig_init = [1.5]
 sigma = [.3]
 V_prime = x -> -x.*(x.^2 .- 1)
@@ -28,7 +27,7 @@ X = DataGen_DWOL(
     )
 
 T = range(t_start,stop = t_stop, length = steps)
-X
+X = complex(X)
 
 data = Dict("steps" => steps,
             "t_stop" => t_start,
@@ -39,7 +38,7 @@ save("Examples/Nonlinear Langevin/data/data_10_23_2020.jld",data)
 data = load("Examples/Nonlinear Langevin/data/data_10_23_2020.jld")
 X = data["X"]
 
-auto_times(X[1,:])
+# auto_times(X[1,:])
 
 # Put in Psi functions
 Psi(x) = [x; x.^3]
@@ -62,8 +61,8 @@ rtol = 1e-6
 #
 Parms = [["DM"       , 5000  , 2^17    , 2    , 5],
          ["SP"       , 5000  , 2^17    , 2    , 5],
-         ["DM"       , 10000    , 2^17    , 3    , 500],
-         ["DM"       , 500    , 2^16    , 3    , 500],
+         ["DM"       , 10000 , 2^17    , 3    , 500],
+         ["DM"       , 50000 , 2^17    , 3    , 500],
          ["DM"       , 1000   , 2^16    , 3    , 500],
          ["DM"       , 5000   , 2^16    , 3    , 500],
          ["DM"       , 10000  , 2^16    , 3    , 500],
@@ -76,7 +75,7 @@ Parms = [["DM"       , 5000  , 2^17    , 2    , 5],
 
 nfft      = Parms[1][3]
 
-P = 3#length(Parms)
+P = 2#length(Parms)
 
 h_wf_packs  = []
 times = zeros(P)
