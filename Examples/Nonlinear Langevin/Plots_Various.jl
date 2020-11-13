@@ -25,33 +25,31 @@ h_wf_sp[1,:,1]
 ## Extimated Spectral Densities
 z_crossspect_sigpred_num_fft_dm = h_wf_packs[2]
 z_crossspect_sigpred_num_fft_sp = h_wf_packs[9]
-z_crossspect_sigpred_num_fft_dm1 = h_wf_packs[16]
 
 semilogy(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_dm[1,1,:])),label = "dm1")
 semilogy(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_dm[1,2,:])),label = "dm2")
 semilogy(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_sp[1,1,:])),label = "sp1")
 semilogy(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_sp[1,2,:])),label = "sp2")
-semilogy(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_dm1[1,1,:])),label = "dm11")
 legend()
 axis([.5, 5.5,-1e-1,1e1])
 
-nfft = 2^14
+
 semilogx(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_sp[1,1,1:nfft]),label = "sp1",".-")
 semilogx(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_sp[1,2,:]),label = "sp2")
 semilogx(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_dm[1,1,1:nfft]),label = "dm1",".-")
 semilogx(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_dm[1,2,:]),label = "dm2")
-semilogx(2pi*(0:nfft-1)/nfft,(real(z_crossspect_sigpred_num_fft_dm1[1,1,:])),label = "dm11",".-")
 legend()
 
 axis([0, 5.5,-1e-3,2.5e-3])
 
-plot(2pi*(0:nfft-1)/nfft,imag(z_crossspect_sigpred_num_fft_dm[1,1,:]),label = "dm1")
-plot(2pi*(0:nfft-1)/nfft,imag(z_crossspect_sigpred_num_fft_dm[1,2,:]),label = "dm2")
-plot(2pi*(0:nfft-1)/nfft,imag(z_crossspect_sigpred_num_fft_sp[1,1,:]),label = "sp1")
-plot(2pi*(0:nfft-1)/nfft,imag(z_crossspect_sigpred_num_fft_sp[1,2,:]),label = "sp2")
+plot(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_sp[1,1,:]),label = "sp1")
+plot(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_sp[1,2,:]),label = "sp2")
+plot(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_dm[1,1,:]),label = "dm1")
+plot(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_dm[1,2,:]),label = "dm2")
 legend()
 axis([.5, 5.5,-2.5e-2,2.5e-2])
 
+nfft = 2^17
 fig, axs = subplots(1,2,sharey = true)
 axs[1].semilogy(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_dm[1,1,:]),label = "dm1")
 axs[1].semilogy(2pi*(0:nfft-1)/nfft,real(z_crossspect_sigpred_num_fft_dm[1,2,:]),label = "dm2")
