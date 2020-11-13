@@ -9,7 +9,7 @@ include("../../Tools/Model_Reduction_Dev.jl")
 
 # Model run Parameters
 t_start = 0
-t_stop  = 1e4
+t_stop  = 1e7
 h       = 1e-2
 
 A       = -[-0.5 1; 0 -0.2]*[-0.5 1; 0 -0.2]'/1.5 #reshape([-0.5],1,1)
