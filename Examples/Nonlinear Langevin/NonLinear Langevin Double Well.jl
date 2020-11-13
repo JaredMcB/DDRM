@@ -1,5 +1,6 @@
-using PyPlot
+# using PyPlot
 using Random
+using JLD
 
 
 include("DataGen.jl") # This has many packages in it's preamble
@@ -11,13 +12,13 @@ V_prime  = x -> -x.*(x.^2 .- 1)
 sig_init = [1.5]
 # Numerical estimate parameters
 scheme   = "FE"
-steps    = 10^7  # Number of time steps (not including those discarded)
+steps    = 10^8  # Number of time steps (not including those discarded)
 h        = .1
 discard  = steps # Number of time steps discarded
-gap      = 1   # 1 + the number of time steps between observations
+gap      = 1     # 1 + the number of time steps between observations
 
 # Get full model run
-Random.seed!(2014)
+Random.seed!(2015)
 X = @time DataGen_DWOL(;
     #SDE parameters
     sigma, V_prime, sig_init,
@@ -25,10 +26,10 @@ X = @time DataGen_DWOL(;
     scheme, steps, h, discard, gap)
 
 
-X = complex(X)
+# X = complex(X)
 
-plot(X[1,1:end÷8000:end],ms=1,".")
-plot(X[1,1:8000],ms=1,".")
+# plot(X[1,1:end÷8000:end],ms=1,".")
+# plot(X[1,1:8000],ms=1,".")
 
 data = Dict("sigma"         => sigma,
             "V_prime_str"   => "x -> -x.*(x.^2 .- 1)",
@@ -62,7 +63,7 @@ Parms = [["DM"       , 5000  , 2^17    , 2    , 5],
 
 nfft = Parms[1][3]
 
-P = 2#length(Parms)
+P = length(Parms)
 
 h_wf_packs  = []
 times = zeros(P)
@@ -79,11 +80,10 @@ for i = 1:P
     times[i]      = Out.time
 end
 
-h_wf_dm = h_wf_packs[1]
-h_wf_sp = h_wf_packs[8]
-
-h_wf_dm[:,:,1]
-h_wf_sp[:,:,1]
+println("DM: ",h_wf_packs[1][1,:,1])
+println("SP: ",h_wf_packs[2][1,:,1])
 
 output = Dict("h_wf_packs" => h_wf_packs)
-save("Examples/Nonlinear Langevin/data/data_11_12_2020.jld",merge(data,output))
+save("../../../data/DWOL_Data/data_11_12_2020_BIG.jld",merge(data,output))
+
+
