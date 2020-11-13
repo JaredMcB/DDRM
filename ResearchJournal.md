@@ -1343,3 +1343,25 @@ For now I will leave it in and continued testing different ARMA
 # Monday, November 9, 2020
 
 11:56 AM - Since I finished teaching at around 9:30 AM I have been investigating differences between my implementation and the `powerspect`estimator Dr. Lin supplied over the weekend. It's performance is comparable to the ones already being used. When I feed it in to the WFing program `get_WF` it preforms similarly to the my own periodogram estimates.  
+
+
+
+# Thursday, November 12, 2020
+
+12:28 - Finished writing an exam and grading and now am ready to research. Yesterday, I met with Dr. Lin and he drew my attention to the fact that most the work I have done the past several days was using a time series that was rather lean in it's information about the underlying process. What I need to do is allow for the numerical solution of the SDE to run over a longer time. The way this can be done efficiently with out losing any important information is to skip entries in the numerical run. So, yesterday I updated the function `DataGen_DWOL` in the file `Exmples/Nonlinear Langevin/DataGen.jl` to allow for a gap in the storing of the solution entries. The crux of it is demonstrated below: (particularly the second `if` statement)
+
+```julia
+signal = zeros(d,ceil(Int,steps/gap))
+    tmp = sig_init
+    if scheme == "FE"
+        for n = 1 : steps_tot-1
+            tmp = tmp + h*V_prime(tmp) +
+                        sqrt(h)*sigma*( ObsNoise ? e[:,n+1] : randn(d) )
+            if (n - discard > 0) && ((n - discard - 1) % gap == 0)
+                signal[:,(n-discard-1)÷gap + 1] = tmp
+            end
+        end
+    ...
+```
+
+With this intact I will now rerun all the analysis before on this richer timeseries. 
