@@ -89,7 +89,7 @@ function DataGen_DWOL(;
         end
     end
 
-    result = Obs_noise ? [signal, e] : signal
+    result = ObsNoise ? [signal, e] : signal
 end
 
 function DWOL_dist_samp(
