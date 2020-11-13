@@ -5,9 +5,9 @@
 #       extension: .jl
 #       format_name: light
 #       format_version: '1.5'
-#       jupytext_version: 1.5.2
+#       jupytext_version: 1.6.0
 #   kernelspec:
-#     display_name: Julia 1.5.0
+#     display_name: Julia 1.5.2
 #     language: julia
 #     name: julia-1.5
 # ---
@@ -16,7 +16,7 @@
 
 using PyPlot
 
-j=include("jaredm.jl")
+j  = include("jaredm.jl")
 
 W=include("KLPowerSpec.jl")
 
@@ -43,6 +43,8 @@ kr=include("kramers.jl")
 
 sde=include("SDE.jl")
 
+jd = include("JMDataGen.jl") 
+
 sigma=0.3
 h=0.01
 nskip=100
@@ -53,6 +55,10 @@ x=sde.onepath(kr.Drift(), nsteps, h; sigma=sigma)[ndrop:nskip:end];
 
 ## sanity check: make sure we really do have a particle jumping back and forth
 plot(x[1:div(end,8000):end],".";markersize=1)
+
+x = jd.DataGen_DWOL(;sigma = [sigma], h, gap = nskip, steps = nsteps, discard = ndrop)[:];
+
+plot(x[1:div(end,8000):end],".";ms=1)
 
 # *Test 0: cross spectra*
 
