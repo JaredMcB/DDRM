@@ -1461,3 +1461,106 @@ signal = zeros(d,ceil(Int,steps/gap))
 I also, change some other things about the function to suite what I hope is a refined taste in programing. I made the time step `h` an input and took out the inputs `t_start` and `t-stop`. With this intact I will now rerun all the analysis before on this richer timeseries.
 
 1:34 PM - I installed Anaconda so I could install jupytext to reconstitute the Jupyter notebooks and test my data generator.
+
+
+
+# Monday, November 16, 2020
+
+11:41 AM - In Math 122B they took a test today. I just finished updating their calendar.
+
+The problem at hand for the past few weeks has been the question: **Why does the periodogram estimate WF give a different result form the direct method estimate WF?**
+
+Looking closely at the estimators for the cross spectral density, under analogous parameters in resolution (`nfft = Nex`) the middle of the graph (`ω ∈ [.5,6]`) the values of the cross spectral density are very small and very close. So, we concluded that the difference must be at the approximations near zero. Last week Dr. Lin pointed out that the timeseries I had been using was in fact, rather lean (short, or brief the problem here was that given the current value of `σ = 0.3` the system did not run long enough in time for the sample to process adequate in formation about it's dynamics.) So we tried it again with longer timeseries and found that (skipping every 99 samples `gap = 100`) the WF were pretty much Identical. Can I find the old results? Can I reproduce them. I would like to be able to look back at these experiments quickly. I think I need to revise what I put into my research Journal here.
+
+12:02 PM - I am preparing to run an experiment. I am thinking about writing a module that creates a nice output after an experiment.
+
+#### Experimant
+* Run on my laptop.
+* timeseries data
+  ```julia
+  #SDE parameters
+  sigma    = [.3]
+  V_prime  = x -> -x.*(x.^2 .- 1)
+  sig_init = [1.5]
+  # Numerical estimate parameters
+  scheme   = "FE"
+  steps    = 10^8  # Number of time steps (not including those discarded)
+  h        = .1
+  discard  = steps # Number of time steps discarded
+  gap      = 100     # 1 + the number of time steps between observations
+  seed     = 2015
+
+  X = @time DataGen_DWOL(;
+    #SDE parameters
+    sigma, V_prime, sig_init,
+    # Numerical estimate parameters
+    scheme, steps, h, discard, gap)
+  ```
+  Data was saved to "Examples/Nonlinear Langevin/data/data_11_16_2020_1.jld"
+  The `h = .1` here was a mistake but I will let it play out.
+
+  ```
+  julia> X
+  1×1000000 Array{Float64,2}:
+ -0.656241  -0.857331  -0.879254  -1.07485  -0.920843  -0.902613  -0.948586  0.90285  1.059  0.772112  0.944862  0.813503  1.07287  0.92711  0.805445  …  0.851886  0.897801  0.585505  0.979232  0.888067  0.816635  1.11003  1.11867  0.951974  1.08343  0.963044  1.00432  1.01226  0.887688  1.05448  1.08554
+ ```
+* We compute the WF and compare. The code is all in the file "Examples\Nonlinear Langevin\NonLinear Langevin Double Well.jl" Here are all the Wiener Filtering parameters:
+  ```julia
+  Psi(x) = [x; x.^3]
+  M_out = 50
+  ty = "bin"
+  ###       xspect_est , par    , nfft    , n    , p
+  Parms = [["DM"       , 5000  , 2^17    , 2    , 5],
+           ["SP"       , 5000  , 2^17    , 2    , 5]]
+  ```
+* Results:
+  ```
+  First componete of the WF by DM: Complex{Float64}[1.3297488674434907 + 2.4073936672208036e-15im, -0.4545637642213554 - 8.671031880999923e-16im]
+  First componete of the WF by SP: Complex[1.325886513646724 - 1.2871558917650188e-15im, -0.45249396088237676 + 4.436097622402122e-16im]
+  ```
+
+  ```
+  julia> real(h_wf_dm)
+  1×2×50 Array{Float64,3}:
+  [:, :, 1] =
+   1.32975  -0.454564
+
+  [:, :, 2] =
+   0.145294  -0.049749
+
+  [:, :, 3] =
+   0.017089  -0.00610873
+
+  ...
+
+  [:, :, 48] =
+   0.00235385  -0.00223777
+
+  [:, :, 49] =
+   0.00255304  -0.00291539
+
+  [:, :, 50] =
+   0.00154927  -0.00160628
+
+   julia> real(h_wf_sp)
+   1×2×50 Array{Float64,3}:
+   [:, :, 1] =
+    1.32589  -0.452494
+
+   [:, :, 2] =
+    0.143381  -0.0484162
+
+   [:, :, 3] =
+    0.0170552  -0.00531202
+
+   ...
+
+   [:, :, 48] =
+    0.00126733  -0.00129325
+
+   [:, :, 49] =
+    0.0033644  -0.00290029
+
+   [:, :, 50] =
+    0.00134207  -0.00142937
+    ```
