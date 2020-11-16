@@ -60,6 +60,7 @@ function redmodrun(X, h_wf, Psi;
     else
         println("reduced model did not blowup")
     end
+    X_rm
 end
 
 

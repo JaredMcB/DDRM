@@ -632,7 +632,7 @@ P[1,1,1] = 10
 P[1,1,2] = 3
 
 L = spectfact_matrix_CKMS(P)
-```
+ ```
 and got
 ```1×1×2 Array{Complex{Float64},3}:
 [:, :, 1] =
@@ -810,7 +810,7 @@ I got the following Wiener filter.
 
 [:, :, 20] =
  -0.0003042347678346185
- ```
+```
 
 
 
@@ -1077,7 +1077,7 @@ HEAD is now at 6d20134 Done for the day.
 Today I showed how the direct estimator when used in the wiener filtering function improved the overall preformance of the function. What I had done is described above. Now, this caused a little concerna dn so Dr. Lin has suggested I compare side by side these two estimators. They are stand alone functions so I can put in some time series of know spectral density, such as white noise and ARMA processes, as compare the out put. So, that is what I would like to do first. Here is the list.
 1. Compare performance of the xspectral estimators. (This also goal 3 from today above.)
 2. Run a study varying the parameters `nfft` the `par` to get a feel for what they can do.
-3.
+
 
 3:14 PM - Starting on comparing the old and new spectral estimators.
 #### Experiment:
@@ -1212,4 +1212,252 @@ Conpare these at large. as it is the commented values seemed to be beter because
  -0.00617988  0.00166548
  ```
 
-The commented one took 2.70 sec and the other took 15.38 sec. 
+The commented one took 2.70 sec and the other took 15.38 sec.
+
+# October 20, 2020
+
+4:56 PM - Just now getting to research.I ran the code on a 2-D LSDE and it looks good. The autocovariances look pretty close. Tomorrow I would like to do model reduction.
+
+
+# October 21, 2020
+
+1:24 PM - I am happy to report that the current WF code (with the old xspectral estimator, the "direct estimator") *seems* to work well in model reduction for the liner SDE. Here is what I did (in a nut shell):
+1. Set up the full model
+   - B = -[-0.5 1; 0 -0.2]*[-0.5 1; 0 -0.2]'/1.5`
+   - then called `modgen_LSDE` from `Examples/LinearSDE/modgen_LSDE.jl` as follows:
+   ```julia
+   # Model run Parameters
+    t_start = 0
+    t_stop  = 1e4
+    h       = 1e-2
+
+    A       = B
+    σ       = [1 0; 0 1]
+    Xo      = [1; 1]
+    t_disc  = 100
+    gap     = 1
+
+    # Get full model run
+    Random.seed!(2016)
+    Y = modgen_LSDE(t_start,t_stop,h;
+        A, σ, Xo, t_disc, gap)
+   ```
+    - This gave me the full model.
+
+2. Then I reduced the model to only the first and then second variable variables.
+
+```julia
+   @time h_wf_1, pred = get_wf(Y[1:1,:], Psi;
+    	M_out, n, p, par, ty, nfft, rl, Preds, PI, rtol);
+   noise_dist = MvNormal(h*I + zeros(1,1))
+   Y_rm_1 = redmodrun(real(Y[1:1,:]), h_wf_1, Psi; noise_dist)
+
+
+   @time h_wf_2, pred = get_wf(Y[2:2,:], Psi;
+     	M_out, n, p, par, ty, nfft, rl, Preds, PI, rtol);
+   noise_dist = MvNormal(h*I + zeros(1,1))
+   Y_rm_1 = redmodrun(real(Y[2:2,:]), h_wf_2, Psi; noise_dist)
+```
+
+I then ran all the usual tests
+1. plot time series
+2. plot distribution
+3. plot autocovariance
+4. plot spectral densities
+
+The spectral densities were pretty much right on top of each other, in both cases. The autocovariances in the first variables diverged around 80 lags. In the second variable they were parallel though numerically off by about 20% the actual starting near 100 the reduced model around 80. These stayed roughly parallel through out. The distributions crudely approximated each other and the timeseries bore no red flags.
+
+## UQ Meeting Notes
+
+Dr. Lin and I ran through what we talked about last week about the different spectral density estimators with Will. I demonstrated a little and we looked at the performance of the WF in the double well Langevin case. We discussed the oddness of the estimators them selves being so close and yet the resulting Wiener filters so different. It was noted that the wiener filter with a (potentially) "better" spectral density approximation (i.e. `par` = 1000, `Nex` = 10^6) decayed slower (or experienced greater noise) than that of one with a "sloppier" spectral estimator (`par` = 55, `Nex` = 1024). The fact is that the sloppier WF decayed to ≈1e-8 at the 100th term, where the tighter WF decayed to only ≈1e-4, around the same order of magnitude of the third coefficient. (while writing this I wonder if that is attributed to the noise, I wonder if that will scale with the number of samples and how it may scale). It was suggested that I do these two things.
+1. Update the function `get_wf` from `tools\Model_reduction_Dev.jl` to be able to switch which spectral estimator it is using. This will allow me a little more ease in investigating what is making the difference.
+2. Investigate the singular values of the matrices used in the division of the S_yx by S_x^+ and the later division by S_y^-. It was speculated that small singular values in the denominator may exacerbate the difference in the cross-spectral estimations.
+
+5:02 PM - I will try and finish the first before dinner and test it a little.
+
+6:08 PM - Done for the day. I added the DWOL processes to *Cross Spectral Density Estimator notebook* that line up with the *Tester DWOL Notebook* in the `Examples/Tester`.  
+
+
+# October 22, 2020
+
+2:27 PM - Today I finished the investigative code for the xspectal estimators with the DWOL data. this notebook is labeled *Cross Spectral Density Estimator notebook* and is in the folder `Tools/ToolBoxTest`. I found that  
+
+|`L`|`Nex`|`n`|`p`|'ty'|xspect  |WFDM|WFSP|
+|---|---  |---|---|--- |---     |--- |--- |
+|100|2^16 |3  |200|bin |close   |yes |no  |
+|500|2^16 |3  |200|bin |v. close|yes |no  |
+
+### Meeting with Dr. Lin
+
+The last line in the table is very unusual. The estimates should not be so close with all other things being equal and their resulting WF so different. So, I will look at each step after the cross spectral estimate is used.
+
+4:00 PM - I added some outputs to the `vecter_wiener_filter_fft` code:
+```julia
+h_num_fft = [h_num_raw[:,:,1:M],
+             matlog1,
+             matlog2,
+             z_spect_pred_minus_num_fft,
+             z_spect_pred_plus_num_fft,
+             S_sigpred_overS_plus_fft_num,
+             S_sigpred_overS_plus_plus_num_fft,
+             H_num] ###
+```
+
+
+# October 23, 2020
+
+8:18 PM - Today I did a lot of exploration. A bit of time was spent in understand the current landscape of the problem. For instance when I ran the WF with the direct estimator with `L = 55` the xspectral estimator of the xspect of the signal and predictors.
+The plot showed a fairly course estimate near θ = 0. This was opposed to the estimte (on the same data) with `L = 10000` (`Nex = 2^16`).
+This estimate was more smooth and more closely agreed the SP estimate (`p=300`, `n=3`, `ty = "bin"`).
+However there was very little difference in the WF that resulted using the same data and these parameters. I conclude that methods enjoys an insensitivity to the xspectral estimation.
+Which is a little enigmatic since it preforms very poorly under the smoothed periodogram method. The issue though I thing is that the larger the number of points used in the xspectral estimation the greater the error.
+This is the error scales at a slightly higher power with the number `nfft`, at some point getting worse as `nfft` increases beyond some point. This is something I would like to investigate more later (future work).  
+
+The Direct method WF was observed to be highly reproducible while the smoothed periodogram WF was more fickle. There were times when I put in the same parameters as before and use the same data but got different wiener filters. I suspect my julia installation has a problem.
+
+So, I when I ran the SPWF on thelio it got closer even within the margins of error. So, now I did a few tests to verify that this is working. So, I made an uneven double well overdamped Langevin simulation and the DMWF passed that test. This test cane be found in the following notebook:
+
+`Examples\Testers\Tester DWOL.ipynb`
+
+The spectral estimator comparisons can be found in the notebook:
+
+`Tools\ToolBoxTest\Cross Spectral Density Estimator Comparison.ipynb`
+
+The model worked on the overdamped uneven Langevin. It got the analytically computed values.
+
+# Wednesday, October 28, 2020
+
+4:13 PM - Now I am going to investigate the variations I get in the xspectral estimators.
+
+
+# Friday, October 30, 2020
+
+10:41 AM - Today I will rewrite the smoothed periodogram estimator. I will make it so that the grid on which the xspectral density is evaluated is user defined. This will be done by segmenting the data into subseries of length defined by the user, computing the periodogram of each subseries and then averaging all the segment periodograms.
+
+4:48 PM - Here is the code (so far)
+
+```julia
+function z_crossspect_scalar_ASP(
+    sig,
+    pred;
+    nfft = 2^10, # The length of each subseries
+    n = 3,
+    p = 10,
+    ty = "bin",
+    L = nfft,
+    win = "Par"
+    )
+
+    # Check length of series
+    l_sig = length(sig)
+    l_pred = length(pred)
+    l_sig == l_pred || println("sizes must be the same, taking min and truncating")
+    l = min(l_sig,l_pred)
+
+    # The total nuber of subseries
+    R = floor(Int,l/nfft)
+    # The windowing function
+    lam = win == "none" ? ones(nfft) : _window(nfft-1; win, two_sided = false)
+    # Computation of the average periodogram
+    aperi = complex(zeros(nfft))
+    for r = 1:R
+        fftsig = fft(lam .* sig[(r-1)*nfft+1:r*nfft])
+        fftpred = conj(fft(lam .* pred[(r-1)*nfft+1:r*nfft]))
+        aperi .+= fftsig .* fftpred
+    end
+    aperi ./= nfft*R
+
+    # Smoothing it too.
+    if ty != "none"
+        aperi_pad = [aperi[end - p*n + 1 : end]; aperi; aperi[1:p*n]]
+        μ = _smoother(n,p; ty)
+        aperi = conv(μ,aperi_pad)[2n*p+1:2n*p+nfft]
+    end
+    aperi
+end
+
+```
+
+  It should be noted that at this point I have included functionality for booth smoothing (by means of convolution after `fft` and windowing by means of multiplication in the time domain) I plan on removing one of these once I figure out which one to remove.
+
+5:28 PM - Smoothing is working well, the windowing is not correct since I am off by a factor, I need to divide something to do with the windowing function. I think I need to divide by the sum of it's `dft`.
+
+So far my tests have consisted of checking the estimated spectral density of a AR(2) process against it's now spectral density. The ASP is showing promise as it is much cleaner (smother and estimate)  
+
+
+
+# Tuesday, November 3, 2020
+
+12:59 PM - Taught and grade all morning. Now I will continue testing the averaged smoothed periodogram (ASP) cross spectral density estimate. Here's the agenda:
+
+1. ARMA(p,q) processes. These are good because they have analytically computable spectral density. Cross spectral densities will need to be tested.
+2. Double-welled overdamped Langevin processes. These will be compared to the two other forms of estimation I have available (he direct method and the full, smoothed periodogram method).
+3. KSE and Lorenz '63. These will again just be compared to the other estimators. I will also compare the with what I may be able to find in the literature.
+
+All of the tests will be conducted in the file `xspect_SP_new_dev.jl` in `Tools/ToolBoxTest`.
+
+### Experiment Notes
+
+#### ARMA
+
+1:20 PM - Generated the following timeseries
+
+```julia
+steps = 10^6
+l = [1, -.9, .5]
+
+X = ARMA_gen(l; steps)
+```
+
+| `nn` | `pp` | `tty` | SP    | `L`  | `Nex` | `win` | DM        | `nfft` | `n`  | `p`  | `ty`   | `win`  | ASP                                   |
+| :--: | ---- | ----- | ----- | ---- | ----- | ----- | :-------- | ------ | ---- | ---- | ------ | ------ | ------------------------------------- |
+|  2   | 500  | "bin" | fuzzy | 100  | 2^11  | "Par" | Very good | 10^15  | 2    | 50   | "none" | "Par"  | Very poor off by a factor.            |
+|  2   | 500  | "bin" | fuzzy | 100  | 2^11  | "Par" | Very good | 10^15  | 2    | 50   | "bin"  | "none" | very good little fuzzy better than SP |
+
+I need to fix the windowing I think I need to divide by the sum of the `dft` of the window. I fixed the scaling of the windowing procedure. It turned out I need to divide the mean square to the window function. The estimate though is still **very** noisy. If fact when I did both windowing and smoothing the it was not as good (as in it varied further from the theoretic xspectral density) than when I just smoothed it. The support of the window function is `nfft`, that is, it is nonnegative on `-nfft:nfft`. I can imagine why it would be a good idea take that any smaller since it would be eliminating data. Perhaps if there was sufficient overlap in the intervals this might be OK and yield some benefit. I don't plan on exploring that now though, and for the moment would just as soon remove the windowing functionality.
+
+For now I will leave it in and continued testing different ARMA
+
+
+
+# Wednesday, November 4, 2020
+
+12:48 PM - Yesterday, I tested a lot of ARMA processes of various types. The performance of the estimators was judge qualitatively.
+
+6:07 PM - I made it so `z_crossspect_fft`calls `z_crossspect_ASP` and ran the Wiener filter
+
+
+
+# Thursday, November 5, 2020
+
+12:28 PM - I am going over the plots of the various elements used in the construction of the WF. I think this is a matter of the direct method varying with in bounds in an acceptable dimension which bounds the periodogram estimate violates. For instance, the WF code has very little sensitivity, it seems, to how the xspectral is approximated at 0.
+
+
+
+# Monday, November 9, 2020
+
+11:56 AM - Since I finished teaching at around 9:30 AM I have been investigating differences between my implementation and the `powerspect`estimator Dr. Lin supplied over the weekend. It's performance is comparable to the ones already being used. When I feed it in to the WFing program `get_WF` it preforms similarly to the my own periodogram estimates.  
+
+
+
+# Thursday, November 12, 2020
+
+12:28 PM - Finished writing an exam and grading and now am ready to research. Yesterday, I met with Dr. Lin and he drew my attention to the fact that most the work I have done the past several days was using a time series that was rather lean in it's information about the underlying process. What I need to do is allow for the numerical solution of the SDE to run over a longer time. The way this can be done efficiently with out losing any important information is to skip entries in the numerical run. So, yesterday I updated the function `DataGen_DWOL` in the file `Exmples/Nonlinear Langevin/DataGen.jl` to allow for a gap in the storing of the solution entries. The crux of it is demonstrated below: (particularly the second `if` statement)
+
+```julia
+signal = zeros(d,ceil(Int,steps/gap))
+    tmp = sig_init
+    if scheme == "FE"
+        for n = 1 : steps_tot-1
+            tmp = tmp + h*V_prime(tmp) +
+                        sqrt(h)*sigma*( ObsNoise ? e[:,n+1] : randn(d) )
+            if (n - discard > 0) && ((n - discard - 1) % gap == 0)
+                signal[:,(n-discard-1)÷gap + 1] = tmp
+            end
+        end
+    ...
+```
+
+I also, change some other things about the function to suite what I hope is a refined taste in programing. I made the time step `h` an input and took out the inputs `t_start` and `t-stop`. With this intact I will now rerun all the analysis before on this richer timeseries.
+
+1:34 PM - I installed Anaconda so I could install jupytext to reconstitute the Jupyter notebooks and test my data generator.

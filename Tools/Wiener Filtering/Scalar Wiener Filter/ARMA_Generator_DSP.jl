@@ -40,25 +40,26 @@ function ARMA_gen(  l = [1, -5/4, 3/8],
                     Zeros = [],
                     Poles = [],
                     e = [],
-                    discard::Int64 = 10^3)
+                    discard::Int64 = 10^3,
+                    out_poly = false)
 
     p, q = length(l) - 1, length(w) - 1
 
     if Poles != []
         p = length(Poles)
-        P = prod([Poly([1]); [Poly([1,-z]) for z in Poles]])
+        P = prod([Polynomial([1]); [Polynomial([1,-z]) for z in Poles]])
         # Produces a poly with roots: Poles.^(-1)
         l = coeffs(P);
     end
 
     if Zeros != []
         q = length(Zeros)
-        Q = prod([Poly([1]); [Poly([1,-z]) for z in Zeros]])
+        Q = prod([Polynomial([1]); [Polynomial([1,-z]) for z in Zeros]])
         w = coeffs(Q);
     end
     steps_tot = steps + discard
 
-    x = zeros(steps_tot);
+    x = complex(zeros(steps_tot));
     if e == []
         e = sqrt(r) * randn(steps_tot);
     end
@@ -73,7 +74,7 @@ function ARMA_gen(  l = [1, -5/4, 3/8],
             x[i] = dot(-reverse(l)[1:p],x[i - p:i-1]) + dot(reverse(w),e[i - q:i])
         end
     end
-    x[discard + 1:end]
+    out_poly ? [x[discard + 1:end], P, Q] : x[discard + 1:end]
 end
 
 function z_spect(x,L; win = "Bart")

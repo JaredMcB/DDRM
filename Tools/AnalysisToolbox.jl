@@ -6,6 +6,10 @@ using Polynomials
 using StatsBase
 using SparseArrays
 
+include("KLPowerSpec.jl")
+
+import .KLPowerSpec
+
 """
     my_crosscov
 I don't remember why I wrote this or if it has any advantage over some builtin
@@ -82,12 +86,12 @@ function _smoother(n=4,p=5; ty = "bin")
     else
         μ_c = ones(2n*p+1)/(2n*p+1)
     end
+    round(sum(μ_c);digits = 5) == 1.0 || println("bad smoother")
     μ_c
 end
 
 function smoother_plot(n,p,ty)
     μ = _smoother(n,p; ty)
-    round(sum(μ);digits = 5) == 1.0 || println("bad smoother")
     plot(-n*p:n*p,μ)
 end
 
@@ -119,8 +123,8 @@ function z_crossspect_fft(
     sig,
     pred::Array{T,2} where T <: Number;
     nfft = 0,
-    n = 3,
-    p = 2500,
+    n = 2,
+    p = 5,
     ty = "bin")
 
     ## sig = d x steps, pred = nu x steps
@@ -131,13 +135,18 @@ function z_crossspect_fft(
     steps = minimum([stepsx stepsy])
     nfft = nfft == 0 ? nextfastfft(steps) : nfft
     # steps == nfft || println("adjusted no. of steps from $steps to $nfft")
-    steps = nfft
+
+    # blks = ceil(Int, steps/nfft)
 
     z_spect_mat = zeros(Complex, d, nu, nfft)
     for i = 1 : d
         for j = 1 : nu
-            z_spect_mat[i,j,:] = z_crossspect_scalar(sig[i,:],pred[j,:];
+            z_spect_mat[i,j,:] = z_crossspect_scalar_ASP(sig[i,:],pred[j,:];
                                                   nfft, n, p,ty)
+
+            # z_spect_mat[i,j,:] = KLPowerSpec.powerspec(sig[i,:],pred[j,:];
+            #                                    blks)
+
         end
     end
     z_spect_mat
@@ -145,7 +154,6 @@ end
 
 function z_spect_scalar(sig; n = 3, p=100, ty = "ave")
     μ = _smoother(n,p;ty)
-    round(sum(μ);digits = 5) == 1.0 || println("bad smoother")
 
     siz = length(sig)
     nfft = nextfastfft(siz)
@@ -161,6 +169,10 @@ z_crsspect_scalar has output of size nfft
 """
 function z_crossspect_scalar(sig,pred; nfft = 0, n = 3, p=100, ty = "ave")
     μ = _smoother(n,p;ty)
+
+    # Of cousre we need these to be mean zero
+    sig .-= mean(sig)
+    pred .-= mean(pred)
 
     l_sig = length(sig)
     l_pred = length(pred)
@@ -179,6 +191,44 @@ function z_crossspect_scalar(sig,pred; nfft = 0, n = 3, p=100, ty = "ave")
     peri = fftsig .* fftpred / nfft
     peri_pad = [peri[end - p*n + 1 : end]; peri; peri[1:p*n]]
     z_crsspect_smoothed = conv(μ,peri_pad)[2n*p+1:2n*p+nfft]
+end
+
+function z_crossspect_scalar_ASP(
+    sig,
+    pred;
+    nfft = 2^10, # The length of each subseries
+    n = 2,
+    p = 5,
+    ty = "bin")
+
+    # Of cousre we need these to be mean zero
+    sig .-= mean(sig)
+    pred .-= mean(pred)
+
+    # Check length of series
+    l_sig = length(sig)
+    l_pred = length(pred)
+    l_sig == l_pred || println("sizes must be the same, taking min and truncating")
+    l = min(l_sig,l_pred)
+
+    # The total nuber of subseries
+    R = floor(Int,l/nfft)
+    # Computation of the average periodogram
+    aperi = complex(zeros(nfft))
+    for r = 1:R
+        fftsig = fft(sig[(r-1)*nfft+1:r*nfft])
+        fftpred = conj(fft(pred[(r-1)*nfft+1:r*nfft]))
+        aperi .+= fftsig .* fftpred
+    end
+    aperi ./= nfft*R
+
+    # Smoothing it too.
+    if ty != "none"
+        aperi_pad = [aperi[end - p*n + 1 : end]; aperi; aperi[1:p*n]]
+        μ = _smoother(n,p; ty)
+        aperi = conv(μ,aperi_pad)[2n*p+1:2n*p+nfft]
+    end
+    aperi
 end
 
 function auto_times(x::AbstractVector{<:Real};plt = false)
@@ -293,13 +343,19 @@ function visual_test_ckms(P,l,nfft;semilog = false)
 end
 
 function emp_cdf(series;
+    bn = 0,
     plt = true)
     l = length(series)
     series = reshape(series,l)
     sort!(series)
 
-    bw = 2*iqr(series)/l^(1/3)
-    bn = Int64(ceil((series[end] - series[1])/bw))
+    if bn != 0
+        bw = (series[end] - series[1])/bn
+    else
+        bw = 2*iqr(series)/l^(1/3)
+        bn = Int64(ceil((series[end] - series[1])/bw))
+    end
+
     b_pts = bw*(0:bn) .+ series[1]
 
     cdf = zeros(bn+1)
@@ -312,9 +368,10 @@ function emp_cdf(series;
 end
 
 function emp_pdf(series;
+    bn = 0,
     plt = true)
 
-    cdf, b_pts = emp_cdf(series,plt = false)
+    cdf, b_pts = emp_cdf(series; bn, plt = false)
     bn = length(cdf) - 1
     bw = b_pts[2] - b_pts[1]
 

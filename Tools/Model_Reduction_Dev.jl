@@ -24,11 +24,13 @@ function get_wf(
     M_out = 20,
     n = 3, p = 1500, par = 1500,
     ty = "bin",
+    xspec_est = "old",
     nfft = 0,
     rl = true,
     Preds = false,
     PI = false,
-    rtol = 1e-6)
+    rtol = 1e-6,
+    info = false)
     # We would like a presample since we want the
     # times series to be offset by one.
 
@@ -44,14 +46,28 @@ function get_wf(
         # which is what we want so as to ensure the reduced
         # model can run explicitly.
 
+    if info
+        return vector_wiener_filter_fft(sig, pred; M_out,
+                n, p, par, nfft, ty, xspec_est, PI, rtol,info)
+    end
+
     h_wf = vector_wiener_filter_fft(sig, pred; M_out,
-            n, p, par, nfft, ty, PI, rtol)
+            n, p, par, nfft, ty, xspec_est, PI, rtol)
 
     h_wf = rl ? real(h_wf) : h_wf
     Preds ? [h_wf, pred] : h_wf
 end
 
+function get_pred(sig, Psi)
+    d, steps = size(sig)
+    nu = size(Psi(zeros(d,1)),1)
 
+    pred = zeros(nu, steps)
+    for n = 1:steps
+        pred[:,n] = Psi(sig[:,n])
+    end
+    pred
+end
 
 """
     spectfact_matrix_CKMS take in m+1 coefficents of a (d x d)-matrix-values Laurent
@@ -214,8 +230,10 @@ function vector_wiener_filter_fft(
     n = 3,
     p = 1500,
     ty = "bin",
+    xspec_est = "old",
     PI = true,
-    rtol = 1e-6
+    rtol = 1e-6,
+    info = false
     )
 
     d, stepsy = size(sig)
@@ -248,14 +266,15 @@ function vector_wiener_filter_fft(
     end
 
     # Compute z-cross-spectrum of sigpred
-#     z_crossspect_sigpred_num_fft = z_crossspect_fft(sig, pred;
-#                         nfft, n, p, ty);
-    z_crossspect_sigpred_num_fft = z_crossspect_fft_old(sig, pred; L, Nex = nfft);
+    z_crossspect_sigpred_num_fft = xspec_est == "SP" ? z_crossspect_fft(sig, pred;
+                        nfft, n, p, ty) : z_crossspect_fft_old(sig, pred; L, Nex = nfft);
 
     # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
     S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
 
+    matlog1 = zeros(nu,nfft) ###
     for i = 1 : nfft
+        # matlog1[:,i] = svd(z_spect_pred_plus_num_fft[:,:,i]).S ###
         S_sigpred_overS_plus_fft_num[:,:,i] = z_crossspect_sigpred_num_fft[:,:,i]/
                                               z_spect_pred_plus_num_fft[:,:,i]
     end
@@ -271,9 +290,10 @@ function vector_wiener_filter_fft(
     S_sigpred_overS_plus_plus_num_fft = fft(S_sigpred_overS_plus_fft_plus_num_fft,3);
 
     # Obtain transfer function H by dividing {S_{yx}/S_x^+}_+ by S_x^-
-
+    matlog2 = zeros(nu,nfft) ###
     H_num = complex(zeros(d,nu,nfft))
     for i = 1: nfft
+        # matlog2[:,i] = svd(z_spect_pred_minus_num_fft[:,:,i]).S ###
         H_num[:,:,i] = S_sigpred_overS_plus_plus_num_fft[:,:,i]/
                        z_spect_pred_minus_num_fft[:,:,i]
     end
@@ -284,5 +304,17 @@ function vector_wiener_filter_fft(
     # Truncate
     M_out > nfft && println("M_out > nfft, taking min")
     M = min(M_out, nfft)
-    h_num_fft = h_num_raw[:,:,1:M]
+
+    if info
+        h_num_fft = [h_num_raw[:,:,1:M],
+                 z_crossspect_sigpred_num_fft,
+                 z_spect_pred_minus_num_fft,
+                 z_spect_pred_plus_num_fft,
+                 S_sigpred_overS_plus_fft_num,
+                 S_sigpred_overS_plus_plus_num_fft,
+                 H_num] ###
+    else
+        h_num_fft = h_num_raw[:,:,1:M]
+    end
+    h_num_fft
 end
