@@ -1348,7 +1348,7 @@ For now I will leave it in and continued testing different ARMA
 
 # Thursday, November 12, 2020
 
-12:28 - Finished writing an exam and grading and now am ready to research. Yesterday, I met with Dr. Lin and he drew my attention to the fact that most the work I have done the past several days was using a time series that was rather lean in it's information about the underlying process. What I need to do is allow for the numerical solution of the SDE to run over a longer time. The way this can be done efficiently with out losing any important information is to skip entries in the numerical run. So, yesterday I updated the function `DataGen_DWOL` in the file `Exmples/Nonlinear Langevin/DataGen.jl` to allow for a gap in the storing of the solution entries. The crux of it is demonstrated below: (particularly the second `if` statement)
+12:28 PM - Finished writing an exam and grading and now am ready to research. Yesterday, I met with Dr. Lin and he drew my attention to the fact that most the work I have done the past several days was using a time series that was rather lean in it's information about the underlying process. What I need to do is allow for the numerical solution of the SDE to run over a longer time. The way this can be done efficiently with out losing any important information is to skip entries in the numerical run. So, yesterday I updated the function `DataGen_DWOL` in the file `Exmples/Nonlinear Langevin/DataGen.jl` to allow for a gap in the storing of the solution entries. The crux of it is demonstrated below: (particularly the second `if` statement)
 
 ```julia
 signal = zeros(d,ceil(Int,steps/gap))
@@ -1364,4 +1364,9 @@ signal = zeros(d,ceil(Int,steps/gap))
     ...
 ```
 
-With this intact I will now rerun all the analysis before on this richer timeseries. 
+I also, change some other things about the function to suite what I hope is a refined taste in programing. I made the time step `h` an input and took out the inputs `t_start` and `t-stop`. With this intact I will now rerun all the analysis before on this richer timeseries. 
+
+1:34 PM - I installed Anaconda so I could install jupytext to reconstitute the Jupyter notebooks and test my data generator. 
+
+
+
