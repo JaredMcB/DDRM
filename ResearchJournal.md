@@ -1632,7 +1632,7 @@ Same set up as above the differences being **only**
   ```
 
 
-  #### Experiment Nov 16, 2020 3
+  #### Experiment Nov 16, 2020 3 (thelio job 144)
   Same set up as above the differences being **only**
   * Run on my thelio.
   * timeseries data
@@ -1688,7 +1688,7 @@ Same set up as above the differences being **only**
 
      [:, :, 3] =
       0.0197208  -0.00779881
-     
+
      ...
 
      [:, :, 48] =
@@ -1701,3 +1701,64 @@ Same set up as above the differences being **only**
       -0.0017526  0.000833896
 
     ```
+    #### Experiment Nov 16, 2020 4 (thelio job 145)
+    Same set up as above 3, exactly save one thing `seed = 2016'.
+    * Data and result was saved to "~/data/data_11_16_2020_4.jld"
+      ```
+      julia> X = load("data_11_16_2020_4.jld","X")
+      1×10000000 Array{Float64,2}:
+      0.938291  0.980287  1.07918  1.07581  1.02021  …  0.330087  0.35004  0.36474  0.344513  0.0
+      ```
+
+    * Results:
+      ```
+      First componete of the WF by DM: Complex{Float64}[1.096979669475226 + 1.404646908929906e-14im, -0.09883483887030214 - 4.739714180791289e-15im]
+      First componete of the WF by SP: Complex[1.223171797163009 - 1.6490594744638936e-14im, -0.14090005527410765 + 4.523301785279795e-15im]
+      ```
+
+      ```
+      julia> real(h_wf_packs[1])
+      1×2×50 Array{Float64,3}:
+      [:, :, 1] =
+       1.09698  -0.0988348
+
+      [:, :, 2] =
+       0.00183088  -0.000800667
+
+      [:, :, 3] =
+       -0.000678346  2.57955e-5
+
+      ...
+
+      [:, :, 48] =
+       0.000393262  8.22848e-5
+
+      [:, :, 49] =
+       -0.000153363  -2.6423e-5
+
+      [:, :, 50] =
+       -0.000700438  0.000167881
+
+
+      julia> real(h_wf_packs[8])
+      1×2×50 Array{Float64,3}:
+      [:, :, 1] =
+       1.22317  -0.1409
+
+      [:, :, 2] =
+       0.0246669  -0.0096447
+
+      [:, :, 3] =
+       0.0180439  -0.00724898
+
+      ...
+
+      [:, :, 48] =
+       -0.000890076  0.00056583
+
+      [:, :, 49] =
+       -0.00142923  0.00045047
+
+      [:, :, 50] =
+       -0.0017453  0.00058458
+      ```
