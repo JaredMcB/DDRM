@@ -16,7 +16,7 @@ steps    = 10^7  # Number of time steps (not including those discarded)
 h        = .1
 discard  = steps # Number of time steps discarded
 gap      = 1     # 1 + the number of time steps between observations
-seed     = 2015
+seed     = 2016
 
 # Get full model run
 Random.seed!(seed)
@@ -86,5 +86,5 @@ println("First componete of the WF by SP: $(h_wf_packs[8][1,:,1])")
 
 output = Dict("h_wf_packs" => h_wf_packs)
 ## This is when we are on the server
-save("../../../data/DWOL_Data/data_11_16_2020_3.jld",merge(data,output))
+save("../../../data/DWOL_Data/data_11_16_2020_4.jld",merge(data,output))
 # save("Examples/Nonlinear Langevin/data/data_11_16_2020_2.jld",merge(data,output))
