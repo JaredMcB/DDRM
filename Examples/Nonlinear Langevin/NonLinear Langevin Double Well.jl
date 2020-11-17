@@ -13,12 +13,13 @@ sig_init = [1.5]
 # Numerical estimate parameters
 scheme   = "FE"
 steps    = 10^8  # Number of time steps (not including those discarded)
-h        = .1
+h        = .01
 discard  = steps # Number of time steps discarded
-gap      = 1     # 1 + the number of time steps between observations
+gap      = 100     # 1 + the number of time steps between observations
+seed     = 2015
 
 # Get full model run
-Random.seed!(2015)
+Random.seed!(seed)
 X = @time DataGen_DWOL(;
     #SDE parameters
     sigma, V_prime, sig_init,
@@ -80,10 +81,10 @@ for i = 1:P
     times[i]      = Out.time
 end
 
-println("DM: ",h_wf_packs[1][1,:,1])
-println("SP: ",h_wf_packs[2][1,:,1])
+println("First componete of the WF by DM: $(h_wf_packs[1][1,:,1])")
+println("First componete of the WF by SP: $(h_wf_packs[8][1,:,1])")
 
 output = Dict("h_wf_packs" => h_wf_packs)
+## This is when we are on the server
 save("../../../data/DWOL_Data/data_11_12_2020_BIG.jld",merge(data,output))
-
-
+# save("Examples/Nonlinear Langevin/data/data_11_16_2020_2.jld",merge(data,output))
