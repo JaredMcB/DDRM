@@ -1474,7 +1474,7 @@ Looking closely at the estimators for the cross spectral density, under analogou
 
 12:02 PM - I am preparing to run an experiment. I am thinking about writing a module that creates a nice output after an experiment.
 
-#### Experimant
+#### Experiment Nov 16, 2020 1
 * Run on my laptop.
 * timeseries data
   ```julia
@@ -1563,4 +1563,70 @@ Looking closely at the estimators for the cross spectral density, under analogou
 
    [:, :, 50] =
     0.00134207  -0.00142937
+    ```
+
+#### Experiment Nov 16, 2020 2
+Same set up as above the differences being **only**
+* Run on my desk top.
+* timeseries data
+  ```julia
+  h        = .01
+  ```
+* Data and result was saved to "Examples/Nonlinear Langevin/data/data_11_16_2020_2.jld"
+  ```
+  julia> X
+  1×1000000 Array{Float64,2}:
+  -0.862223  -0.941636  -0.988963  -0.857691  -1.09023  …  -0.75433  -1.0951  -1.03065  -1.01327  -0.713247  -0.966905
+ ```
+
+* Results:
+  ```
+  First componete of the WF by DM: Complex{Float64}[1.068928167997716 - 2.983446612974894e-15im, -0.30447182295937214 + 1.1961030165977653e-15im]
+  First componete of the WF by SP: Complex[1.071075375767013 + 2.7847331907457456e-16im, -0.30521795675917857 - 2.5149744546223904e-17im]
+  ```
+
+  ```
+  julia> real(h_wf_packs[1])
+  1×2×50 Array{Float64,3}:
+  [:, :, 1] =
+   1.06893  -0.304472
+
+  [:, :, 2] =
+   0.193165  -0.0723479
+
+  [:, :, 3] =
+   0.0969474  -0.0359304
+
+  ...
+
+  [:, :, 48] =
+   -0.000477763  0.00062005
+
+  [:, :, 49] =
+   -0.00230393  0.00106569
+
+  [:, :, 50] =
+   0.00169566  -0.000434639
+
+  julia> real(h_wf_packs[8])
+  1×2×50 Array{Float64,3}:
+  [:, :, 1] =
+   1.07108  -0.305218
+
+  [:, :, 2] =
+   0.194427  -0.0726695
+
+  [:, :, 3] =
+   0.0984909  -0.0363122
+
+  ...
+
+  [:, :, 48] =
+   -0.000198413  0.000605992
+
+  [:, :, 49] =
+   -0.0033782  0.0014048
+
+  [:, :, 50] =
+   0.000420223  4.8856e-6
     ```
