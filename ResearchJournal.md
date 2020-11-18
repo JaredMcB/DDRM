@@ -1765,6 +1765,60 @@ Same set up as above 3, exactly save one thing `seed = 2016`.
 
 # Tuesday, Nov 17, 2020
 
-3:34 PM - Today I continue the experiments of yesterday. The goal will be to analysis the noise in the wienerfilter. So, here is the plan I will repeat *Experiment Nov 16, 2020 3* 100 times with different data and save the wiener filters. Then I will find the mean and analyze the variance. I will repeat this with `steps = 10^6` and `steps = 10^8` (though maybe only running 50 or so in the ensamble).
+3:34 PM - Today I continue the experiments of yesterday. The goal will be to analysis the noise in the wiener filter. So, here is the plan I will repeat *Experiment Nov 16, 2020 3* 100 times with different data and save the wiener filters. Then I will find the mean and analyze the variance. I will repeat this with `steps = 10^6` and `steps = 10^8` (though maybe only running 50 or so in the ensemble).
 
-The first thing is to write the code. I will do so in the directory `Examples/Nonlieanr Langevin`. These are going to be written to be run on thelio. 
+The first thing is to write the code. I will do so in the directory `Examples/Nonlinear Langevin` under the file name `DWOL_ens_tests.jl`. These are going to be written to be run on thelio.
+
+5:09 PM - I ran the first experiment for the day.
+
+#### Experiment Nov 17, 2020 1 (thelio job 147)
+This experiment is, as is mentioned above, an experiment in analyzing the error in the WF. Particularly, I wish to see how the error scales with the number of effective samples.
+The experiment is all contained within the file `Examples/Nonlinear Langevin/DWOL_ens_tests.jl`
+This is the first experiment in a series. What we do is generator an ensemble of `Nens = 100` independent runs of the timeseries with the parameters given below. For each run we compute the wiener filter using the (1) direct method (DM)for cross spectral density approximation and (2) the smoothed periodogram (SP). We then save the `2*Nens` Wiener filters for statistical analysis later.
+
+* Data and result was saved to "~/data/data_11_16_2020_4.jld" The parameters were
+  ```julia
+  #SDE parameters
+  sigma    = [.3]
+  V_prime  = x -> -x.*(x.^2 .- 1)
+  sig_init = [1.5]
+  # Numerical estimate parameters
+  scheme   = "FE" # Forward euler
+  steps    = 10^7  # Number of time steps (not including those discarded)
+  h        = .1
+  discard  = steps # Number of time steps discarded
+  gap      = 1     # 1 + the number of time steps between observations
+
+  Psi(x) = [x; x.^3]
+
+  # Model reduction Parameters
+  M_out = 20
+  ty = "bin"
+  ### Varing parameters
+  ###       xspect_est , par    , nfft    , n    , p
+  #
+  Parms = [["DM"       , 5000  , 2^17    , 2    , 5, ty, M_out],
+           ["SP"       , 5000  , 2^17    , 2    , 5, ty, M_out]]
+
+  Nens = 100
+  ```
+
+* Results: The data was saved in the file "~/data/data_11_17_2020_1.jld". In the file are  the above parameters and the output variable `h_wfs_ens` which is a 5-dimensional array. The first two dimension are the row in `Parms` that was used and the ensemble index, respectively the last three dimensions are for the wiener filter.
+
+| `xspect_est`| statistic | h_wf[1,1,1] | h_wf[1,1,1] |
+|---|---|---|---|
+|"DM" | mean | 1.095424882549188 | -0.09837284642681761|
+|"SP" | mean | 1.2212270201731081| -0.140304542799513 |
+|"DM" | var | 1.1940063094075038e-6 | 1.3031776243201438e-7|
+|"SP" | var | 1.2444470995957716e-5| 1.5089635615229606e-6 |
+
+#### Experiment Nov 17, 2020 2 (thelio job 148)
+
+This experiment was the same as the *Experiment Nov 17, 2020 1* with one exception: `steps = 10^6` the data was saved, as described above, in "~/data/data_11_17_2020_2.jld". Here are some of the results.
+
+| `xspect_est`| statistic | h_wf[1,1,1] | h_wf[1,1,1] |
+|---|---|---|---|
+|"DM" | mean |1.0955532773712064 | -0.0984309622679665|
+|"SP" | mean | 1.2175349889961529| -0.13915486525042936 |
+|"DM" | var | 1.0964189610161555e-5 | 1.2682319503192065e-6|
+|"SP" | var | 0.00014711838831749758| 1.846553738659983e-5 |
