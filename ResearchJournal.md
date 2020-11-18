@@ -1187,7 +1187,7 @@ Conpare these at large. as it is the commented values seemed to be beter because
 
 [:, :, 100] =
  -7.86683e-6  1.92763e-6
- ```
+```
  as opposed to
  ```
  1×2×100 Array{Float64,3}:
@@ -1503,6 +1503,7 @@ Looking closely at the estimators for the cross spectral density, under analogou
   julia> X
   1×1000000 Array{Float64,2}:
  -0.656241  -0.857331  -0.879254  -1.07485  -0.920843  -0.902613  -0.948586  0.90285  1.059  0.772112  0.944862  0.813503  1.07287  0.92711  0.805445  …  0.851886  0.897801  0.585505  0.979232  0.888067  0.816635  1.11003  1.11867  0.951974  1.08343  0.963044  1.00432  1.01226  0.887688  1.05448  1.08554
+  ```
  ```
 * We compute the WF and compare. The code is all in the file "Examples\Nonlinear Langevin\NonLinear Langevin Double Well.jl" Here are all the Wiener Filtering parameters:
   ```julia
@@ -1512,7 +1513,7 @@ Looking closely at the estimators for the cross spectral density, under analogou
   ###       xspect_est , par    , nfft    , n    , p
   Parms = [["DM"       , 5000  , 2^17    , 2    , 5],
            ["SP"       , 5000  , 2^17    , 2    , 5]]
-  ```
+ ```
 * Results:
   ```
   First componete of the WF by DM: Complex{Float64}[1.3297488674434907 + 2.4073936672208036e-15im, -0.4545637642213554 - 8.671031880999923e-16im]
@@ -1563,7 +1564,7 @@ Looking closely at the estimators for the cross spectral density, under analogou
 
    [:, :, 50] =
     0.00134207  -0.00142937
-    ```
+  ```
 
 #### Experiment Nov 16, 2020 2
 Same set up as above the differences being **only**
@@ -1676,6 +1677,7 @@ Same set up as above the differences being **only**
 
     [:, :, 50] =
      -0.000572883  0.000422376
+    ```
 
 
      julia> real(h_wf_packs[8])
@@ -1815,6 +1817,25 @@ This is the first experiment in a series. What we do is generator an ensemble of
 #### Experiment Nov 17, 2020 2 (thelio job 148)
 
 This experiment was the same as the *Experiment Nov 17, 2020 1* with one exception: `steps = 10^6` the data was saved, as described above, in "~/data/data_11_17_2020_2.jld". Here are some of the results.
+
+| `xspect_est`| statistic | h_wf[1,1,1] | h_wf[1,1,1] |
+|---|---|---|---|
+|"DM" | mean |1.0955532773712064 | -0.0984309622679665|
+|"SP" | mean | 1.2175349889961529| -0.13915486525042936 |
+|"DM" | var | 1.0964189610161555e-5 | 1.2682319503192065e-6|
+|"SP" | var | 0.00014711838831749758| 1.846553738659983e-5 |
+
+
+
+# Wednesday, Nov 18, 2020
+
+12:18 PM - Just lost a lot of writing because Atom crashed on my as I was writing in this journal. I think there might be a problem running the markdown previewer at the same time. Anyway, I just finished grading the last midterm exam for Math 122B, and would like to do a bit more grading today, as I am a little behind. But first I want to get some experiment running. Namely, (1) on thelio I want to do an ensemble study of *Experiment Nov 16, 2020 2* with `Nens = 100`. So, that means `gap = 100`, `h = 0.01`, and `steps = 10^8`. I have that this works well for both WF estimators. Then I would like to repeat the experiment for `steps = 10^7` and `steps = 10^6` so that I can see what happens when I use too few samples. Hopefully the transition from working to not working will be instructive. I already have a lot of examples of these WF's not giving the same results. (2) I would like to look at the guts of the particular runs of the Wiener filters and see what is happening. So, I will run the *Experiment Nov 16, 2020 3* again with `info = true` in the `get_wf` call. This experiment I will run on my desktop.
+
+**Question:** I would like to better understand the relationship between the continuous time filter for the continuous time solution of the DWOL problem and their discrete time approximations. Particularly I want to understand in what way these WF estimates may approach the theoretical continuous time filter. Is it as `steps` goes to infinity or as `nfft` or `Nex` goes to infinity or both?
+
+#### Experiment Nov 18, 2020 1 (thelio job 149)
+
+This experiment an ensemble study of *Experiment Nov 17, 2020 2*, in which the resulting WF matched pretty well. What I would like to do now is get an idea of the mean and variance of these filters. The experiment is running using `Langevin/DWOL_ens_tests.jl` on thelioe and the data and results are saved in the file "~/data/data_11_18_2020_1.jld". Here are some of the results.
 
 | `xspect_est`| statistic | h_wf[1,1,1] | h_wf[1,1,1] |
 |---|---|---|---|
