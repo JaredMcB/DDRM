@@ -5,36 +5,6 @@ using JLD
 include("DataGen.jl") # This has many packages in it's preamble
 include("../../Tools/Model_Reduction_Dev.jl")
 
-#SDE parameters
-sigma    = [.3]
-V_prime  = x -> -x.*(x.^2 .- 1)
-sig_init = [1.5]
-# Numerical estimate parameters
-scheme   = "FE"
-steps    = 10^7  # Number of time steps (not including those discarded)
-h        = .1
-discard  = steps # Number of time steps discarded
-gap      = 1     # 1 + the number of time steps between observations
-
-Psi(x) = [x; x.^3]
-
-# Model reduction Parameters
-M_out = 20
-ty = "bin"
-### Varing parameters
-###       xspect_est , par    , nfft    , n    , p
-#
-Parms = [["DM"       , 5000  , 2^17    , 2    , 5, ty, M_out],
-         ["SP"       , 5000  , 2^17    , 2    , 5, ty, M_out]]
-
-Nens = 100
-
-h_wfs_ens = run_get_wf(;Psi,
-    sigma, V_prime, sig_init,
-    scheme, steps, h, discard, gap,
-    Parms,
-    Nens)
-
 function run_get_wf(;
     Psi      = x -> [x; x.^3],
     # Model run parameters
@@ -79,6 +49,36 @@ function run_get_wf(;
     end
     h_wfs_ens
 end
+
+#SDE parameters
+sigma    = [.3]
+V_prime  = x -> -x.*(x.^2 .- 1)
+sig_init = [1.5]
+# Numerical estimate parameters
+scheme   = "FE"
+steps    = 10^7  # Number of time steps (not including those discarded)
+h        = .1
+discard  = steps # Number of time steps discarded
+gap      = 1     # 1 + the number of time steps between observations
+
+Psi(x) = [x; x.^3]
+
+# Model reduction Parameters
+M_out = 20
+ty = "bin"
+### Varing parameters
+###       xspect_est , par    , nfft    , n    , p
+#
+Parms = [["DM"       , 5000  , 2^17    , 2    , 5, ty, M_out],
+         ["SP"       , 5000  , 2^17    , 2    , 5, ty, M_out]]
+
+Nens = 100
+
+h_wfs_ens = run_get_wf(;Psi,
+    sigma, V_prime, sig_init,
+    scheme, steps, h, discard, gap,
+    Parms,
+    Nens)
 
 data = Dict("sigma"         => sigma,
             "V_prime_str"   => "x -> -x.*(x.^2 .- 1)",
