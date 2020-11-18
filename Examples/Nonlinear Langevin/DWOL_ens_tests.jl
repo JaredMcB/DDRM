@@ -11,7 +11,7 @@ V_prime  = x -> -x.*(x.^2 .- 1)
 sig_init = [1.5]
 # Numerical estimate parameters
 scheme   = "FE"
-steps    = 10^6  # Number of time steps (not including those discarded)
+steps    = 10^7  # Number of time steps (not including those discarded)
 h        = .1
 discard  = steps # Number of time steps discarded
 gap      = 1     # 1 + the number of time steps between observations
@@ -89,7 +89,7 @@ data = Dict("sigma"         => sigma,
             "h"             => h,
             "discard"       => discard,
             "gap"           => gap,
-            "h_wf_ens"      => h_wf_en)
+            "h_wfs_ens"      => h_wfs_ens)
 
 save("../../../data/DWOL_Data/data_11_17_2020_1.jld",data)
 
