@@ -108,7 +108,7 @@ function DWOL_dist_samp(
             exp(-(x-μ_neg)^2/(2v^2))/(2v*sqrt(2\pi))
 
     μ = σ[1]^2/2
-    p(x) =  exp(-(x^2-1)^2/μ)
+    p(x) =  exp(-(x^2-1)^2/μ/4)
     c = 1.05*p(0)/q(0)
     cq(x) = c*q(x)
     Z = zeros(N)
