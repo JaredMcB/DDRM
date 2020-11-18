@@ -56,7 +56,7 @@ V_prime  = x -> -x.*(x.^2 .- 1)
 sig_init = [1.5]
 # Numerical estimate parameters
 scheme   = "FE"
-steps    = 10^7  # Number of time steps (not including those discarded)
+steps    = 10^6  # Number of time steps (not including those discarded)
 h        = .1
 discard  = steps # Number of time steps discarded
 gap      = 1     # 1 + the number of time steps between observations
@@ -91,7 +91,7 @@ data = Dict("sigma"         => sigma,
             "gap"           => gap,
             "h_wfs_ens"      => h_wfs_ens)
 
-save("../../../data/DWOL_Data/data_11_17_2020_1.jld",data)
+save("../../../data/DWOL_Data/data_11_17_2020_2.jld",data)
 
 v_sp = var(h_wfs_ens[2,:,1,1,1])
 m_sp = mean(h_wfs_ens[2,:,1,1,1])
@@ -99,6 +99,6 @@ m_sp = mean(h_wfs_ens[2,:,1,1,1])
 v_dm = var(h_wfs_ens[1,:,1,1,1])
 m_dm = mean(h_wfs_ens[1,:,1,1,1])
 
-prntln("===================================================")
+println("===================================================")
 println("mean and varieance of DM WF: $m_dm and $v_dm")
 println("mean and varieance of Sp WF: $m_sp and $v_sp")
