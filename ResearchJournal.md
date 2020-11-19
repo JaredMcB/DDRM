@@ -1677,8 +1677,6 @@ Same set up as above the differences being **only**
 
     [:, :, 50] =
      -0.000572883  0.000422376
-    ```
-
 
      julia> real(h_wf_packs[8])
      1×2×50 Array{Float64,3}:
@@ -1701,8 +1699,8 @@ Same set up as above the differences being **only**
 
      [:, :, 50] =
       -0.0017526  0.000833896
-
     ```
+
 #### Experiment Nov 16, 2020 4 (thelio job 145)
 Same set up as above 3, exactly save one thing `seed = 2016`.
 * Data and result was saved to "~/data/data_11_16_2020_4.jld"
@@ -1833,13 +1831,61 @@ This experiment was the same as the *Experiment Nov 17, 2020 1* with one excepti
 
 **Question:** I would like to better understand the relationship between the continuous time filter for the continuous time solution of the DWOL problem and their discrete time approximations. Particularly I want to understand in what way these WF estimates may approach the theoretical continuous time filter. Is it as `steps` goes to infinity or as `nfft` or `Nex` goes to infinity or both?
 
-#### Experiment Nov 18, 2020 1 (thelio job 149)
+#### Experiment Nov 18, 2020 1 (thelio job 150)
 
-This experiment an ensemble study of *Experiment Nov 17, 2020 2*, in which the resulting WF matched pretty well. What I would like to do now is get an idea of the mean and variance of these filters. The experiment is running using `Langevin/DWOL_ens_tests.jl` on thelioe and the data and results are saved in the file "~/data/data_11_18_2020_1.jld". Here are some of the results.
+This experiment an ensemble study of *Experiment Nov 17, 2020 2*, in which the resulting WF matched pretty well. What I would like to do now is get an idea of the mean and variance of these filters. The experiment is running using `Langevin/DWOL_ens_tests.jl` on thelio and the data and results are saved in the file "~/data/data_11_18_2020_1.jld". Here are some of the results.
 
 | `xspect_est`| statistic | h_wf[1,1,1] | h_wf[1,1,1] |
 |---|---|---|---|
-|"DM" | mean |1.0955532773712064 | -0.0984309622679665|
-|"SP" | mean | 1.2175349889961529| -0.13915486525042936 |
-|"DM" | var | 1.0964189610161555e-5 | 1.2682319503192065e-6|
-|"SP" | var | 0.00014711838831749758| 1.846553738659983e-5 |
+|"DM" | mean | 1.0724217934082474    | -0.30594141224404103 |
+|"SP" | mean | 1.074365601988284     | -0.3066500631917417  |
+|"DM" | var  | 3.966369819921137e-5  | 4.652132489933455e-6 |
+|"SP" | var  | 5.3503771439725386e-5 | 7.24717987093219e-6  |
+
+#### Experiment Nov 18, 2020 2 (thelio job 154)
+
+This experiment is the same as *Experiment Nov 18, 2020 1*, but with `steps = 10^7` The experiment is running using `Langevin/DWOL_ens_tests.jl` on thelio and the data and results are saved in the file "~/data/data_11_18_2020_2.jld". Here are some of the results.
+
+| `xspect_est`| statistic | h_wf[1,1,1] | h_wf[1,1,1] |
+|---|---|---|---|
+|"DM" | mean |1.0685370878746394 | -0.30464623282477016|
+|"SP" | mean | NaN | NaN |
+|"DM" | var | 0.0005199931437080256 | 6.218700778799889e-5|
+|"SP" | var | NaN | NaN |
+
+#### Experiment Nov 18, 2020 3 (thelio job 155)
+
+This experiment is the same as *Experiment Nov 18, 2020 1*, but with `steps = 10^6` The experiment is running using `Langevin/DWOL_ens_tests.jl` on thelio and the data and results are saved in the file "~/data/data_11_18_2020_3.jld". Here are some of the results.
+
+| `xspect_est`| statistic | h_wf[1,1,1] | h_wf[1,1,1] |
+|---|---|---|---|
+|"DM" | mean |1.0720108129404529 | ?|
+|"SP" | mean | NaN| ?|
+|"DM" | var | 0.0005268889598374218 | ?|
+|"SP" | var | NaN| ? |
+
+It looks like the functions I used did not support times series of length less than `nfft`
+
+
+#### Experiment Nov 18, 2020 4 (desktop)
+
+This experiment is the same as *Experiment Nov 16, 2020 3*. That is it runs a DWOL model with σ = 3 (as always) and `steps = 10^7`, `h = 0.1`, and `gap = 1`. This time I am looking at the plots of the algorithm steps. `Nonlinear Langevin/NonLiner Langevin Double Well.jl` was used on my desktop and the data and results are saved in the file "Examples/Nonlinear Langevin/data/data_11_18_2020_4.jld". I did the array of plots that Dr. Lin requested last week namely:
+
+|real | imaginary|
+|---|---|
+|S_yx DM and SP | S_yx DM and SP |
+|S_yx/S_x^+ DM and SP | S_yx/S_x^+ DM and SP |
+|{S_yx/S_x^+}_+ DM and SP |{S_yx/S_x^+}_+ DM and SP |
+|{S_yx/S_x^+}_+/s_x^- DM and SP |{S_yx/S_x^+}_+/s_x^- DM and SP|
+
+The plots were produced using the script `Nonlinear Langevin/Plots_for_DrLinNov11_2020.jl`.
+
+In the plots it was apparent that the cross spectral density estimated using the periodogram was about twice as high as the direct method analogue. meaning the difference in power near 0 was material. That difference then get spread out by the causal-part projection operator.
+
+#### Experiment Nov 18, 2020 5 (desktop)
+
+This experiment is the same as *Experiment Nov 16, 2020 2*. That is it runs a DWOL model with σ = 3 (as always) and `steps = 10^8`, `h = 0.01`, and `gap = 100`. This time I am looking at the plots of the algorithm steps.  Again I used the scripts `Nonlinear Langevin/NonLiner Langevin Double Well.jl` and `Plots_for_DrLinNov11_2020.jl` on my desktop. The data and results are saved in the file "Examples/Nonlinear Langevin/data/data_11_18_2020_5.jld". The result here was that the estimator near 0 were in much closer agreement. and so there closeness survived the casual-part operator.
+
+## UQ meeting notes
+
+Today during UQ we I reported the problems and we looked at the above plots and came to the above conclusions (I had written those after the meeting). It was also speculated that the reason for the closeness in the estimators with data of `gap = 100` over those with data of `gap = 1` (even though the time span of the run was the same) was the difference in smoothing. The `gap = 100` data (`h = 0.01`) covered a time span of 10^6 sec, but with only 10^6 points. The  `gap = 1` data (`h = 0.1`) covered a covered the same time span, but with 10^7 points.
