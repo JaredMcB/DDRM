@@ -12,10 +12,10 @@ V_prime  = x -> -x.*(x.^2 .- 1)
 sig_init = [1.5]
 # Numerical estimate parameters
 scheme   = "FE"
-steps    = 10^7  # Number of time steps (not including those discarded)
-h        = .1
+steps    = 10^8  # Number of time steps (not including those discarded)
+h        = .01
 discard  = steps # Number of time steps discarded
-gap      = 1     # 1 + the number of time steps between observations
+gap      = 100     # 1 + the number of time steps between observations
 seed     = 2016
 
 # Get full model run
@@ -25,6 +25,8 @@ X = @time DataGen_DWOL(;
     sigma, V_prime, sig_init,
     # Numerical estimate parameters
     scheme, steps, h, discard, gap)
+
+plot(X[1,1:end÷8000:end],ms=1,".")
 
 
 # X = complex(X)
@@ -87,4 +89,4 @@ println("First componete of the WF by SP: $(h_wf_packs[8][1,:,1])")
 output = Dict("h_wf_packs" => h_wf_packs)
 ## This is when we are on the server
 save("../../../data/DWOL_Data/data_11_16_2020_4.jld",merge(data,output))
-# save("Examples/Nonlinear Langevin/data/data_11_16_2020_2.jld",merge(data,output))
+save("Examples/Nonlinear Langevin/data/data_11_18_2020_5.jld",merge(data,output))
