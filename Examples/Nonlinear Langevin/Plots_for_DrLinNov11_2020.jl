@@ -1,3 +1,5 @@
+using PyPlot
+
 z_crossspect_sigpred_num_fft_dm = h_wf_packs[2]
 z_crossspect_sigpred_num_fft_sp = h_wf_packs[9]
 
