@@ -1895,5 +1895,5 @@ Today during UQ I reported the problems and we looked at the above plots and cam
 # Thursday, Nov 19, 2020
 2:50 PM - First, I want to see the effect of increasing the `gap` parameter on a parameter. So, I will have thelio (I think) generate a run `X` of `steps = 10^8` and `h=0.01`, and then run the wiener filters (one for each approximation method) on the series `X`, `X[:,1:10:end]`, and `X[:,1:100:end]` and compare the two wiener filters. I suspect the first one to be pretty different from each other but the last one should match up rather well.
 
-#### Experiment Nov 18, 2020 1 (varying the gap for the same series)
-I never got to this experiment as I think it's time to start working on KSE. 
+#### Experiment Nov 19, 2020 1 (varying the gap for the same series)
+I never got to this experiment as I think it's time to start working on KSE.
