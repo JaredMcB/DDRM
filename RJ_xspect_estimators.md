@@ -1888,4 +1888,12 @@ This experiment is the same as *Experiment Nov 16, 2020 2*. That is it runs a DW
 
 ## UQ meeting notes
 
-Today during UQ we I reported the problems and we looked at the above plots and came to the above conclusions (I had written those after the meeting). It was also speculated that the reason for the closeness in the estimators with data of `gap = 100` over those with data of `gap = 1` (even though the time span of the run was the same) was the difference in smoothing. The `gap = 100` data (`h = 0.01`) covered a time span of 10^6 sec, but with only 10^6 points. The  `gap = 1` data (`h = 0.1`) covered a covered the same time span, but with 10^7 points.
+Today during UQ I reported the problems and we looked at the above plots and came to the above conclusions (I had written those after the meeting). It was also speculated that the reason for the closeness in the estimators with data of `gap = 100` over those with data of `gap = 1` (even though the time span of the run was the same) was the difference in smoothing. The `gap = 100` data (`h = 0.01`) covered a time span of 10^6 sec, but with only 10^6 points. The  `gap = 1` data (`h = 0.1`) covered a covered the same time span, but with 10^7 points.
+
+
+
+# Thursday, Nov 19, 2020
+2:50 PM - First, I want to see the effect of increasing the `gap` parameter on a parameter. So, I will have thelio (I think) generate a run `X` of `steps = 10^8` and `h=0.01`, and then run the wiener filters (one for each approximation method) on the series `X`, `X[:,1:10:end]`, and `X[:,1:100:end]` and compare the two wiener filters. I suspect the first one to be pretty different from each other but the last one should match up rather well.
+
+#### Experiment Nov 19, 2020 1 (varying the gap for the same series)
+I never got to this experiment as I think it's time to start working on KSE.
