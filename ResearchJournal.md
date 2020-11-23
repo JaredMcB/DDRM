@@ -1848,10 +1848,10 @@ This experiment is the same as *Experiment Nov 18, 2020 1*, but with `steps = 10
 
 | `xspect_est`| statistic | h_wf[1,1,1] | h_wf[1,1,1] |
 |---|---|---|---|
-|"DM" | mean |1.0685370878746394 | -0.30464623282477016|
-|"SP" | mean | NaN | NaN |
-|"DM" | var | 0.0005199931437080256 | 6.218700778799889e-5|
-|"SP" | var | NaN | NaN |
+|"DM" | mean | 1.0685370878746394    | -0.30464623282477016|
+|"SP" | mean | NaN                   | NaN                 |
+|"DM" | var  | 0.0005199931437080256 | 6.218700778799889e-5|
+|"SP" | var  | NaN                   | NaN                 |
 
 #### Experiment Nov 18, 2020 3 (thelio job 155)
 
@@ -1859,10 +1859,10 @@ This experiment is the same as *Experiment Nov 18, 2020 1*, but with `steps = 10
 
 | `xspect_est`| statistic | h_wf[1,1,1] | h_wf[1,1,1] |
 |---|---|---|---|
-|"DM" | mean |1.0720108129404529 | ?|
-|"SP" | mean | NaN| ?|
-|"DM" | var | 0.0005268889598374218 | ?|
-|"SP" | var | NaN| ? |
+|"DM" | mean | 1.0799339828734176   | -0.30799075003241844|
+|"SP" | mean | NaN                  | NaN                 |
+|"DM" | var  | 0.004598458570730727 | 0.000564803873321387|
+|"SP" | var  | NaN                  | NaN                 |
 
 It looks like the functions I used did not support times series of length less than `nfft`
 
@@ -1889,3 +1889,5 @@ This experiment is the same as *Experiment Nov 16, 2020 2*. That is it runs a DW
 ## UQ meeting notes
 
 Today during UQ we I reported the problems and we looked at the above plots and came to the above conclusions (I had written those after the meeting). It was also speculated that the reason for the closeness in the estimators with data of `gap = 100` over those with data of `gap = 1` (even though the time span of the run was the same) was the difference in smoothing. The `gap = 100` data (`h = 0.01`) covered a time span of 10^6 sec, but with only 10^6 points. The  `gap = 1` data (`h = 0.1`) covered a covered the same time span, but with 10^7 points.
+
+5:21 PM - I am done for the day. Tomorrow, the
