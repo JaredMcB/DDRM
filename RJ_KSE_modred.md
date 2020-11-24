@@ -74,4 +74,17 @@ short    = true
 loadsol  = true
 ```
 
-I ran this experiment on my laptop and got a out-of-memory error. I will now conduction a memory requirement analysis. 
+I ran this experiment on my laptop and got a out-of-memory error. I will now conduction a memory requirement analysis.
+
+2:49 PM - I created the file "KSE/KSE_data_gen.jl." It just generates and saves KSE runs. I ran it just now according to the above parameters. Displayed below for conveniences.
+```julia
+T        = 10^5 # Length (in seconds) of time of run
+T_disc   = 10^5 ÷ 2 # Length (in seconds) of time discarded
+P        = 2π/sqrt(0.085)  # Period
+N        = 96  # Number of fourier modes used
+h        = 1e-3 # Timestep
+g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
+obs_gap  = 100
+seed     = 2020
+```
+The run was saved in "Examples/KSE/Data/KSE_sol_lin.jld" on my desktop. 
