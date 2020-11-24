@@ -18,8 +18,9 @@ using DSP: conv # For conv function in Psi
 using Dates
 
 include("../../Tools/Model_Reduction_Dev.jl")
+include("Model_KSE.jl")
 
-Exp = 11_23_20_1
+Exp = "11_23_20_1"
 
 ## Parameters
 # run parameters
@@ -74,10 +75,10 @@ println("==================================")
 server = startswith(pwd(), "/u5/jaredm") ? true : false
 println("on server = $server")
 sol_file = server ? "../../../data/KSE_Data/KSE_sol$Exp.jld" :
-   "Examples/KSEData/KSE_sol$Exp.jld"
+   "Examples/KSE/Data/KSE_sol$Exp.jld"
 println("Sol save location: " * sol_file)
 wf_file = server ? "../../../data/KSE_Data/KSE_wf$Exp-Mo$M_out.jld" :
-   "Examples/KSEData/KSE_wf$Exp-Mo$M_out.jld"
+   "Examples/KSE/Data/KSE_wf$Exp-Mo$M_out.jld"
 
 sol_file = "Examples/KSE/Data/KSE_sol_lin.jld"
 
@@ -156,6 +157,6 @@ print("Get_wf computation time: ")
 
 # Save Wienerfilter
 dat = Dict("dat_h_wf" => h_wf)
-Data = merge(paramaters, dat)
+Data = merge(paramaters,dat)
 save(wf_file, Data)
 println("Wiener filter saved")
