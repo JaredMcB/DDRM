@@ -1,3 +1,5 @@
+module AnalysisToolbox
+
 using Statistics
 using FFTW
 using LinearAlgebra
@@ -6,9 +8,7 @@ using Polynomials
 using StatsBase
 using SparseArrays
 
-include("KLPowerSpec.jl")
 
-import .KLPowerSpec
 
 """
     my_crosscov
@@ -143,10 +143,6 @@ function z_crossspect_fft(
         for j = 1 : nu
             z_spect_mat[i,j,:] = z_crossspect_scalar_ASP(sig[i,:],pred[j,:];
                                                   nfft, n, p,ty)
-
-            # z_spect_mat[i,j,:] = KLPowerSpec.powerspec(sig[i,:],pred[j,:];
-            #                                    blks)
-
         end
     end
     z_spect_mat
@@ -460,3 +456,4 @@ function ARMA_gen(; l = [1, -5/4, 3/8],
     end
     x[discard + 1:end]
 end
+end # module
