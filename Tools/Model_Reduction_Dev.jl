@@ -1,11 +1,12 @@
+module Model_Reduction_Dev
+
 using FFTW
 using LinearAlgebra
 using DSP: conv, nextfastfft
-using Polynomials
 using StatsBase
 using SparseArrays
 
-include("AnalysisToolbox.jl")
+at = include("AnalysisToolbox.jl")
 
 """
     `get_wf` provides the causal wiener filter that best approximates `signal`
@@ -58,13 +59,13 @@ function get_wf(
     Preds ? [h_wf, pred] : h_wf
 end
 
-function get_pred(sig, Psi)
-    d, steps = size(sig)
+function get_pred(signal, Psi)
+    d, steps = size(signal)
     nu = size(Psi(zeros(d,1)),1)
 
-    pred = zeros(nu, steps)
+    pred = complex(zeros(nu, steps))
     for n = 1:steps
-        pred[:,n] = Psi(sig[:,n])
+        pred[:,n] = Psi(signal[:,n])
     end
     pred
 end
@@ -202,12 +203,12 @@ function matrix_autocov_seq(pred;
     lags = -L:L
 
     # Smoothed viewing window
-    lam = _window(L, win = win, two_sided = false)
+    lam = at._window(L, win = win, two_sided = false)
 
     R_pred_smoothed = zeros(Complex,nu,nu,length(0:L))
     for i = 1 : nu
         for j = 1 : nu
-            temp = my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
+            temp = at.my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
             temp = .5*(temp[L+1:end] + conj(reverse(temp[1:L+1])))
             R_pred_smoothed[i,j,:] = lam .* temp
         end
@@ -261,8 +262,8 @@ function vector_wiener_filter_fft(
     end
 
     # Compute z-cross-spectrum of sigpred
-    z_crossspect_sigpred_num_fft = xspec_est == "SP" ? z_crossspect_fft(sig, pred;
-                        nfft, n, p, ty) : z_crossspect_fft_old(sig, pred; L, Nex = nfft);
+    z_crossspect_sigpred_num_fft = xspec_est == "SP" ? at.z_crossspect_fft(sig, pred;
+                        nfft, n, p, ty) : at.z_crossspect_fft_old(sig, pred; L, Nex = nfft);
 
     # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
     S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
@@ -313,3 +314,5 @@ function vector_wiener_filter_fft(
     end
     h_num_fft
 end
+
+end #Module
