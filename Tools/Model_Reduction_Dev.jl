@@ -91,8 +91,8 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
     NN = reverse(P[:,:,2:end],dims = 3)
     Re = Rr = p0 = P[:,:,1]
 
-    F = sparse([[zeros(d,d*(m-1)); I] zeros(d*m,d)])
-    h = sparse([zeros(d,d*(m-1)) I])
+    F = sparse([[spzeros(d,d*(m-1)); sparse(I,d*(m-1),d*(m-1))] spzeros(d*m,d)])
+    h = sparse([spzeros(d,d*(m-1)) sparse(I,d,d)])
 
     K = complex(zeros(d*m,d))
     for i = 0 : m-1
@@ -157,7 +157,7 @@ function spectfact_matrix_CKMS_pinv(P; N_ckms = 1500, rtol = 1e-6)
     Re = Rr = p0 = P[:,:,1]
 
     F = sparse([[spzeros(d,d*(m-1)); sparse(I,d*(m-1),d*(m-1))] spzeros(d*m,d)])
-    h = sparse([spzeros(d,d*(m-1)) sparse(I,d*(m-1),d*(m-1))])
+    h = sparse([spzeros(d,d*(m-1)) sparse(I,d,d)])
 
     K = complex(zeros(d*m,d))
     for i = 0 : m-1
@@ -243,11 +243,12 @@ function vector_wiener_filter_fft(
     steps = minimum([stepsx stepsy])
     nfft = nfft == 0 ? nfft = nextfastfft(steps) : nfft
     nffth = Int(floor(nfft/2))
+    L = par
 
-    R_pred_smoothed = matrix_autocov_seq(pred, L = par, steps, nu, win)
+    R_pred_smoothed = matrix_autocov_seq(pred; L, steps, nu, win)
 
     # Compute coefficients of spectral factorization of z-spect-pred
-    l = PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed,rtol = rtol) :
+    l = @time PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed,rtol = rtol) :
              spectfact_matrix_CKMS(R_pred_smoothed)
 
     l_pad_minus = nfft >= L+1 ? cat(dims = 3,l,zeros(nu,nu,nfft - L - 1)) :
