@@ -152,3 +152,12 @@ And this fixed it for me, I can get the filter without the memory error. And her
   3.85341+0.84301im    -2.40369-0.725644im    -2.93544+2.57677im   -13.7484-2.01821im  -4.01097+3.17342im      -1.36109e-6-1.39479e-5im  -1.47302e-5+3.15551e-5im  -1.68483e-6+1.4567e-5im    -2.00679e-5+4.08112e-5im    
  -1.05924-1.41698im    0.537742-0.882067im   -0.225708-0.503753im  0.568337-1.09505im  0.864916-0.911282im      5.36164e-6+1.65332e-6im  -3.32195e-6+2.82276e-5im   1.25603e-6-2.07771e-6im   -7.82065e-5+3.80681e-5im
  ```
+
+
+# Tuesday, November 24, 2020
+
+9:55 AM - Yesterday, I got a result for the Wiener filter using KSE data and short psi predictors. The Wiener filter was suspect though as it had coefficients in the thousands. Today, I want to vary the parameters a bit and see if I can get a more reasonable output for the Wiener filter. I will ru these now on thelio because it takes my computer a very long time.
+
+So, first I will rerun *Experiment Nov 23, 2020 1* on thelio.
+
+#### Experiment Nov 24, 2020 1 (WF from Lin data on thelio)
