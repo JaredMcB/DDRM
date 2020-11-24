@@ -58,13 +58,13 @@ function get_wf(
     Preds ? [h_wf, pred] : h_wf
 end
 
-function get_pred(sig, Psi)
-    d, steps = size(sig)
+function get_pred(signal, Psi)
+    d, steps = size(signal)
     nu = size(Psi(zeros(d,1)),1)
 
     pred = zeros(nu, steps)
     for n = 1:steps
-        pred[:,n] = Psi(sig[:,n])
+        pred[:,n] = Psi(signal[:,n])
     end
     pred
 end

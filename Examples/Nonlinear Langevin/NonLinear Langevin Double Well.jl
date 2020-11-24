@@ -48,6 +48,13 @@ X = load("Examples/Nonlinear Langevin/data/data_11_18_2020_5.jld","X")
 
 # auto_times(X[1,:])
 
+ind = 0:10000
+A = my_autocor(X[:],ind)
+semilogy(.1*(ind),A)
+
+
+
+
 # Put in Psi functions
 Psi(x) = [x; x.^3]
 
