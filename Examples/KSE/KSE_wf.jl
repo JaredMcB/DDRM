@@ -20,7 +20,7 @@ using Dates
 include("../../Tools/Model_Reduction_Dev.jl")
 include("Model_KSE.jl")
 
-Exp = "11_23_20_1"
+Exp = "11_24_20_1"
 
 ## Parameters
 # run parameters
@@ -80,7 +80,9 @@ println("Sol save location: " * sol_file)
 wf_file = server ? "../../../data/KSE_Data/KSE_wf$Exp-Mo$M_out.jld" :
    "Examples/KSE/Data/KSE_wf$Exp-Mo$M_out.jld"
 
-sol_file = "Examples/KSE/Data/KSE_sol_lin.jld"
+# When I want the standard lin et al. (2017) data.
+sol_file = server ? "../../../data/KSE_Data/KSE_sol_lin.jld" :
+   "Examples/KSE/Data/KSE_sol_lin.jld"
 
 if loadsol
    # Load Old Data
