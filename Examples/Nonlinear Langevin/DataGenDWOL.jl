@@ -1,4 +1,4 @@
-
+module DataGenDWOL
 using StatsBase
 using Statistics
 using DSP
@@ -453,3 +453,4 @@ function Model_filter(series; par = 55)
 
     l = Scalar_CKMS_c(R_series);
 end
+end #module
