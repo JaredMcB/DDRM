@@ -191,9 +191,7 @@ xspec_est= "old" # Default
  Started running at: `12:00:00`
  received email at: `1:08 PM`
 
-
-
- ```
+```
  julia> h_wf = load("KSE_wf11_24_20_1-Mo20.jld","dat_h_wf")
  5×25×20 Array{Complex{Float64},3}:
  [:, :, 1] =
@@ -252,14 +250,26 @@ errK errR : 9.974873558782727e-11 3.1617462324742043e-15
 ```
 
 
-
-
-
-
-
-
-
-
 I want to rerun the above experiment, now with more pricipled choises of parameters.  So, it will be very simmilar to *Experiment Nov 24, 2020 1*. the difference the difference being in the WF parameters, namely `par` and `nfft`. These will be determined based on characteristics of the data. Such as the time it takes the autocorrolation to decay to a margin of error.
 
-#### Experiment Nov 24, 2020 2 (job ???) (WF on Lin data with better parameters)
+So, once the data set was completed on thelio, I created the notebook "KSE_data_analyzer" in "Examples/KSE". In it I load the data, get the `sig` and `pred` arrays and then look at there autocovariances and cross covariances.
+
+Here is what I looked at specifically:
+1. The autocovariance sequence for each of the 25 predictors. I just did:
+   ```
+lags = -4000:4000
+let plt = plot
+    for m = 1:25
+        figure()
+        A = at.my_crosscov(pred[m,:],pred[m,:],lags)
+        plt(Δt*lags,A)
+        legend()
+        title("modes $m and $m")
+    end
+end
+   ```
+   I noticed that the shapes of the first 5 and the next 5 were very similar respectively (I mean 1 looked like 6, but scaled, 2 looked like 7, but scaled, and so on). The next 15 had extremely high
+
+2. I began to think about the fact that these are not mean zero processes and how that effects model reduction in this way.
+
+5:21 PM - Done for the day. 
