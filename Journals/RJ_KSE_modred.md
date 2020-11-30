@@ -156,7 +156,7 @@ And this fixed it for me, I can get the filter without the memory error. And her
 
 # Tuesday, November 24, 2020
 
-9:55 AM - Yesterday, I got a result for the Wiener filter using KSE data and short psi predictors. The Wiener filter was suspect though as it had coefficients in the thousands. Today, I want to vary the parameters a bit and see if I can get a more reasonable output for the Wiener filter. I will ru these now on thelio because it takes my computer a very long time.
+9:55 AM - Yesterday, I got a result for the Wiener filter using KSE data and short psi predictors. The Wiener filter was suspect, though, as it had coefficients in the thousands. Today, I want to vary the parameters a bit and see if I can get a more reasonable output for the Wiener filter. I will run these now on thelio because it takes my computer a very long time.
 
 So, first I will rerun *Experiment Nov 23, 2020 1* on thelio.
 
@@ -250,7 +250,7 @@ errK errR : 9.974873558782727e-11 3.1617462324742043e-15
 ```
 
 
-I want to rerun the above experiment, now with more pricipled choises of parameters.  So, it will be very simmilar to *Experiment Nov 24, 2020 1*. the difference the difference being in the WF parameters, namely `par` and `nfft`. These will be determined based on characteristics of the data. Such as the time it takes the autocorrolation to decay to a margin of error.
+I want to rerun the above experiment, now with more principled choices of parameters.  So, it will be very simmilar to *Experiment Nov 24, 2020 1*. The difference being in the WF parameters, namely `par` and `nfft`. These will be determined based on characteristics of the data. Such as the time it takes the autocorrolation to decay to a 2 margins of error.
 
 So, once the data set was completed on thelio, I created the notebook "KSE_data_analyzer" in "Examples/KSE". In it I load the data, get the `sig` and `pred` arrays and then look at there autocovariances and cross covariances.
 
@@ -272,4 +272,145 @@ end
 
 2. I began to think about the fact that these are not mean zero processes and how that effects model reduction in this way.
 
-5:21 PM - Done for the day. 
+5:21 PM - Done for the day.
+
+
+
+# Wednesday, November 25, 2020
+2:47 PM - Today I have been investigating the question of implementing model reduction with noncentered data. Since this uses Wiener filtering theory and Weiner filters assumes the processes are mean zero, there is something to be done here. Is it so simple as centering `X` and `Psi(X)` taking the wiener filter and then adding means appropriately to the reduced model?
+
+4;09 PM - It seems to be exactly that simple. The code as it is only contemplates estimated second order information from the time series, the spectral density of  `pred` and the cross spectral density of `sig` and `pred`. De-meaning in these functions is built-it. So, the Wiener filter is spatial shift invariant. The thing to do while running the reduced model is to add the mean of `sig` and subtract `h_wf` acting on the mean of `pred`.
+this means running the reduce model should look like this:
+
+```julia
+d, steps = size(X)
+nu = size(Psi(zeros(d,1)),1)
+
+sig  = X[:,2:end]
+
+pred = complex(zeros(nu, steps-1))
+for n = 1:steps-1
+    pred[:,n] = Psi(X[:,n])
+end
+
+PSI  = complex(zeros(nu,steps))
+X_rm = complex(zeros(d,steps))
+X_rm[:,1:M_out] = X[:,1:M_out]
+
+pred_m = mean(pred,dims = 2)
+sig_m  = mean(sig,dims = 2)
+
+C = sig_m - sum(h_wf[:,:,k]*pred_m for k = 1:M_out,dims = 2)
+
+for i = 1:M_out
+    PSI[:,i] = Psi(X_rm[:,i])
+end
+
+for i = M_out+1:steps
+   X_rm[:,i] = C + sum(h_wf[:,:,k]*PSI[:,i-k] for k = 1:M_out,dims = 2) + Noise[:,i]
+   PSI[:,i] = Psi(X_rm[:,i])
+end
+return X_rm
+```
+
+I verified this experimentally just to be sure. I used the following potentials with the following derivatives:
+```julia
+V_c_prime  = x -> -x.*(x.^2 .- 1)
+V_s_prime  = x -> -x.^3 + 6x.^2 - 11x .+ 6
+```
+the first is centered (at zero) and the other has an axis of symmetry at `x=2`. I used this with the following parameters to generate two time series:
+```julia
+# Model run Parameters
+sigma    = [.4]
+sig_init = [1.5]
+# Numerical estimate parameters
+scheme   = "FE"
+steps    = 10^7 # Nomber of time steps (not including those discarded)
+h        = .1
+discard  = steps # Number of time steps discarded
+gap      = 1
+
+V_c_prime  = x -> -x.*(x.^2 .- 1)
+V_s_prime  = x -> -x.^3 + 6x.^2 - 11x .+ 6
+
+
+# Get full model run
+Random.seed!(2014)
+X_c = @time gen.DataGen_DWOL(; sigma, V_prime = V_c_prime, sig_init, scheme, steps, h, discard, gap)
+
+Random.seed!(2014)
+X_s = @time gen.DataGen_DWOL(; sigma, V_prime = V_s_prime, sig_init, scheme, steps, h, discard, gap)
+```
+
+The series were identical, but for a shift of 2 in the x-direction. I then computed the Wiener filters using
+
+```julia
+Psi(x)  = [x; x.^2; x.^3]
+
+par   = 5000
+nfft  = 2^14
+Preds = true
+M_out = 20
+
+h_wf_c, pred_c = mr.get_wf(X_c,Psi; M_out, par, nfft, Preds);
+h_wf_s, pred_s = mr.get_wf(X_s,Psi; M_out, par, nfft, Preds);
+```
+and got the following results:
+```
+julia> h_wf_c
+1×3×20 Array{Float64,3}:
+[:, :, 1] =
+ 1.09548  -0.00017354  -0.0983164
+
+[:, :, 2] =
+ 0.00221948  0.000275644  -0.000893722
+
+[:, :, 3] =
+ 0.00053129  -0.000162947  -0.000390774
+
+...
+
+
+julia> h_wf_s
+1×3×20 Array{Float64,3}:
+[:, :, 1] =
+ -0.0836275  0.589727  -0.098317
+
+[:, :, 2] =
+ -0.00960635  0.00563605  -0.00089298
+
+[:, :, 3] =
+ -0.0035093  0.00218446  -0.000391526
+
+...
+```
+Observe that these both agree with the what is expected since the model for each (using forward Euler) is
+```
+X_c[:,n+1] = -h*X_c[:,n].^3 + (1 + h)*X_c[:,n] + Noise
+X_s[:,n+1] = -h*X_s[:,n].^3 + 6h*X_s[:,n].^2 + (1 - 11h)*X_s[:,n] .+ 6h + Noise
+```
+this leads an analytic of
+```
+h_wf_c_ana[:,:,1] = [1.1   0    -0.1]
+h_wf_c_ana[:,:,1] = [-0.1  0.6  -0.1]
+```
+Which matches pretty well.
+
+To verify the additive adjustment above I looked at the one step transition using the function `one_step_pred` from "Examples/Testers/testertool.jl"
+```julia
+m_pred_s = mean(pred_s,dims = 2)
+S = 2 .- sum(h_wf_s[:,:,j]*m_pred_s for j = 1 : M_out)
+
+X_hat_c = one_step_pred(sig_c, h_wf_c, pred_c)
+X_hat_s = one_step_pred(sig_s, h_wf_s, pred_s) .+ S
+
+wind = (1:100) .+ 24000
+plot([sig_c[1,wind] X_hat_c[1,wind.+1]])
+plot([sig_s[1,wind] X_hat_s[1,wind.+1]])
+```
+The predictors and the original match in both cases.
+
+
+# Monday, November 30, 2020
+
+12:52 PM - The centered and noncentered data was good to investigating. Now, I will get back to computing the Wiener filters with better parameters. I return to thelio and the notebook from Tuesday, Nov 24, 2020.
