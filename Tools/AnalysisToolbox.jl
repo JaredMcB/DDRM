@@ -260,6 +260,9 @@ function auto_times(x::AbstractVector{<:Real};plt = false)
     plt ? [τ_exp, τ_int, P] : [τ_exp, τ_int]
 end
 
+rowmatrix(x) = reshape(x,1,length(x))
+z_crossspect_dm(sig,pred; flags...) = z_crossspect_fft_old(rowmatrix(sig), rowmatrix(pred); flags...)[1:end]
+
 function z_crossspect_fft_old(
     sig,
     pred;
