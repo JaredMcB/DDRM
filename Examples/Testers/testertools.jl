@@ -46,9 +46,8 @@ function redmodrun(X, h_wf, Psi;
     Noise = noise ? rand(noise_dist,steps) : zeros(d,steps)
 
     for i = M_out+1:steps
-        X_rm[:,i] = sum(h_wf[:,:,k]*PSI[:,i-k]
-            for k = 1:M_out,dims = 2) + Noise[:,i]
-                PSI[:,i] = Psi(X_rm[:,i])
+        X_rm[:,i] = sum(h_wf[:,:,k]*PSI[:,i-k] for k = 1:M_out,dims = 2) + Noise[:,i]
+        PSI[:,i] = Psi(X_rm[:,i])
         if isnan(X_rm[1,i])
             bust = i
             break
