@@ -17,8 +17,8 @@ using JLD
 using DSP: conv # For conv function in Psi
 using Dates
 
-include("../../Tools/Model_Reduction_Dev.jl")
-include("Model_KSE.jl")
+mr  = include("../../Tools/Model_Reduction_Dev.jl")
+kse = include("Model_KSE.jl")
 
 Exp = "12_01_20_1"
 
@@ -92,7 +92,7 @@ if loadsol
    vv = Data["dat_vv"]
    tt = Data["dat_tt"]
 else
-   uu, vv, tt = my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
+   uu, vv, tt = kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
 
    dat = Dict("dat_uu" => uu, "dat_vv" => vv, "dat_tt" => tt)
    Data = merge(paramaters, dat)
@@ -155,7 +155,7 @@ Psi(x) = short ? [x; InvBurgRK4_1step(x); Inertialman_part_short(x)] :
 ## Get Wiener filter
 
 print("Get_wf computation time: ")
-@time h_wf = get_wf(X, Psi; M_out, par, nfft, rl = false, PI = false)
+@time h_wf = mr.get_wf(X, Psi; M_out, par, nfft, rl = false, PI = false)
 
 # Save Wienerfilter
 dat = Dict("dat_h_wf" => h_wf)
