@@ -417,7 +417,31 @@ The predictors and the original match in both cases.
 
 Looking at the autocorrelations of the predictor series, it looks like they decay to roughly a margin of error after about 150 units of time, so this would be 1500 time steps, which means `par = 1500` should be enough to capture the correlations in the data. I will also try a little less than this and see how it goes.
 
-Now we want to get a picture of the necessary resolution in frequency space. For this I look at the cross covariances.
+Now we want to get a picture of the necessary resolution in frequency space. For this I look at the cross covariances. It seemed to me that there was very weak (if any) correlation between any pair of distinct predictors excepts the identity terms (1-5) and the inviscid Burger terms (6-10). That is to say I might suspect the cross covariance (`sig` and `pred`) could look like this:
+```
+⋆ 0 0 0 0 ⋆ 0 0 0 0
+0 ⋆ 0 0 0 0 ⋆ 0 0 0
+0 0 ⋆ 0 0 0 0 ⋆ 0 0           zeros(5,15)
+0 0 0 ⋆ 0 0 0 0 ⋆ 0
+0 0 0 0 ⋆ 0 0 0 0 ⋆
+```
+where the stars an nonzero, the covariance of the predictors seems to have this structure
+```
+⋆ 0 0 0 0 ⋆ 0 0 0 0
+0 ⋆ 0 0 0 0 ⋆ 0 0 0
+0 0 ⋆ 0 0 0 0 ⋆ 0 0           
+0 0 0 ⋆ 0 0 0 0 ⋆ 0
+0 0 0 0 ⋆ 0 0 0 0 ⋆           zeros(10,15)
+⋆ 0 0 0 0 ⋆ 0 0 0 0
+0 ⋆ 0 0 0 0 ⋆ 0 0 0
+0 0 ⋆ 0 0 0 0 ⋆ 0 0           
+0 0 0 ⋆ 0 0 0 0 ⋆ 0
+0 0 0 0 ⋆ 0 0 0 0 ⋆
+
+zeros(15,10)                  ⋆-diagonal(15,15)
+```
+
+I don't quite know what to do with this structure yet. But I might as well experiment on my purposed values of `par = 1500` I will first use
 
 
 #### Experiment Nov 30, 2020 1 (Langevin data with smallest possible `nfft`)
@@ -451,7 +475,7 @@ Parms = [["DM"       , 50     , 2^17    , 2    , 5],
          ["DM"       , 5000   , 2^14    , 2    , 5]]
 ```
 
-The Weiner filtering code is run three times. Each with it's own associated row of the above `Parms` variables. 
+The Weiner filtering code is run three times. Each with it's own associated row of the above `Parms` variables.
 
 here are the results:
 ```
@@ -500,3 +524,5 @@ julia> h_wf_packs[15][1,:,1:10]'
  -0.00220578+5.65421e-14im   0.000508484-1.76376e-14im
   0.00277172-7.97258e-14im  -0.000828119+2.48918e-14im
 ```
+
+#### Experiment Nov 30, 2020 1 (Langevin data with smallest possible `nfft`)
