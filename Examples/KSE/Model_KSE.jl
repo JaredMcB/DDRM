@@ -1,3 +1,5 @@
+module Model_KSE
+
 using FFTW, Statistics
 
 function my_KSE_solver(
@@ -88,3 +90,5 @@ function my_KSE_solver(
     start = n_disc+1
     uu[:,start:end], vv[:,start:end], tt[1:end-start+1]
 end
+
+end # module
