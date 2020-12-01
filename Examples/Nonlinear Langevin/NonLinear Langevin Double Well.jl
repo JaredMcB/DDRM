@@ -3,9 +3,9 @@ using Random
 using JLD
 
 
-include("DataGen.jl") # This has many packages in it's preamble
-include("../../Tools/Model_Reduction_Dev.jl")
-
+dg = include("DataGenDWOL.jl") # This has many packages in it's preamble
+mr = include("../../Tools/Model_Reduction_Dev.jl")
+at = include("../../Tools/AnalysisToolbox.jl")
 #SDE parameters
 sigma    = [.3]
 V_prime  = x -> -x.*(x.^2 .- 1)
@@ -49,7 +49,7 @@ X = load("Examples/Nonlinear Langevin/data/data_11_18_2020_5.jld","X")
 # auto_times(X[1,:])
 
 ind = 0:10000
-A = my_autocor(X[:],ind)
+A = at.my_autocor(X[:],ind)
 semilogy(.1*(ind),A)
 
 
@@ -65,17 +65,18 @@ ty = "bin"
 ### Varing parameters
 ###       xspect_est , par    , nfft    , n    , p
 #
-Parms = [["DM"       , 5000  , 2^17    , 2    , 5],
-         ["SP"       , 5000  , 2^17    , 2    , 5]]
+Parms = [["DM"       , 50  , 2^17    , 2    , 5],
+         ["DM"       , 50  , 120    , 2    , 5],
+         ["DM"       , 5000  , 2^14    , 2    , 5]]
 
-nfft = Parms[1][3]
+# nfft = Parms[1][3]
 
 P = length(Parms)
 
 h_wf_packs  = []
 times = zeros(P)
 for i = 1:P
-    Out = @timed get_wf(X[:,1:1:end], Psi;
+    Out = @timed mr.get_wf(X[:,1:1:end], Psi;
         M_out, ty, info = true,
         xspec_est = Parms[i][1],
         par       = Parms[i][2],

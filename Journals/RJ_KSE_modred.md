@@ -414,3 +414,89 @@ The predictors and the original match in both cases.
 # Monday, November 30, 2020
 
 12:52 PM - The centered and noncentered data was good to investigating. Now, I will get back to computing the Wiener filters with better parameters. I return to thelio and the notebook from Tuesday, Nov 24, 2020.
+
+Looking at the autocorrelations of the predictor series, it looks like they decay to roughly a margin of error after about 150 units of time, so this would be 1500 time steps, which means `par = 1500` should be enough to capture the correlations in the data. I will also try a little less than this and see how it goes.
+
+Now we want to get a picture of the necessary resolution in frequency space. For this I look at the cross covariances.
+
+
+#### Experiment Nov 30, 2020 1 (Langevin data with smallest possible `nfft`)
+
+This experiment is a run of the double-welled overdamped Langevin process:
+
+| parameter | value |
+|--- |--- |
+|`sigma` | 0.3 |
+|`V_prime` | x -> -x.*(x.^2 .- 1) |
+|`sig_init`| 1.5 |
+|`scheme` | "FE" |
+|`steps` | 10^7 |
+|`h` (time step)| 0.1 |
+|`discard` | 'steps'|
+|`gap` | 1|
+
+The Wiener filtering parameters are as follows:
+```julia
+# Put in Psi functions
+Psi(x) = [x; x.^3]
+
+# Model reduction Parameters
+M_out = 20
+ty = "bin"
+
+### Varing parameters
+###       xspect_est , par    , nfft    , n    , p
+Parms = [["DM"       , 50     , 2^17    , 2    , 5],
+         ["DM"       , 50     , 120     , 2    , 5],
+         ["DM"       , 5000   , 2^14    , 2    , 5]]
+```
+
+The Weiner filtering code is run three times. Each with it's own associated row of the above `Parms` variables. 
+
+here are the results:
+```
+julia> times
+3-element Array{Float64,1}:
+ 29.8823148
+ 30.949746601
+ 43.4594022
+
+julia> h_wf_packs[1][1,:,1:10]'
+10×2 LinearAlgebra.Adjoint{Complex{Float64},Array{Complex{Float64},2}}:
+       1.09824+2.64328e-14im     -0.099226-7.93992e-15im
+    0.00180432-3.31373e-14im  -0.000795544+1.03531e-14im
+  -0.000809017-8.12924e-15im    6.95014e-5+2.60707e-15im
+    0.00118388-4.62527e-16im   -0.00021893-1.16555e-16im
+  -0.000236858+9.45978e-15im    4.61908e-5-2.87852e-15im
+  -0.000561057+6.48942e-15im   0.000165708-2.3882e-15im
+   0.000879032+3.28968e-14im  -0.000350527-9.49214e-15im
+    0.00110459-5.01987e-14im  -0.000240615+1.52815e-14im
+   -0.00213206+3.43862e-14im   0.000517865-1.08814e-14im
+    0.00210348-4.83778e-14im  -0.000620188+1.51543e-14im
+
+julia> h_wf_packs[8][1,:,1:10]'
+10×2 LinearAlgebra.Adjoint{Complex{Float64},Array{Complex{Float64},2}}:
+      1.09748+5.69274e-14im    -0.0989922-1.6957e-14im
+   0.00197576-1.32301e-13im  -0.000842647+4.03524e-14im
+ -0.000734024+1.0566e-13im     4.83054e-5-3.17053e-14im
+    0.0011944-4.93628e-14im  -0.000222027+1.50126e-14im
+  -0.00025543-8.21179e-15im    5.11942e-5+1.61224e-15im
+ -0.000577133+7.15856e-14im   0.000169312-2.20492e-14im
+  0.000890196-1.77782e-14im  -0.000355921+6.84521e-15im
+   0.00116187-9.08725e-14im  -0.000260733+2.67209e-14im
+  -0.00201997+9.09829e-14im   0.000480553-2.75675e-14im
+   0.00226817-3.75216e-14im  -0.000673646+1.1115e-14im
+
+julia> h_wf_packs[15][1,:,1:10]'
+10×2 LinearAlgebra.Adjoint{Complex{Float64},Array{Complex{Float64},2}}:
+     1.09698+3.44339e-14im    -0.0988348-1.03353e-14im
+  0.00183088-3.28098e-14im  -0.000800667+9.90803e-15im
+-0.000678346-1.24045e-14im    2.57955e-5+4.46203e-15im
+  0.00154754-2.70635e-14im  -0.000333177+8.09354e-15im
+ 0.000106247+4.18996e-14im   -6.75428e-5-1.28916e-14im
+-0.000196658-4.25912e-14im    4.28827e-5+1.26922e-14im
+  0.00143237+1.07269e-13im  -0.000537704-3.24095e-14im
+  0.00171027-1.09667e-13im  -0.000422434+3.3529e-14im
+ -0.00220578+5.65421e-14im   0.000508484-1.76376e-14im
+  0.00277172-7.97258e-14im  -0.000828119+2.48918e-14im
+```
