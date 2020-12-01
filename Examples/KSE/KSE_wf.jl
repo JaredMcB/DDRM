@@ -20,7 +20,7 @@ using Dates
 include("../../Tools/Model_Reduction_Dev.jl")
 include("Model_KSE.jl")
 
-Exp = "11_24_20_1"
+Exp = "12_01_20_1"
 
 ## Parameters
 # run parameters
@@ -40,7 +40,7 @@ d = 5 # No. of lowest modes taken in reduced model
 # Wiener filtering parameters
 M_out = 20
 nfft = 2^14
-par = 5000
+par = 1500
 xspec_est = "old" # Default
 short = true
 loadsol = true

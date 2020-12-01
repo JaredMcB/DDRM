@@ -451,7 +451,7 @@ Parms = [["DM"       , 50     , 2^17    , 2    , 5],
          ["DM"       , 5000   , 2^14    , 2    , 5]]
 ```
 
-The Weiner filtering code is run three times. Each with it's own associated row of the above `Parms` variables. 
+The Weiner filtering code is run three times. Each with it's own associated row of the above `Parms` variables.
 
 here are the results:
 ```
@@ -499,4 +499,30 @@ julia> h_wf_packs[15][1,:,1:10]'
   0.00171027-1.09667e-13im  -0.000422434+3.3529e-14im
  -0.00220578+5.65421e-14im   0.000508484-1.76376e-14im
   0.00277172-7.97258e-14im  -0.000828119+2.48918e-14im
+```
+
+
+# Tuesday, December 1, 2020
+
+12:57 PM - I just most of a paper from 1987 on constrained wiener filtering.
+
+Picinbono, Bernard, and Michel Bouvet. "Constrained Wiener filtering (Corresp.)." *IEEE transactions on information theory* 33.1 (1987): 160-166.
+
+according to Google scholar the article has been cited 14 times. So, maybe that is not so good.
+
+I recently became interested in constrained Wiener filtering after having observed that many of the variables seem that they might be uncorrelated. However this does not amount, thinking about it now to a constraint on the Wiener filter itself.
+
+1:32 PM - Today I want to run the Wiener filter with my new purposed values. This will be the experiment below.
+
+#### Experiment Dec 1, 2020 1
+
+This is a variation of *Experiment Nov 24, 2020 1*. I will use the same script ("Examples/KSE/KSE_wf.jl") but with the following Wiener filtering parameters.
+```julia
+# Wiener filtering parameters
+M_out = 20
+nfft = 2^14
+par = 1400
+xspec_est = "old" # Default
+short = true
+loadsol = true
 ```
