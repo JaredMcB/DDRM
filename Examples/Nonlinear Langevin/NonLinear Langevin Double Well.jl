@@ -90,6 +90,8 @@ end
 
 println("First componete of the WF by DM: $(h_wf_packs[1][1,:,1])")
 println("First componete of the WF by SP: $(h_wf_packs[8][1,:,1])")
+println("First componete of the WF by SP: $(h_wf_packs[15][1,:,1])")
+
 
 output = Dict("h_wf_packs10" => h_wf_packs)
 ## This is when we are on the server
