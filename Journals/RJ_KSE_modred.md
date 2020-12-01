@@ -514,7 +514,7 @@ I recently became interested in constrained Wiener filtering after having observ
 
 1:32 PM - Today I want to run the Wiener filter with my new purposed values. This will be the experiment below.
 
-#### Experiment Dec 1, 2020 1
+#### Experiment Dec 1, 2020 1 (thelio job 160)
 
 This is a variation of *Experiment Nov 24, 2020 1*. I will use the same script ("Examples/KSE/KSE_wf.jl") but with the following Wiener filtering parameters.
 ```julia
@@ -526,3 +526,4 @@ xspec_est = "old" # Default
 short = true
 loadsol = true
 ```
+The experiment was run of thelio.
