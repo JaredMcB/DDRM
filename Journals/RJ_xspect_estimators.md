@@ -1869,7 +1869,7 @@ It looks like the functions I used did not support times series of length less t
 
 #### Experiment Nov 18, 2020 4 (desktop)
 
-This experiment is the same as *Experiment Nov 16, 2020 3*. That is it runs a DWOL model with σ = 3 (as always) and `steps = 10^7`, `h = 0.1`, and `gap = 1`. This time I am looking at the plots of the algorithm steps. `Nonlinear Langevin/NonLiner Langevin Double Well.jl` was used on my desktop and the data and results are saved in the file "Examples/Nonlinear Langevin/data/data_11_18_2020_4.jld". I did the array of plots that Dr. Lin requested last week namely:
+This experiment is the same as *Experiment Nov 16, 2020 3*. That is it runs a DWOL model with σ = .3 (as always) and `steps = 10^7`, `h = 0.1`, and `gap = 1`. This time I am looking at the plots of the algorithm steps. `Nonlinear Langevin/NonLiner Langevin Double Well.jl` was used on my desktop and the data and results are saved in the file "Examples/Nonlinear Langevin/data/data_11_18_2020_4.jld". I did the array of plots that Dr. Lin requested last week namely:
 
 |real | imaginary|
 |---|---|
@@ -1884,7 +1884,7 @@ In the plots it was apparent that the cross spectral density estimated using the
 
 #### Experiment Nov 18, 2020 5 (desktop)
 
-This experiment is the same as *Experiment Nov 16, 2020 2*. That is it runs a DWOL model with σ = 3 (as always) and `steps = 10^8`, `h = 0.01`, and `gap = 100`. This time I am looking at the plots of the algorithm steps.  Again I used the scripts `Nonlinear Langevin/NonLiner Langevin Double Well.jl` and `Plots_for_DrLinNov11_2020.jl` on my desktop. The data and results are saved in the file "Examples/Nonlinear Langevin/data/data_11_18_2020_5.jld". The result here was that the estimator near 0 were in much closer agreement. and so there closeness survived the casual-part operator.
+This experiment is the same as *Experiment Nov 16, 2020 2*. That is it runs a DWOL model with σ = .3 (as always) and `steps = 10^8`, `h = 0.01`, and `gap = 100`. This time I am looking at the plots of the algorithm steps.  Again I used the scripts `Nonlinear Langevin/NonLiner Langevin Double Well.jl` and `Plots_for_DrLinNov11_2020.jl` on my desktop. The data and results are saved in the file "Examples/Nonlinear Langevin/data/data_11_18_2020_5.jld". The result here was that the estimator near 0 were in much closer agreement. and so there closeness survived the casual-part operator.
 
 ## UQ meeting notes
 
