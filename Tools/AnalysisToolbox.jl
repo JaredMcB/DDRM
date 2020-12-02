@@ -273,7 +273,7 @@ function z_crossspect_fft_old(
     ## sig = d x steps, pred = nu x steps
     d, stepsx = size(sig)
     nu, stepsy = size(pred)
-
+git 
     Nexh = Int(floor(Nex/2))
     lags = -L:L;
 
@@ -304,7 +304,7 @@ function z_crossspect_fft_old(
 
     ## C_smoothed = d x nu x 2L+1
 
-    ## Pad with zeros in preparation for fft
+    ## Pad with zeros in preparation for fft we want it to be Nex long
     C_padded = cat(dims = 3, zeros(d,nu,Nex - Nexh - L), C_smoothed, zeros(d,nu,Nexh - L - 1))
     C = fftshift(C_padded,3)
 

@@ -20,7 +20,7 @@ using Dates
 mr  = include("../../Tools/Model_Reduction_Dev.jl")
 kse = include("Model_KSE.jl")
 
-Exp = "12_01_20_3"
+Exp = "12_01_20_4"
 
 ## Parameters
 # run parameters
@@ -40,7 +40,7 @@ d = 5 # No. of lowest modes taken in reduced model
 # Wiener filtering parameters
 M_out = 20
 nfft = 2^14
-par = 500
+par = 1500
 xspec_est = "old" # Default
 short = true
 loadsol = true
@@ -58,6 +58,7 @@ paramaters = Dict(
    "tm" => now(),
    "M_out" => M_out,
    "nfft" => nfft,
+   "par" => par,
    "obs_gap" => obs_gap,
    "d" => d, # No. of lowest modes taken in reduced model
    "M_out" => M_out,
@@ -81,7 +82,7 @@ wf_file = server ? "../../../data/KSE_Data/KSE_wf$Exp-Mo$M_out.jld" :
    "Examples/KSE/Data/KSE_wf$Exp-Mo$M_out.jld"
 
 # When I want the standard lin et al. (2017) data.
-sol_file = server ? "../../../data/KSE_Data/KSE_sol_lin.jld" :
+sol_file = server ? "../../../data/KSE_Data/KSE_sol_lin1.jld" :
    "Examples/KSE/Data/KSE_sol_lin.jld"
 
 if loadsol
