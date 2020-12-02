@@ -273,7 +273,6 @@ function z_crossspect_fft_old(
     ## sig = d x steps, pred = nu x steps
     d, stepsx = size(sig)
     nu, stepsy = size(pred)
-git 
     Nexh = Int(floor(Nex/2))
     lags = -L:L;
 
