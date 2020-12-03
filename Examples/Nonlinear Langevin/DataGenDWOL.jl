@@ -42,7 +42,7 @@ function DataGen_DWOL(;
         for n = 1 : steps_tot-1
             tmp = tmp + h*V_prime(tmp) +
                         sqrt(h)*sigma*( ObsNoise ? e[:,n+1] : randn(d) )
-            if (n - discard > 0) && ((n - discard - 1) % gap == 0)
+            if (n > discard) && ((n - discard - 1) % gap == 0)
                 signal[:,(n-discard-1)÷gap + 1] = tmp
             end
         end
