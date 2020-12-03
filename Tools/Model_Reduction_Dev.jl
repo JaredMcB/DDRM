@@ -328,25 +328,27 @@ function redmodrun(
    )
 
    d, nu, M_out = size(h_wf)
+   steps_tot = steps + discard
 
    ## Run reduced model with no noise
-   sig_rm = complex(zeros(d,steps))
+   sig_rm = complex(zeros(d,steps_tot))
    sig_rm[:,1:M_out] = sig[:,1:M_out]
 
+   C = sig_m + sum(h_wf[:,:,k] for k = 1:M_out)*pred_m
+
    # load presamples
-   PSI_past = complex(zeros(nu,steps))
+   PSI_past = complex(zeros(nu,steps_tot))
    for i=1:M_out
        PSI_past[:,i] = Psi(sig[:,i])
    end
-   C = sig_m + sum(h_wf[:,:,k] for k = 1:M_out)*pred_m
    # Move forward without original data
-   for i = M_out+1:steps
+   for i = M_out+1:steps_tot
        sig_rm[:,i] = sum(h_wf[:,:,k]*PSI_past[:,i-k] for k = 1:M_out) +
                      C + (noise ? rand(noise_dist) : zeros(d))
        isnan(sig_rm[1,i]) && break
        PSI_past[:,i] = Psi(sig_rm[:,i])
    end
-   sig_rm
+   sig_rm[:,discard+1:end]
 end
 
 end #Module
