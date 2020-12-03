@@ -1081,3 +1081,20 @@ errK errR :  8.813444296750153e-11 2.8987032740866613e-13
 1:05 PM - Now, I want to
 1. get some of the scripts in place to run the reduced models. And
 2. look at enforcing the fact that distinct models should be uncorrelated.
+
+5:46 PM - I Wrote the function `modredrun` in the module `Model_Reduction_Dev` in the file "Tools/Model_Reduction_Dev.jl" This should run a generic reduced model given the following
+```julia
+function modredrun(;
+   sig,              # Here only the first M_out = size(h_wf,3) are needed
+   sig_m,            # The mean of the signal process
+   pred_m,           # the mean of the predictor process
+   h_wf,             # The Wiener filter
+   Psi,              # The basis functions of the reduced model
+   steps,            # How many steps you want to run the RM
+   discard,          # How many steps we discard
+   noise = false,    # true includes the noise term
+   Nosie_dist        # The distribution of the noise term
+   )
+```
+
+Done for the day.
