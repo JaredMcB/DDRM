@@ -4,10 +4,11 @@ module KSE_modredTools
 using JLD
 using DSP: conv # For conv function in Psi
 using Dates
+using Distributions
 
-mr = include("Model_Reduction_Dev.jl")
+mr = include("../../Tools/Model_Reduction_Dev.jl")
 
-function InvBurgRK4_1step(x)
+function InvBurgRK4_1step(x;h,obs_gap,P,N)
  lx = length(x)
  function F(x)
      𝑥 = [conj(reverse(x, dims = 1));0; x]
@@ -51,58 +52,11 @@ function Inertialman_part_short(x)
   L
 end
 
-PSI(x; short = true) = short ? [x; InvBurgRK4_1step(x); Inertialman_part_short(x)] :
-                [x; InvBurgRK4_1step(x); Inertialman_part(x)]
-
-
-function modredrun(;
-   X,
-   h_wf,
-   Psi,
-   steps,
-   discard,
-   noise = false,
-   Nosie_dist
-   )
-
-   d, nu, M_out = size(h_wf)
-
-   pred = mr.get_pred(X[:,1:M_out],psi)
-
-
-   ## Run reduced model with no noise
-   steps = size(V_obs,2)
-   V_rm = [V_obs[:,1:M_out] complex(zeros(d,steps-M_out))]
-   nu = size(Psi(V_obs[:,1]),1)
-
-   # load presamples
-   PSI_past = complex(zeros(nu,steps))
-   for i=1:M_out
-       PSI_past[:,i] = Psi(V_obs[:,i])
-   end
-
-   # Move forward without original data
-   print("Reduced Model Run Time: ")
-   @time for i = M_out+1:steps
-       V_rm[:,i] = sum(h_wf[:,:,k]*PSI_past[:,i-k] for k = 1:M_out)
-       isnan(V_rm[1,i]) && break
-       PSI_past[:,i] = Psi(V_rm[:,i])
-   end
-
-   # Process reduced model run
-   steps_rm = size(V_rm,2)
-   V_rm_end = conj(reverse(V_rm,dims = 1))
-   VV_rm = [zeros(1,steps_rm); V_rm; zeros(N-2d-1,steps_rm);V_rm_end]
-   UU_rm = real(ifft(VV_rm,1))
-   tt_rm = tt[1:end]
-
-   dat = Dict(
-      "dat_UU_rm" => UU_rm,
-      "dat_VV_rm" => VV_rm,
-      "dat_tt_rm" => tt_rm)
-   Data = merge(paramaters,dat)
-   save(rmrun_file,Data)
-   println("Reduced Model Run saved")
+function PSI(x; short = true, h,obs_gap,P,N)
+   short ? [x; InvBurgRK4_1step(x;h,obs_gap,P,N); Inertialman_part_short(x)] :
+           [x; InvBurgRK4_1step(x;h,obs_gap,P,N); Inertialman_part(x)]
 end
+
+
 
 end #module
