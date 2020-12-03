@@ -315,4 +315,38 @@ function vector_wiener_filter_fft(
     h_num_fft
 end
 
+function modredrun(;
+   sig,              # Here only the first M_out = size(h_wf,3) are needed
+   sig_m,            # The mean of the signal process
+   pred_m,           # the mean of the predictor process
+   h_wf,
+   Psi,
+   steps,            # How many steps you want to run the RM
+   discard,          # How many steps we discard
+   noise = false,    # true includes the noise term
+   Nosie_dist        # The distribution of the noise term
+   )
+
+   d, nu, M_out = size(h_wf)
+
+   ## Run reduced model with no noise
+   sig_rm = complex(zeros(d,steps))
+   sig_rm[:,1:M_out] = sig[:,1:M_out]
+
+   # load presamples
+   PSI_past = complex(zeros(nu,steps))
+   for i=1:M_out
+       PSI_past[:,i] = Psi(sig[:,i])
+   end
+   C = sig_m + sum(h_wf[:,:,k] for k = 1:M_out)*pred_m
+   # Move forward without original data
+   for i = M_out+1:steps
+       sig_rm[:,i] = sum(h_wf[:,:,k]*PSI_past[:,i-k] for k = 1:M_out) +
+                     C + (noise ? rand(Noise_dist) : zeros(d))
+       isnan(sig_rm[1,i]) && break
+       PSI_past[:,i] = Psi(sig_rm[:,i])
+   end
+   sig_rm
+end
+
 end #Module
