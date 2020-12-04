@@ -23,9 +23,9 @@ function DataGen_DWOL(;
 
     d = size(sigma,1)
 
-    if discard == 0
-        sig_init = [DWOL_dist_samp(1,σ = sigma)]
-    end
+    # if discard == 0
+    #     sig_init = [DWOL_dist_samp(1,σ = sigma)]
+    # end
 
     size(sig_init,1) == size(sigma,1) || print("Dimension of initial value "*
                                                "and sigma do not agree")
@@ -36,53 +36,54 @@ function DataGen_DWOL(;
     d == 1 && (sigma = reshape(sigma,1,1))
 
     # Here we genereate the signal process.
-    signal = zeros(d,ceil(Int,steps/gap))
+    signal = zeros(d,floor(Int,steps-1/gap)+1) # This lenth was figured solely from
+                                               # the recursion below.
     tmp = sig_init
     if scheme == "FE"
-        for n = 1 : steps_tot-1
+        for n = 1 : steps_tot
             tmp = tmp + h*V_prime(tmp) +
-                        sqrt(h)*sigma*( ObsNoise ? e[:,n+1] : randn(d) )
+                        sqrt(h)*sigma*( ObsNoise ? e[:,n] : randn(d) )
             if (n > discard) && ((n - discard - 1) % gap == 0)
                 signal[:,(n-discard-1)÷gap + 1] = tmp
             end
         end
     elseif scheme == "T2"
-        for n = 1 : steps_tot-1
+        for n = 1 : steps_tot
             tmp = tmp .+ h*(-tmp.^3 .+ tmp) .+
                             h^2/2*( tmp.*(tmp.^2 .- 1).*(tmp.^2 .- 1) ) .+
-                            sqrt(h)*sigma*( ObsNoise ? e[:,n+1] : randn(d) )
+                            sqrt(h)*sigma*( ObsNoise ? e[:,n] : randn(d) )
             if (n - discard > 0) && ((n - discard - 1) % gap == 0)
                 signal[:,(n-discard-1)÷gap + 1] = tmp
             end
         end
     elseif scheme == "EM"
-        for n = 1 : steps_tot-1
+        for n = 1 : steps_tot
             k1 = tmp .+ h/2*V_prime(tmp)
             tmp = tmp .+ h*V_prime(k1) .+
-                            sqrt(h)*sigma*( ObsNoise ? e[:,n+1] : randn(d) )
+                            sqrt(h)*sigma*( ObsNoise ? e[:,n] : randn(d) )
             if (n - discard > 0) && ((n - discard - 1) % gap == 0)
                 signal[:,(n-discard-1)÷gap + 1] = tmp
             end
         end
     elseif scheme == "ET"
-        for n = 1 : steps_tot-1
+        for n = 1 : steps_tot
             k0 = V_prime(tmp)
             k1 = tmp .+ h*k0
             tmp = tmp .+ h/2*V_prime(k1) .+ h/2*K0 .+
-                            sqrt(h)*sigma*( ObsNoise ? e[:,n+1] : randn(d) )
+                            sqrt(h)*sigma*( ObsNoise ? e[:,n] : randn(d) )
             if (n - discard > 0) && ((n - discard - 1) % gap == 0)
                 signal[:,(n-discard-1)÷gap + 1] = tmp
             end
         end
     elseif scheme == "RK4"
-        for n = 1 : steps_tot-1
+        for n = 1 : steps_tot
             k1 = tmp
             k2 = tmp .+ h/2*V_prime(k1)
             k3 = tmp .+ h/2*V_prime(k2)
             k4 = tmp .+ h*V_prime(k3)
             tmp = tmp .+ h/6*( V_prime(k1) .+ 2*V_prime(k1) .+
                             2*V_prime(k1) .+ V_prime(k1) ) .+
-                            sqrt(h)*sigma*( ObsNoise ? e[:,n+1] : randn(d) )
+                            sqrt(h)*sigma*( ObsNoise ? e[:,n] : randn(d) )
             if (n - discard > 0) && ((n - discard - 1) % gap == 0)
                 signal[:,(n-discard-1)÷gap + 1] = tmp
             end

@@ -1098,3 +1098,67 @@ function modredrun(;
 ```
 
 Done for the day.
+
+
+# Thursday, December 3, 2020
+
+1:15 PM - Tested the new function `redmodrun` in "Tools/Model_Reduction_Dev.jl" on the DWOL and it looks OK. I started investigating this function more closely. I want it to reproduce a generated time series given the right Wiener filter and noise. The way I can verify this is to set the seed and collect the noise sequence. I did this and fond that when the noise values are the same the two series are almost identical observe:
+```julia
+using Random
+using Distributions
+
+# Get software to generate model
+gen = include("../Nonlinear Langevin/DataGenDWOL.jl")
+
+# Get model reduction software being tested
+mr  = include("../../Tools/Model_Reduction_Dev.jl")
+at  = include("../../Tools/AnalysisToolbox.jl")
+
+# Model run Parameters
+sigma    = [.4]
+sig_init = [1.5]
+# Numerical estimate parameters
+scheme   = "FE"
+steps    = 10^5 #(10^7) # Number of time steps (not including those discarded)
+h        = .01
+discard  = steps # Number of time steps discarded
+gap      = 1
+
+V_c_prime  = x -> -x.*(x.^2 .- 1)
+
+h_wf = zeros(1,3,1)
+h_wf[1,:,1] = [1.01 0 -0.01]
+
+Psi(x)  = [x; x.^2; x.^3]
+
+noise = true
+noise_dist = MvNormal(zeros(1),sqrt(h)*sigma)
+rand(noise_dist)
+
+Random.seed!(2014)
+X_rm_c = real(mr.redmodrun(reshape(sig_init,1,:), h_wf, Psi; steps,discard, noise, noise_dist))
+
+Random.seed!(2014)
+steps_tot = steps + discard
+e = 1/sqrt(h)/sigma[1]*rand(noise_dist,steps_tot)
+
+X_c = @time gen.DataGen_DWOL(; sigma, V_prime = V_c_prime, sig_init, scheme, steps, h, discard, gap, ObsNoise = true,e)
+
+sum(abs.(X_rm_c[1,2:end] - X_c[1][1,1:end-1]))
+```
+the output is:
+```
+julia> sum(abs.(X_rm_c[1,2:end] - X_c[1][1,1:end-1]))
+3.7973773171079417e-10
+```
+for `steps = 10^5` (`discard = steps`) and
+```
+julia> sum(abs.(X_rm_c[1,2:end] - X_c[1][1,1:end-1]))
+1.6955452561287845e-8
+```
+for `steps = 10^7`. So, the reduced (reproduced, rather) model did exactly what the true model did.
+
+11:15 PM - Today I also met with Dr. Lin and we looked at the data (KSE) and the resulting Wiener filter for parameters values (`par = 1500` and `nfft = 2^12`). A few things were noted:
+1. I am scaling the fourier transform differently from the way Dr. Lin did it and he suggested that his way is better for our purposes. I will need to investigate this issue. This was surmised from the fact that the variances of the model were on the order of 100 000.
+2. In consideration of the above it seemed that the computed Wiener filter may be worth running in a noise-free reduced model run. Before that though I will investigate at which point the WF coefficents decay enough that truncation is not a big issue. May ways of doing this were discussed.
+3. After a suitable cut off was perposed I would run the noise-free reduced model.  
