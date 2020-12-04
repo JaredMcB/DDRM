@@ -39,7 +39,7 @@ function DataGen_DWOL(;
     signal = zeros(d,ceil(Int,steps/gap))
     tmp = sig_init
     if scheme == "FE"
-        for n = 1 : steps_tot-1
+        for n = 1 : steps_tot - 1
             tmp = tmp + h*V_prime(tmp) +
                         sqrt(h)*sigma*( ObsNoise ? e[:,n+1] : randn(d) )
             if (n > discard) && ((n - discard - 1) % gap == 0)
