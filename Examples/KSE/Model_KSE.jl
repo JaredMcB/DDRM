@@ -16,7 +16,7 @@ function my_KSE_solver(
     ## Spatial grid and initial conditions:
     x = P*(1:N)/N
     u = g.(x)
-    v = fft(u)
+    v = fft(u)                  # ifft to get division by N this definition is better here
 
     ## Precompute various ETDRK4 scalar quantities:
     q = 2π/P*[0:N÷2-1; 0; N÷2-N+1:-1]
@@ -49,8 +49,8 @@ function my_KSE_solver(
     ℓ = -0.5im*q
 
     v_pad = [v; zeros(N)]
-    F = plan_fft(v_pad)
-    iF = plan_ifft(v_pad)
+    F = plan_ifft(v_pad)        # julia's ifft is my fft for this problem.
+    iF = plan_fft(v_pad)        # julia's fft is my ifft for this problem.
 
     function NonLin(v)
         v_pad = [v; zeros(N)]
@@ -59,8 +59,8 @@ function my_KSE_solver(
     end
 
     # ## Not correcting for aliasing
-    # F = plan_fft(v)
-    # iF = plan_ifft(v)
+    # F = plan_ifft(v)          # julia's ifft is my fft for this problem.
+    # iF = plan_fft(v)          # julia's fft is my ifft for this problem.
     # NonLin(v) = F*(real(iF*v)).^2
 
     vv = complex(zeros(N, n_obs+1)); vv[:,1]= v
@@ -78,7 +78,7 @@ function my_KSE_solver(
         @. v =  E*v + Nv*f1 + 2*(Na+Nb)*f2 + Nc*f3
         if n % n_gap == 0
             ni = Int64(n÷n_gap) + 1
-            u = real.(ifft(v))
+            u = real.(fft(v))   # julia's fft is my ifft for this problem.
             uu[:,ni] = u
             vv[:,ni] = v
             tt[ni] = t
