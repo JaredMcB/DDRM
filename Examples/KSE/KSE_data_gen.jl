@@ -14,7 +14,7 @@ using Random
 
 kse = include("Model_KSE.jl")
 
-gen = "lin1"     # this is just a reference designation it shows up in the
+gen = "linn"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
 T        = 10^5 # Length (in seconds) of time of run
@@ -24,7 +24,7 @@ N        = 96  # Number of fourier modes used
 h        = 1e-3 # Timestep
 g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
 obs_gap  = 100
-seed     = 2021
+seed     = 2020
 
 Random.seed!(seed)
 uu, vv, tt =  kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
