@@ -1212,4 +1212,4 @@ seed     = 2020
 ```
 The goal will be to view this data on the "KSE_data_analyzer" notebook.
 
-It finished at about 3:29 PM. And seems not to have worked. 
+It finished at about 3:29 PM. And seems not to have worked. So, I found a typo in the code, I had missed an instance of fft to be changed to ifft. I fixed it and checked it in a new notebook "KSE_data_gen_test". The data looked good. So, I just sent it to thelio as job 175 at Fri Dec  4 16:16:00 2020.   
