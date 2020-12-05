@@ -1159,6 +1159,57 @@ julia> sum(abs.(X_rm_c[1,2:end] - X_c[1][1,1:end-1]))
 for `steps = 10^7`. So, the reduced (reproduced, rather) model did exactly what the true model did.
 
 11:15 PM - Today I also met with Dr. Lin and we looked at the data (KSE) and the resulting Wiener filter for parameters values (`par = 1500` and `nfft = 2^12`). A few things were noted:
-1. I am scaling the fourier transform differently from the way Dr. Lin did it and he suggested that his way is better for our purposes. I will need to investigate this issue. This was surmised from the fact that the variances of the model were on the order of 100 000.
-2. In consideration of the above it seemed that the computed Wiener filter may be worth running in a noise-free reduced model run. Before that though I will investigate at which point the WF coefficents decay enough that truncation is not a big issue. May ways of doing this were discussed.
-3. After a suitable cut off was perposed I would run the noise-free reduced model.  
+1. I am scaling the Fourier transform differently from the way Dr. Lin did it and he suggested that his way is better for our purposes. I will need to investigate this issue. This was surmised from the fact that the variances of the model were on the order of 100 000.
+2. In consideration of the above it seemed that the computed Wiener filter may be worth running in a noise-free reduced model run. Before that though I will investigate at which point the WF coefficients decay enough that truncation is not a big issue. May ways of doing this were discussed.
+3. After a suitable cut off was purposed I would run the noise-free reduced model.
+
+
+# Friday, December 4, 2020
+
+11:50 AM - The first thing I want to work on today is to check the scaling (or lack thereof) associated with the DFT I am using.  Here I have a slow but intuitive implementation of the same transforms that `FFTW.jl` uses, and demonstrate a little test.
+```julia
+using FFTW
+using Statistics: mean
+
+function my_dft(u)
+	N = length(u)
+	v = [sum(u[j]*exp(-im*2pi/N*(j-1)*(k-1)) for j = 1:N) for k = 1:N]
+end
+
+function my_idft(v)
+	N = length(v)
+	u = [mean(v[k]*exp(im*2pi/N*(k-1)*(j-1)) for k = 1:N) for j = 1:N]
+end
+
+nfft = 2^10
+Theta = 2π*(0:nfft-1)/nfft
+Z = exp.(-im*Theta)
+
+f(z) = 2z^(-1) + 6 + 2z
+R = f.(Z)
+S = fft(R)/nfft
+S_my = my_idft(R)
+```
+The result was
+```
+julia> sum(abs.(S-S_my))
+1.9216778795533907e-11
+```
+So, Julia (FFTW) puts the mean with the `ifft`. This means the `vv` in the function `my_KSE_solver` is unscaled and then scaled when it is converted back to `uu`. This make `vv` very large so I would just as soon not have that. So, today, I switched each instance of `fft` with `ifft` and vice versa. Now to run it on thelio. This is just a repeat of what was done at the beginning of Nov 24, 2020, for reference I repeat my self a little: I ran "Examples/KSE/KSE_data_gen.jl" (job 174 at Fri Dec  4 14:41:00 2020) to generate KSE data and save it as "data/KSE_Data/KSE_sol_linn.jld". Here, `gen = "linn"`. So, now we have a copy of the data of thelio, with the standard `gen = "linn"` parameters:
+
+```julia
+gen = "linn"     # this is just a reference designation it shows up in the
+                # output file. I think of generatrion.
+
+T        = 10^5 # Length (in seconds) of time of run
+T_disc   = 10^5 ÷ 2 # Length (in seconds) of time discarded
+P        = 2π/sqrt(0.085)  # Period
+N        = 96  # Number of fourier modes used
+h        = 1e-3 # Timestep
+g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
+obs_gap  = 100
+seed     = 2020
+```
+The goal will be to view this data on the "KSE_data_analyzer" notebook.
+
+It finished at about 3:29 PM. And seems not to have worked. 
