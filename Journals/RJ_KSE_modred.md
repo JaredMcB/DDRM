@@ -1212,4 +1212,128 @@ seed     = 2020
 ```
 The goal will be to view this data on the "KSE_data_analyzer" notebook.
 
-It finished at about 3:29 PM. And seems not to have worked. So, I found a typo in the code, I had missed an instance of fft to be changed to ifft. I fixed it and checked it in a new notebook "KSE_data_gen_test". The data looked good. So, I just sent it to thelio as job 175 at Fri Dec  4 16:16:00 2020.   
+It finished at about 3:29 PM. And seems not to have worked. So, I found a typo in the code, I had missed an instance of fft to be changed to ifft. I fixed it and checked it in a new notebook "KSE_data_gen_test". The data looked good. So, I just sent it to thelio as job 175 at Fri Dec  4 16:16:00 2020.
+
+
+# Saturday, December 5, 2020
+
+2:14 PM - Thelio is down so I will run the data on my computer. I ran "KSE_data_gen.jl" in Atom, in it's own window. I started it at 2:16 PM.
+8:54 PM - I don't know when it finished, but I now have a set of data on my computer to work with. I ran it through the "KSE_data_analyzer" notebook and saw the the data was much smaller in absolute value but I also found that all the predictors were of the around the same order, that is they were order unity or smaller. This is because before the inertial manifold predictors were much bigger in magnitude than the signal itself. These terms are quadratic in the terms of the signal process.
+
+```julia
+gen = "linn"     # this is just a reference designation it shows up in the
+                # output file. I think of generatrion.
+
+T        = 10^5 # Length (in seconds) of time of run
+T_disc   = 10^5 ÷ 2 # Length (in seconds) of time discarded
+P        = 2π/sqrt(0.085)  # Period
+N        = 96  # Number of fourier modes used
+h        = 1e-3 # Timestep
+g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
+obs_gap  = 100
+seed     = 2020
+
+Random.seed!(seed)
+uu, vv, tt =  kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
+```
+The data was saved in "KSE/Data/KSE_sollinn.jld" (on my desktop).
+This data was then loaded and a Wiener filter was computed. Here is the code I used along with the solution.
+```julia
+M_out = 100
+Δt = h*obs_gap
+
+par = 1500
+nfft = 2^12
+
+Psi(x) = kmr.PSI(x; h, obs_gap, P, N)
+
+@time h_wf = mr.get_wf(X, Psi; M_out, par, nfft, rl = false, PI = false)
+```
+The result was:
+```
+5×25×100 Array{Complex{Float64},3}:
+[:, :, 1] =
+  9349.87-1255.54im  -233.103+169.473im  …  -11.5853-5.06667im
+  133.295-930.953im   7147.62-594.171im     -7.12174-3.59719im
+ -747.302+394.273im  -1655.48-932.133im     -18.7627-27.4841im
+  2516.65+2272.37im   540.984-320.928im     -18.2888+12.4662im
+ -86.6757+407.361im  -36.4745+52.2861im      7.88715+5.72918im
+
+[:, :, 2] =
+  1879.78+1938.71im   178.546-321.55im   …    34.578+13.6545im
+  111.045-1233.06im   2284.96+996.729im      21.5259+8.60318im
+ -668.679+758.057im  -1165.18-620.042im      51.1214+71.2045im
+  295.955+1087.76im    440.94+218.167im      54.6638-38.8932im
+  -161.55+62.4245im  -9.80719+35.5088im     -22.3996-15.9665im
+
+[:, :, 3] =
+ -9517.05+166.643im   334.363-116.327im  …  -29.6608-10.2677im
+  1353.09+2593.49im  -6123.03-584.627im     -20.5444-2.09551im
+ -1067.03-980.211im   2071.81+1069.72im     -40.1492-43.7478im
+ -1588.29-2321.62im  -327.739-104.45im      -44.0172+36.1104im
+ -47.1073-401.068im   97.1253-101.104im      17.7296+12.1839im
+
+...
+
+[:, :, 98] =
+ -79.0629-588.198im  -66.3832+756.56im   …  -1.36171+0.335836im
+ -977.496+1788.77im  -63.1384-539.863im      2.50092-4.33989im
+  1676.07-3361.66im   394.014-14.5664im     -2.00886+3.18274im
+ -323.927-822.25im   -268.681+60.2782im     0.414216-0.477683im
+ -184.819-129.395im  -39.8059-17.3266im      0.22577-0.0295624im
+
+[:, :, 99] =
+ 781.357-542.832im    -326.9+432.729im  …    1.51566+0.05337im
+ 1508.15+691.723im   297.618+455.677im      -4.48108+3.61844im
+ 2046.35-645.228im   305.331-472.463im      0.315305+2.43262im
+ 1279.73+43.8159im  -100.379+262.281im      0.152594+0.712349im
+ 176.589+42.4591im   61.8087+12.7585im     -0.121087-0.0740854im
+
+[:, :, 100] =
+  127.238-75.906im   -380.392-160.87im   …   -1.90492-0.588557im
+  -1162.0-2338.46im   -1229.4+1755.66im       5.47405-4.27488im
+ -2681.35-1309.98im   1320.45-847.341im       1.19182-5.28527im
+  1.89863-127.924im  -525.121+239.076im     -0.828088-0.968056im
+ -40.1118+126.569im  -19.3036-44.9249im      0.146902+0.143395im
+```
+Also,
+```
+ Get_wf computation time: 710.222636 seconds (411.03 M allocations: 861.093 GiB, 9.44% gc time)
+
+ CKMS Computation time: 507.801449 seconds (169.25 M allocations: 773.837 GiB, 11.57% gc time)
+ Number of CKMS iterations: 6103
+ errK errR : 8.148016231247954e-11 4.512741213213582e-14
+```
+I think this will not be a very good Wiener filter. However observe the following:
+```julia
+sig  = X[:,2:end];
+pred = mr.get_pred(X[:,1:end-1], Psi);
+
+sig_m  = mean(sig, dims = 2);
+pred_m = mean(pred, dims = 2);
+C = sig_m
+```
+```
+julia> sum(h_wf[:,:,k]*pred[:,M_out - k + 1] for k = 1:M_out) + C
+5×1 Array{Complex{Float64},2}:
+   0.6817769290154864 + 0.2837080449283443im
+  -0.9962927993676172 - 0.09952869236130044im
+  -1.8758810133270523 + 0.6414698155927139im
+   0.6861379865270217 - 0.1852998998267594im
+ -0.23151584478867768 - 0.09224841253651911im
+
+julia> sig[:,M_out:M_out+1]
+5×3 Array{Complex{Float64},2}:
+   0.49894+0.166077im   0.495678+0.162481im   0.491848+0.15849im
+  -1.76475-0.555181im   -1.73796-0.562808im   -1.71021-0.569899im
+ -0.753714+0.810655im   -0.75247+0.834937im  -0.749829+0.857893im
+  0.636802-0.387014im   0.651121-0.343075im   0.664037-0.298592im
+ -0.203709-0.126904im  -0.201219-0.119974im  -0.197976-0.112141im
+
+julia> norm(sig_rm - sig[:,M_out])/norm(sig[:,M_out])
+0.6257158457486914
+
+julia> norm(sig_rm - sig[:,M_out])
+1.463322098376953
+```
+Despite the outrageous looking coefficients the relative one-step prediction error is much smaller than I though it would be.
