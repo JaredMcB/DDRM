@@ -45,7 +45,7 @@ paramaters = Dict(
 server = startswith(pwd(), "/u5/jaredm") ? true : false
 println("on server = $server")
 sol_file = server ? "../../../data/KSE_Data/KSE_sol_$gen.jld" :
-   "Examples/KSE/Data/KSE_sol_$gen.jld"
+   "Desktop/DDMR/Examples/KSE/Data/KSE_sol_$gen.jld"
 println("Sol save location: " * sol_file)
 
 dat = Dict("dat_uu" => uu, "dat_vv" => vv, "dat_tt" => tt)
