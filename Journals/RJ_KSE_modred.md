@@ -1440,3 +1440,4 @@ julia> h_wf
  Number of CKMS iterations: 6608
  errK errR : 9.577601950902882e-11 7.172692752063925e-14
  ```
+ The above was done on my laptop. I am going to look at the new data again.
