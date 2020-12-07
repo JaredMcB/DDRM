@@ -1215,6 +1215,7 @@ The goal will be to view this data on the "KSE_data_analyzer" notebook.
 It finished at about 3:29 PM. And seems not to have worked. So, I found a typo in the code, I had missed an instance of fft to be changed to ifft. I fixed it and checked it in a new notebook "KSE_data_gen_test". The data looked good. So, I just sent it to thelio as job 175 at Fri Dec  4 16:16:00 2020.
 
 
+
 # Saturday, December 5, 2020
 
 2:14 PM - Thelio is down so I will run the data on my computer. I ran "KSE_data_gen.jl" in Atom, in it's own window. I started it at 2:16 PM.
@@ -1237,7 +1238,9 @@ Random.seed!(seed)
 uu, vv, tt =  kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
 ```
 The data was saved in "KSE/Data/KSE_sollinn.jld" (on my desktop).
-This data was then loaded and a Wiener filter was computed. Here is the code I used along with the solution.
+
+#### Experiment Dec 5, 2020 1
+Here I compute the Wiener filter for the data generated on my computer. This data was then loaded and a Wiener filter was computed. Here is the code I used along with the solution.
 ```julia
 M_out = 100
 Δt = h*obs_gap
@@ -1337,3 +1340,103 @@ julia> norm(sig_rm - sig[:,M_out])
 1.463322098376953
 ```
 Despite the outrageous looking coefficients the relative one-step prediction error is much smaller than I though it would be.
+
+
+# Monday, December 7, 2020
+
+1:35 PM - Today, I am investigating the Wiener filter after I have modified the KSE data generating code. This is all described above. Today, I am back on thelio. I will repeat the experiment above (*Experiment Dec 5, 2020 1*)
+
+This experiment was run in the notebook "Examples/KSE/KSE Model reduction.ipynb"
+
+Here is the code
+```julia
+using JLD
+using Dates
+using PyPlot
+using Statistics: mean
+using LinearAlgebra: norm
+
+mr  = include("../../Tools/Model_Reduction_Dev.jl")
+at  = include("../../Tools/AnalysisToolbox.jl")
+kmr = include("KSE_modredTools.jl")
+
+server = startswith(pwd(), "/u5/jaredm") ? true : false
+println("on server = $server")
+# sol_file = server ? "../../../data/KSE_Data/KSE_sol$Exp.jld" :
+#    "Examples/KSE/Data/KSE_sol$Exp.jld"
+# println("Sol save location: " * sol_file)
+# wf_file = server ? "../../../data/KSE_Data/KSE_wf$Exp-Mo$M_out.jld" :
+#    "Examples/KSE/Data/KSE_wf$Exp-Mo$M_out.jld"
+
+# When I want the standard lin et al. (2017) data.
+sol_file = server ? "../../../data/KSE_Data/KSE_sol_linn.jld" :
+   "Data/KSE_sol_linn.jld"
+
+ M_out = 100
+ Δt = h*obs_gap
+
+ par = 1500
+ nfft = 2^12
+
+ Psi(x) = kmr.PSI(x; h, obs_gap, P, N)
+
+ X = vv[2:d+1, 1:end]
+
+ @time h_wf = mr.get_wf(X, Psi; M_out, par, nfft, rl = false, PI = false)
+ ```
+Here is the result:
+```
+julia> h_wf
+5×25×100 Array{Complex{Float64},3}:
+[:, :, 1] =
+  10545.7-794.949im   232.383+1179.6im   …  -20.1252-10.494im
+  593.575-1799.06im   12685.9-1111.27im     -11.8238-10.7905im
+ -911.765+3735.54im   200.106-1160.23im      39.9278-27.5552im
+  57.7441-42.4492im  -398.934-200.039im      3.85142-38.91im
+ -206.186+274.822im   14.6174-47.9232im     -9.89727+27.9757im
+
+[:, :, 2] =
+ -923.329+1049.9im   -257.06+35.9999im  …   43.9612+30.9441im
+ -1283.12-2704.16im   881.87+2394.12im      24.7885+17.2973im
+ -2448.36+2692.45im  36.5887-23.7307im     -103.841+26.8297im
+  394.477+678.363im  -466.74+11.9714im     -18.2804+86.1575im
+  110.848-135.379im  34.0694+22.3472im      27.7382-74.3678im
+
+[:, :, 3] =
+ -8715.85+832.049im   137.084-1023.18im  …  -22.6788-21.6486im
+  1215.29+743.874im  -11344.4-356.744im     -5.70314-1.44347im
+  453.665-2426.23im  -353.878+562.911im      74.4533+14.1772im
+  293.217+391.919im   -293.16+443.571im      22.2058-48.2931im
+  192.215-271.336im  -12.0341+29.414im      -21.1788+53.165im
+
+...
+
+[:, :, 98] =
+   1051.4+710.149im  -129.466-34.2065im  …  -0.225742+0.490731im
+ -939.966-859.626im   292.121+729.808im       8.53509+8.78829im
+ -1233.31+1505.86im  -183.629+106.972im       1.87664+10.7836im
+ -671.687+759.237im   169.179-247.71im       -1.39865+4.03962im
+  83.2924+56.5083im   16.5698-35.9778im      0.108188-0.0874232im
+
+[:, :, 99] =
+  519.149+1146.91im  -628.011+399.565im  …   0.297174-0.903767im
+ -3657.41-516.108im   1612.15-488.185im       3.30528+4.25188im
+ -1156.27+3548.35im   596.615-958.239im      -1.36434-3.68165im
+  581.055+906.052im  -519.433-531.896im      -1.51742-1.17972im
+ -105.143-123.866im   12.2814+1.25605im     0.0790085+0.0356196im
+
+[:, :, 100] =
+  1307.79-233.191im  -789.205-301.516im  …   -1.33643+2.63357im
+  1046.75-2831.8im    17.9295+579.418im      -6.28936-2.99582im
+ -4160.22+249.454im   3269.37-798.956im       0.17423-8.82939im
+  1434.13-635.662im  -464.613-525.253im     -0.353796-2.80418im
+  -43.064+28.3919im  -14.6587-12.9168im     -0.217532+0.0821389im
+ ```
+ Here are more output results:
+ ```
+ Get_wf computation time: 441.084422 seconds (411.78 M allocations: 924.783 GiB, 1.92% gc time)
+
+ CKMS Computation time: 218.085101 seconds (169.31 M allocations: 837.491 GiB, 2.18% gc time)
+ Number of CKMS iterations: 6608
+ errK errR : 9.577601950902882e-11 7.172692752063925e-14
+ ```
