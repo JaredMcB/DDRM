@@ -1441,3 +1441,5 @@ julia> h_wf
  errK errR : 9.577601950902882e-11 7.172692752063925e-14
  ```
  The above was done on my laptop. I am going to look at the new data again.
+
+ 2:58 PM - It looks like the data may not yet be right. Because the autocorrecations don't match what they were before and think it may be in the dealiasing part.
