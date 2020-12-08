@@ -1346,6 +1346,8 @@ Despite the outrageous looking coefficients the relative one-step prediction err
 
 1:35 PM - Today, I am investigating the Wiener filter after I have modified the KSE data generating code. This is all described above. Today, I am back on thelio. I will repeat the experiment above (*Experiment Dec 5, 2020 1*)
 
+#### Experiment Dec 7, 2020 1 (Rerun on thelio)
+
 This experiment was run in the notebook "Examples/KSE/KSE Model reduction.ipynb"
 
 Here is the code
@@ -1431,12 +1433,18 @@ julia> h_wf
  -4160.22+249.454im   3269.37-798.956im       0.17423-8.82939im
   1434.13-635.662im  -464.613-525.253im     -0.353796-2.80418im
   -43.064+28.3919im  -14.6587-12.9168im     -0.217532+0.0821389im
- ```
- Here are more output results:
- ```
- Get_wf computation time: 441.084422 seconds (411.78 M allocations: 924.783 GiB, 1.92% gc time)
+```
+Here are more output results:
+```
+Get_wf computation time: 441.084422 seconds (411.78 M allocations: 924.783 GiB, 1.92% gc time)
 
- CKMS Computation time: 218.085101 seconds (169.31 M allocations: 837.491 GiB, 2.18% gc time)
- Number of CKMS iterations: 6608
- errK errR : 9.577601950902882e-11 7.172692752063925e-14
- ```
+CKMS Computation time: 218.085101 seconds (169.31 M allocations: 837.491 GiB, 2.18% gc time)
+Number of CKMS iterations: 6608
+errK errR : 9.577601950902882e-11 7.172692752063925e-14
+```
+
+
+# Tuesday, December 8, 2020
+
+10:16 AM - Today I am at my office hoping to get a lot done!
+The first thing I want t do is think about the data that I have just generated after the redefinition of the discrete Fourier transform. I will quickly compare some aspects of it with what Dr. Lin has published. This should not take more than 20 mins.
