@@ -34,23 +34,25 @@ function my_KSE_solver(
 
     ## Some declareations
 
-    a = Complex.(zeros(N))
-    b = Complex.(zeros(N))
-    c = Complex.(zeros(N))
+    a  = Complex.(zeros(N))
+    b  = Complex.(zeros(N))
+    c  = Complex.(zeros(N))
     Nv = Complex.(zeros(N))
     Na = Complex.(zeros(N))
     Nb = Complex.(zeros(N))
     Nc = Complex.(zeros(N))
 
     # Main time-stepping loop
-    n_max = round(Int,T/h)
-    n_obs = floor(Int,n_max/n_gap)
+    n_max  = round(Int,T/h)
+    n_obs  = floor(Int,n_max/n_gap)
     n_disc = floor(Int,T_disc/h/n_gap)
-    ℓ = -0.5im*q
+    ℓ      = 0.5im*q            # julia puts the negative exponent in fft since
+                                # we are using ifft for the scaling the positve
+                                # comes down when the derivative is taken 
 
     v_pad = [v; zeros(N)]
-    F = plan_ifft(v_pad)        # julia's ifft is my fft for this problem.
-    iF = plan_fft(v_pad)        # julia's fft is my ifft for this problem.
+    F  = plan_ifft(v_pad)        # julia's ifft is my fft for this problem.
+    iF = plan_fft(v_pad)         # julia's fft is my ifft for this problem.
 
     function NonLin(v)
         v_pad = [v; zeros(N)]
