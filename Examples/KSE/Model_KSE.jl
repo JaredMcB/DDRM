@@ -49,8 +49,8 @@ function my_KSE_solver(
     ℓ = -0.5im*q
 
     v_pad = [v; zeros(N)]
-    F = plan_ifft(v_pad)        # julia's ifft is my fft for this problem.
-    iF = plan_fft(v_pad)        # julia's fft is my ifft for this problem.
+    F = plan_fft(v_pad)        # julia's ifft is my fft for this problem.
+    iF = plan_ifft(v_pad)        # julia's fft is my ifft for this problem.
 
     function NonLin(v)
         v_pad = [v; zeros(N)]
