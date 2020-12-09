@@ -1346,6 +1346,8 @@ Despite the outrageous looking coefficients the relative one-step prediction err
 
 1:35 PM - Today, I am investigating the Wiener filter after I have modified the KSE data generating code. This is all described above. Today, I am back on thelio. I will repeat the experiment above (*Experiment Dec 5, 2020 1*)
 
+#### Experiment Dec 7, 2020 1 (Rerun on thelio)
+
 This experiment was run in the notebook "Examples/KSE/KSE Model reduction.ipynb"
 
 Here is the code
@@ -1431,15 +1433,22 @@ julia> h_wf
  -4160.22+249.454im   3269.37-798.956im       0.17423-8.82939im
   1434.13-635.662im  -464.613-525.253im     -0.353796-2.80418im
   -43.064+28.3919im  -14.6587-12.9168im     -0.217532+0.0821389im
- ```
- Here are more output results:
- ```
- Get_wf computation time: 441.084422 seconds (411.78 M allocations: 924.783 GiB, 1.92% gc time)
+```
+Here are more output results:
+```
+Get_wf computation time: 441.084422 seconds (411.78 M allocations: 924.783 GiB, 1.92% gc time)
 
- CKMS Computation time: 218.085101 seconds (169.31 M allocations: 837.491 GiB, 2.18% gc time)
- Number of CKMS iterations: 6608
- errK errR : 9.577601950902882e-11 7.172692752063925e-14
- ```
- The above was done on my laptop. I am going to look at the new data again.
+CKMS Computation time: 218.085101 seconds (169.31 M allocations: 837.491 GiB, 2.18% gc time)
+Number of CKMS iterations: 6608
+errK errR : 9.577601950902882e-11 7.172692752063925e-14
+```
 
- 2:58 PM - It looks like the data may not yet be right. Because the autocorrecations don't match what they were before and think it may be in the dealiasing part.
+
+# Tuesday, December 8, 2020
+
+10:16 AM - Today I am at my office hoping to get a lot done!
+The first thing I want t do is think about the data that I have just generated after the redefinition of the discrete Fourier transform. I will quickly compare some aspects of it with what Dr. Lin has published. This should not take more than 20 mins.
+
+11:45 AM - This ended up taking about 90 mins. In the time I finally added `.ipynb` to my `.gitignore`. So, I will be using jupytext a lot more now. Anyway, I compared the KSE statistics and found some the same and some different. The energy looks off by a factor of ten. That is to say the 2017 series is 1/10 in energy, from mine. this suggests the omission of a multiple of a time-step perhaps.  While I think of something better to do I think I will have thelio make another times series.
+
+3:40 PM - I did not make the time series, as I said I would. I have instead been looking at the code. I verified that the code (when not correcting for aliasing) behaves the same as Trefethen's MatLab code. I looked at the first and last line of both outputs and they were identical. When I corrected for aliasing there was only a small change in the output visually. Now, I switched the definition of the discrete Fourier transform (putting the mean in the forward transoform rather than the backward as both FFTW and MatLab do). This gave me a very different solution. So, there is more I need to do when change I switch the denition of the transform. This is what I will focus on in the last hour before I have to go home. 
