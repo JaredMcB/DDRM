@@ -10,7 +10,6 @@
 using JLD
 using DSP: conv # For conv function in Psi
 using Dates
-using Random
 
 kse = include("Model_KSE.jl")
 
@@ -26,7 +25,6 @@ g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
 obs_gap  = 100
 seed     = 2020
 
-Random.seed!(seed)
 uu, vv, tt =  kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
 
 paramaters = Dict(
