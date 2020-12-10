@@ -11,7 +11,6 @@ N        = 128  # Number of fourier modes used
 h        = 1/4  # Timestep
 g        = x -> cos(x/16)*(1 + sin.(x/16))
 obs_gap  = floor(Int, T/h/100)
-seed     = 2021
 
 Δt = h*obs_gap
 uu, vv, tt =  @time kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
@@ -28,3 +27,5 @@ u = rand(128)
 using FFTW
 
 u - ifft(fft(u))
+
+uu
