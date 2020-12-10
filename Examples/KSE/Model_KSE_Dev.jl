@@ -55,7 +55,7 @@ function my_KSE_solver(
     iF = plan_fft(v_pad)         # julia's fft is my ifft for this problem.
 
     function NonLin(v)
-        v_pad = [v; zeros(N)]
+        v_pad = [v; zeros(2N)]
         nv = F*(real(iF*v_pad)).^2
         nv[1:N]
     end
