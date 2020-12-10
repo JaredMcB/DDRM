@@ -1456,4 +1456,77 @@ The first thing I want t do is think about the data that I have just generated a
 
 # Wednesday, December 9, 2020
 
-1:16 PM - Just got through talking a while with Eric. Before that I finished some class stuff. What I want to do now is get the data analyzer working and then run the reduced model. 
+1:16 PM - Just got through talking a while with Eric. Before that I finished some class stuff. What I want to do now is get the data analyzer working and then run the reduced model.
+
+# Thursday, December 10, 2020
+
+8:26 PM - Yesterday, I ran some simulations and analyzed the data. I got the same autocorrelations as before the change. Which are different from the earlier data which more closely resembeled Dr. Lins results. I also cached the notebooks and and added `*.ipynb` to the `.gitignore`. Hopefully this works well for me.
+
+Today, I plan on investigating the solver to see why it does not give the other results. I think I will run a few experiments.
+1. If I just supply the scalers myself what happens.
+   ```julia
+   dft(X)       = fft(X)/size(X,1)
+   idft(X)      = ifft(X)*size(X,1)
+   plan_dft(X)  = plan_fft(X)/size(X,1)
+   plan_idft(X) = plan_ifft(X)*size(X,1)
+   ```
+2. Then try this again:
+   ```julia
+  dft(X)       = ifft(X)
+  idft(X)      = fft(X)
+  plan_dft(X)  = plan_ifft(X)
+  plan_idft(X) = plan_fft(X)
+  ```
+  This one requires a change on the coefficient of 𝑖.
+
+I don't think I like this, I need to think of something else, a fresh session sort of thing. So, When I use
+```julia
+dft  = ifft
+idft = fft
+```
+and make the appropriate change in the coefficient 𝑖. Then the code behaves just the same as the original solver on the Trefethen data. (not correcting for aliasing). I will verify this again.
+
+I already have the module `Model_KSE` in "Examples/KSE/Model_KSE.jl" which I had altered and then reverted back to as it was before. I have verified that this script (when not correcting for aliasing) preforms the same as Trefethen's MatLab code, I compare the final term in the series and they were the same. Then I duplicated this modele and made `Model_KSE_Dev` in "Examples/KSE/Model_KSE_Dev.jl". I then changed the definition of `dft` used using
+```julia
+dft(X)       = ifft(X)
+idft(X)      = fft(X)
+plan_dft(X)  = plan_ifft(X)
+plan_idft(X) = plan_fft(X)
+```
+together with a change in the sign of the coefficient of 𝑖.
+
+I ran both solvers on the Trefethen problem, in a new session, both not accounting for aliasing. And they are Idenitcal where is the script with result:
+```julia
+using PyPlot
+using Statistics: mean, var
+
+kse = include("../Model_KSE.jl")
+ksed = include("../Model_KSE_Dev.jl")
+
+T        = 150 # Length (in seconds) of time of run
+T_disc   = 0    # Length (in seconds) of time discarded
+P        = 32π  # Period
+N        = 128  # Number of fourier modes used
+h        = 1/4  # Timestep
+g        = x -> cos(x/16)*(1 + sin.(x/16))
+obs_gap  = floor(Int, T/h/100)
+
+Δt = h*obs_gap
+uu, vv, tt    =  @time kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
+uud, vvd, ttd =  @time ksed.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
+```
+The result:
+```
+julia> sum(abs.(uu - uud).^2)
+0.0
+```
+
+Now, When I do correct for aliasing in both algorithms and run the entirely same script, I get
+```
+julia> sum(abs.(uu - uud).^2)
+259442.24694821244
+```
+
+I conclude that the dealiasing part needs to be adjusted a long with the change in the dft, though I don't understand why it should.
+
+12:42 PM - I am taking a break from this (since it is becoming unproductive) to grade.

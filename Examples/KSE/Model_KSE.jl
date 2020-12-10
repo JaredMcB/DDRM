@@ -48,20 +48,20 @@ function my_KSE_solver(
     n_disc = floor(Int,T_disc/h/n_gap)
     ℓ      = -0.5im*q
 
-    # v_pad = [v; zeros(N)]
-    # F  = plan_fft(v_pad)
-    # iF = plan_ifft(v_pad)
-    #
-    # function NonLin(v)
-    #     v_pad = [v; zeros(N)]
-    #     nv = F*(real(iF*v_pad)).^2
-    #     nv[1:N]
-    # end
+    v_pad = [v; zeros(N)]
+    F  = plan_fft(v_pad)
+    iF = plan_ifft(v_pad)
 
-    ## Not correcting for aliasing
-    F = plan_fft(v)
-    iF = plan_ifft(v)
-    NonLin(v) = F*(real(iF*v)).^2
+    function NonLin(v)
+        v_pad = [v; zeros(N)]
+        nv = F*(real(iF*v_pad)).^2
+        nv[1:N]
+    end
+
+    # ## Not correcting for aliasing
+    # F = plan_fft(v)
+    # iF = plan_ifft(v)
+    # NonLin(v) = F*(real(iF*v)).^2
 
     vv = complex(zeros(N, n_obs+1)); vv[:,1]= v
     uu = zeros(N, n_obs+1); uu[:,1]= u
@@ -78,7 +78,7 @@ function my_KSE_solver(
         @. v =  E*v + Nv*f1 + 2*(Na+Nb)*f2 + Nc*f3
         if n % n_gap == 0
             ni = Int64(n÷n_gap) + 1
-            u = real.(ifft(v))   
+            u = real.(ifft(v))
             uu[:,ni] = u
             vv[:,ni] = v
             tt[ni] = t

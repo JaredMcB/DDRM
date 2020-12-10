@@ -23,7 +23,6 @@ N        = 96  # Number of fourier modes used
 h        = 1e-3 # Timestep
 g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
 obs_gap  = 100
-seed     = 2020
 
 uu, vv, tt =  kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
 

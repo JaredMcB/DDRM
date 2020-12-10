@@ -1,8 +1,8 @@
 using PyPlot
-using Random
 using Statistics: mean, var
 
 kse = include("../Model_KSE.jl")
+ksed = include("../Model_KSE_Dev.jl")
 
 T        = 150 # Length (in seconds) of time of run
 T_disc   = 0    # Length (in seconds) of time discarded
@@ -13,7 +13,8 @@ g        = x -> cos(x/16)*(1 + sin.(x/16))
 obs_gap  = floor(Int, T/h/100)
 
 Δt = h*obs_gap
-uu, vv, tt =  @time kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
+uu, vv, tt    =  @time kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
+uud, vvd, ttd =  @time ksed.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
 
 t_start = 0
 t_stop = 150
@@ -26,6 +27,7 @@ mean(uu, dims = 2)
 u = rand(128)
 using FFTW
 
-u - ifft(fft(u))
+u - fft(ifft(u))
 
+sum(abs.(uu - uud).^2)
 uu
