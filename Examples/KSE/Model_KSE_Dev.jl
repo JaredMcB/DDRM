@@ -9,7 +9,8 @@ function my_KSE_solver(
     h :: Real = 1/4, # Timestep
     g = x -> cos(π*x/16)*(1 + sin.(π*x/16)), # Initial condition function
     T_disc = T/2,
-    n_gap = 100 # 1 +  No. of EDTRK4 steps between reported data
+    n_gap = 100, # 1 +  No. of EDTRK4 steps between reported data
+    aliasing = false
     )
 
 
@@ -49,21 +50,23 @@ function my_KSE_solver(
     ℓ      = 0.5im*q            # julia puts the negative exponent in fft since
                                 # we are using ifft for the scaling the positve
                                 # comes down when the derivative is taken
+    if aliasing
+        Nh    = ceil(Int,N/2)
+        v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+        F     = plan_ifft(v_pad)        # julia's ifft is my fft for this problem.
+        iF    = plan_fft(v_pad)         # julia's fft is my ifft for this problem.
 
-    v_pad = [v; zeros(N)]
-    F  = plan_ifft(v_pad)        # julia's ifft is my fft for this problem.
-    iF = plan_fft(v_pad)         # julia's fft is my ifft for this problem.
-
-    function NonLin(v)
-        v_pad = [v; zeros(2N)]
-        nv = F*(real(iF*v_pad)).^2
-        nv[1:N]
+        NonLin = function (v)
+            v_pad = v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+            nv    = F*(real(iF*v_pad)).^2
+            nv[1:N]
+        end
+    else
+        ## Not correcting for aliasing
+        F = plan_ifft(v)          # julia's ifft is my fft for this problem.
+        iF = plan_fft(v)          # julia's fft is my ifft for this problem.
+        NonLin = v -> F*(real(iF*v)).^2
     end
-
-    # ## Not correcting for aliasing
-    # F = plan_ifft(v)          # julia's ifft is my fft for this problem.
-    # iF = plan_fft(v)          # julia's fft is my ifft for this problem.
-    # NonLin(v) = F*(real(iF*v)).^2
 
     vv = complex(zeros(N, n_obs+1)); vv[:,1]= v
     uu = zeros(N, n_obs+1); uu[:,1]= u
