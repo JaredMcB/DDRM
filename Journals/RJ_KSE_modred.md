@@ -1,4 +1,4 @@
-# Monday, November 23, 2020
+simple# Monday, November 23, 2020
 
 11:31 AM - Here I start again, (though much wiser now) my study of model reduction by the Weiner projection of the KSE model. So, to get started I will need some data. I will us the data I produced last summer from parameters used by Lu, Lin and Chorin in
 
@@ -1530,3 +1530,70 @@ julia> sum(abs.(uu - uud).^2)
 I conclude that the dealiasing part needs to be adjusted a long with the change in the dft, though I don't understand why it should.
 
 12:42 PM - I am taking a break from this (since it is becoming unproductive) to grade.
+
+### Meeting with Dr. Lin
+The issue I wanted to discuss surrounded the following facts.
+1. When I do not my solver (from "Examples/KSE/Model_KSE") with out correcting aliasing my solution matches very well Trefethen's code, it reproduces his solution.
+2. When I switch for `dft = ifft` (in every instance) and change the coefficient of the first derivative this code with aliasing also matches.
+3. When I correct for aliasing in both implementations. The solutions are very different.
+
+We discussed this at length and concluded that the de-aliasing lines of code where not correct.   
+
+
+# Friday, December 11, 2020
+
+2:23 PM - I have been working on this dealiasing code. But it has proven very enigmatic to my methods which are perhaps too sloppy when I tried rerunning, what I thought was exactly the same code as yesterday, the solution was populated entirely of `NaN`s. I went back to the Trefethen code and was able to reproduce those results. For the past few hours I have been investigating this issue and feel no closer to it's resolution. I methods of investigation are way too causal. This is why I am grateful for this journal. I need it to help me systematically investigate the problem. Without it, I seem to just run a bunch of things and try to remember it all. I am taking a break now to grade and will return with fresh eyes. I think it will be really good and worth while to write a tutorial about aliasing with regards to KSE (geared to an undergraduate audience I guess)
+
+4:54 PM - Very interesting! I have been struggleing with a coding problem I had coded, with in my solver:
+```julia
+if aliasing
+    Nh    = ceil(Int,N/2)
+    v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+    F     = plan_ifft(v_pad)        # julia's ifft is my fft for this problem.
+    iF    = plan_fft(v_pad)         # julia's fft is my ifft for this problem.
+
+    function NonLin(v)
+        v_pad = v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+        nv    = F*(real(iF*v_pad)).^2
+        nv[1:N]
+    end
+else
+    ## Not correcting for aliasing
+    F = plan_ifft(v)          # julia's ifft is my fft for this problem.
+    iF = plan_fft(v)          # julia's fft is my ifft for this problem.
+    NonLin(v) = F*(real(iF*v)).^2
+end
+```
+the problem was that things were behaving very funny if I ran `aliasing = true` I get:
+```
+julia> uu_a, vv_a, tt    =  @time ksed.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap,aliasing = true)
+ArgumentError: FFTW plan applied to wrong-size array
+```
+Even in a fresh session. So for some reason the function definition in the else statement is beign referenced on `NonLin` calls. Similarly if I run: `aliasing = false` I get:
+```
+julia> uu_a, vv_a, tt    =  @time ksed.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap,aliasing = true)
+UndefVarError: NonLin not defined
+```
+I think that julia doesn't know where to get the function definition which is so odd. Anyway, I looked on the discourse and found a solution that seems to work (though I think multiple dispatch might be an issue with this fix, but that's fine with me). The key is using anonymous functions as in this:
+```julia
+if aliasing
+    Nh    = ceil(Int,N/2)
+    v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+    F     = plan_ifft(v_pad)        # julia's ifft is my fft for this problem.
+    iF    = plan_fft(v_pad)         # julia's fft is my ifft for this problem.
+
+    NonLin = function (v)
+        v_pad = v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+        nv    = F*(real(iF*v_pad)).^2
+        nv[1:N]
+    end
+else
+    ## Not correcting for aliasing
+    F = plan_ifft(v)          # julia's ifft is my fft for this problem.
+    iF = plan_fft(v)          # julia's fft is my ifft for this problem.
+    NonLin = v -> F*(real(iF*v)).^2
+end
+```
+The source is https://discourse.julialang.org/t/defining-a-function-inside-if-else-end-not-as-expected/13815
+
+I will have to verify this more completely later right now I have to go. But it worked in my simiple tests.
