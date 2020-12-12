@@ -9,7 +9,8 @@ function my_KSE_solver(
     h :: Real = 1/4, # Timestep
     g = x -> cos(π*x/16)*(1 + sin.(π*x/16)), # Initial condition function
     T_disc = T/2,
-    n_gap = 100 # 1 +  No. of EDTRK4 steps between reported data
+    n_gap = 100, # 1 +  No. of EDTRK4 steps between reported data
+    aliasing = true
     )
 
 
@@ -48,20 +49,22 @@ function my_KSE_solver(
     n_disc = floor(Int,T_disc/h/n_gap)
     ℓ      = -0.5im*q
 
-    v_pad = [v; zeros(N)]
-    F  = plan_fft(v_pad)
-    iF = plan_ifft(v_pad)
-
-    function NonLin(v)
+    if aliasing
+        ## Not correcting for aliasing
+        F = plan_fft(v)
+        iF = plan_ifft(v)
+        NonLin(v) = F*(real(iF*v)).^2
+    else
         v_pad = [v; zeros(N)]
-        nv = F*(real(iF*v_pad)).^2
-        nv[1:N]
-    end
+        F  = plan_fft(v_pad)
+        iF = plan_ifft(v_pad)
 
-    # ## Not correcting for aliasing
-    # F = plan_fft(v)
-    # iF = plan_ifft(v)
-    # NonLin(v) = F*(real(iF*v)).^2
+        function NonLin(v)
+            v_pad = [v; zeros(N)]
+            nv = F*(real(iF*v_pad)).^2
+            nv[1:N]
+        end
+    end
 
     vv = complex(zeros(N, n_obs+1)); vv[:,1]= v
     uu = zeros(N, n_obs+1); uu[:,1]= u
