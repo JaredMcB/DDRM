@@ -1,4 +1,4 @@
-simple# Monday, November 23, 2020
+# Monday, November 23, 2020
 
 11:31 AM - Here I start again, (though much wiser now) my study of model reduction by the Weiner projection of the KSE model. So, to get started I will need some data. I will us the data I produced last summer from parameters used by Lu, Lin and Chorin in
 
@@ -1460,7 +1460,7 @@ The first thing I want t do is think about the data that I have just generated a
 
 # Thursday, December 10, 2020
 
-8:26 PM - Yesterday, I ran some simulations and analyzed the data. I got the same autocorrelations as before the change. Which are different from the earlier data which more closely resembled Dr. Lin's results. I also cached the notebooks and and added `*.ipynb` to the `.gitignore`. Hopefully this works well for me.
+8:26 PM - Yesterday, I ran some simulations and analyzed the data. I got the same autocorrelations as before the change. Which are different from the earlier data which more closely resembled Dr. Lin's results. I also cached the notebooks and added `*.ipynb` to the `.gitignore`. Hopefully this works well for me.
 
 Today, I plan on investigating the solver to see why it does not give the other results. I think I will run a few experiments.
 1. If I just supply the scalers myself what happens.
@@ -1495,7 +1495,7 @@ plan_idft(X) = plan_fft(X)
 ```
 together with a change in the sign of the coefficient of 𝑖.
 
-I ran both solvers on the Trefethen problem, in a new session, both not accounting for aliasing. And they are Idenitcal where is the script with result:
+I ran both solvers on the Trefethen problem, in a new session, both not accounting for aliasing. And they are identical here is the script with result:
 ```julia
 using PyPlot
 using Statistics: mean, var
@@ -1542,7 +1542,7 @@ We discussed this at length and concluded that the de-aliasing lines of code whe
 
 # Friday, December 11, 2020
 
-2:23 PM - I have been working on this dealiasing code. But it has proven very enigmatic to my methods which are perhaps too sloppy when I tried rerunning, what I thought was exactly the same code as yesterday, the solution was populated entirely of `NaN`s. I went back to the Trefethen code and was able to reproduce those results. For the past few hours I have been investigating this issue and feel no closer to it's resolution. I methods of investigation are way too causal. This is why I am grateful for this journal. I need it to help me systematically investigate the problem. Without it, I seem to just run a bunch of things and try to remember it all. I am taking a break now to grade and will return with fresh eyes. I think it will be really good and worth while to write a tutorial about aliasing with regards to KSE (geared to an undergraduate audience I guess)
+2:23 PM - I have been working on this dealiasing code. But it has proven very enigmatic to my methods which are perhaps too sloppy. When I tried rerunning, what I thought was exactly the same code as yesterday, the solution was populated entirely of `NaN`s. I went back to the Trefethen problem and was able to reproduce those results. For the past few hours I have been investigating this issue and feel no closer to it's resolution. My methods of investigation are way too causal. This is why I am grateful for this journal. I need it to help me systematically investigate the problem. Without it, I seem to just run a bunch of things and try to remember it all. I am taking a break now to grade and will return with fresh eyes. I think it will be really good and worth while to write a tutorial about aliasing with regards to KSE (geared to an undergraduate audience I guess)
 
 4:54 PM - Very interesting! I have been struggleing with a coding problem I had coded, with in my solver:
 ```julia
@@ -1597,3 +1597,13 @@ end
 The source is https://discourse.julialang.org/t/defining-a-function-inside-if-else-end-not-as-expected/13815
 
 I will have to verify this more completely later right now I have to go. But it worked in my simiple tests.
+
+
+
+# Wednesday December 16, 2020
+
+3:12 PM - I am very close to being done with teaching this semester. So, I can start ramping up my research.
+
+Now, the first thing I want to do today is to test the new solvers that have optional aliasing. I need to make sure that code is working. The I will test the different de-aliasing algorthm. So, here is a goal:
+##### Goal:
+Get a run of data that agrees with the 2017 paper.
