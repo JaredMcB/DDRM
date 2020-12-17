@@ -49,23 +49,17 @@ function my_KSE_solver(
     n_disc = floor(Int,T_disc/h/n_gap)
     ℓ      = -0.5im*q
 
-    if dealias
-        Nh    = ceil(Int,N/2)
-        v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
-        F     = plan_fft(v_pad)        # julia's ifft is my fft for this problem.
-        iF    = plan_ifft(v_pad)         # julia's fft is my ifft for this problem.
+    Np    = dealias ? N : 0
+    Nh    = ceil(Int,N/2)
+    v_pad = [v[1:Nh]; zeros(2Np); v[Nh+1:end]]
+    F     = plan_fft(v_pad)        # julia's ifft is my fft for this problem.
+    iF    = plan_ifft(v_pad)         # julia's fft is my ifft for this problem.
 
-        NonLin = function (v)
-            v_pad = v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
-            nv    = F*(real(iF*v_pad)).^2
-            nv[1:N]
+    NonLin = function (v)
+        v_pad = v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+        nv    = F*(real(iF*v_pad)).^2
+        nv[1:N]
         end
-    else
-        ## Not correcting for aliasing
-        F = plan_fft(v)          # julia's ifft is my fft for this problem.
-        iF = plan_ifft(v)          # julia's fft is my ifft for this problem.
-        NonLin = v -> F*(real(iF*v)).^2
-    end
 
     vv = complex(zeros(N, n_obs+1)); vv[:,1]= v
     uu = zeros(N, n_obs+1); uu[:,1]= u
