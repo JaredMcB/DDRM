@@ -1596,14 +1596,20 @@ end
 ```
 The source is https://discourse.julialang.org/t/defining-a-function-inside-if-else-end-not-as-expected/13815
 
-I will have to verify this more completely later right now I have to go. But it worked in my simiple tests.
+I will have to verify this more completely later right now I have to go. But it worked in my simple tests.
 
 
 
-# Wednesday December 16, 2020
+# Wednesday, December 16, 2020
 
 3:12 PM - I am very close to being done with teaching this semester. So, I can start ramping up my research.
 
 Now, the first thing I want to do today is to test the new solvers that have optional aliasing. I need to make sure that code is working. The I will test the different de-aliasing algorthm. So, here is a goal:
 ##### Goal:
 Get a run of data that agrees with the 2017 paper.
+
+
+
+# Thursday, December 17, 2020
+
+The thing to look for is that the energy decays. 

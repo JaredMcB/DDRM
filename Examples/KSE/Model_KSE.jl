@@ -10,7 +10,7 @@ function my_KSE_solver(
     g = x -> cos(π*x/16)*(1 + sin.(π*x/16)), # Initial condition function
     T_disc = T/2,
     n_gap = 100, # 1 +  No. of EDTRK4 steps between reported data
-    aliasing = true
+    dealias = true
     )
 
 
@@ -49,21 +49,22 @@ function my_KSE_solver(
     n_disc = floor(Int,T_disc/h/n_gap)
     ℓ      = -0.5im*q
 
-    if aliasing
-        ## Not correcting for aliasing
-        F = plan_fft(v)
-        iF = plan_ifft(v)
-        NonLin(v) = F*(real(iF*v)).^2
-    else
-        v_pad = [v; zeros(N)]
-        F  = plan_fft(v_pad)
-        iF = plan_ifft(v_pad)
+    if dealias
+        Nh    = ceil(Int,N/2)
+        v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+        F     = plan_fft(v_pad)        # julia's ifft is my fft for this problem.
+        iF    = plan_ifft(v_pad)         # julia's fft is my ifft for this problem.
 
-        function NonLin(v)
-            v_pad = [v; zeros(N)]
-            nv = F*(real(iF*v_pad)).^2
+        NonLin = function (v)
+            v_pad = v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+            nv    = F*(real(iF*v_pad)).^2
             nv[1:N]
         end
+    else
+        ## Not correcting for aliasing
+        F = plan_fft(v)          # julia's ifft is my fft for this problem.
+        iF = plan_ifft(v)          # julia's fft is my ifft for this problem.
+        NonLin = v -> F*(real(iF*v)).^2
     end
 
     vv = complex(zeros(N, n_obs+1)); vv[:,1]= v

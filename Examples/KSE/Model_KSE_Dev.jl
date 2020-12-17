@@ -10,7 +10,7 @@ function my_KSE_solver(
     g = x -> cos(π*x/16)*(1 + sin.(π*x/16)), # Initial condition function
     T_disc = T/2,
     n_gap = 100, # 1 +  No. of EDTRK4 steps between reported data
-    aliasing = false
+    dealias = false
     )
 
 
@@ -50,7 +50,7 @@ function my_KSE_solver(
     ℓ      = 0.5im*q            # julia puts the negative exponent in fft since
                                 # we are using ifft for the scaling the positve
                                 # comes down when the derivative is taken
-    if aliasing
+    if dealias
         Nh    = ceil(Int,N/2)
         v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
         F     = plan_ifft(v_pad)        # julia's ifft is my fft for this problem.
