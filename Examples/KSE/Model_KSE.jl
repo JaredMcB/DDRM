@@ -16,7 +16,7 @@ function my_KSE_solver(
     ## Spatial grid and initial conditions:
     x = P*(1:N)/N
     u = g.(x)
-    v = fft(u)
+    v = fft(u)/N
 
     ## Precompute various ETDRK4 scalar quantities:
     q = 2π/P*[0:N÷2-1; 0; N÷2-N+1:-1]
@@ -48,20 +48,20 @@ function my_KSE_solver(
     n_disc = floor(Int,T_disc/h/n_gap)
     ℓ = -0.5im*q
 
-    v_pad = [v; zeros(N)]
-    F = plan_fft(v_pad)
-    iF = plan_ifft(v_pad)
+    # v_pad = [v; zeros(N)]
+    # F = plan_fft(v_pad)
+    # iF = plan_ifft(v_pad)
+    #
+    # function NonLin(v)
+    #     v_pad = [v; zeros(N)]
+    #     nv = F*(real(iF*v_pad)).^2
+    #     nv[1:N]
+    # end
 
-    function NonLin(v)
-        v_pad = [v; zeros(N)]
-        nv = F*(real(iF*v_pad)).^2
-        nv[1:N]
-    end
-
-    # ## Not correcting for aliasing
-    # F = plan_fft(v)
-    # iF = plan_ifft(v)
-    # NonLin(v) = F*(real(iF*v)).^2
+    ## Not correcting for aliasing
+    F = plan_fft(v)
+    iF = plan_ifft(v)
+    NonLin(v) = F*(real(iF*v)).^2
 
     vv = complex(zeros(N, n_obs+1)); vv[:,1]= v
     uu = zeros(N, n_obs+1); uu[:,1]= u

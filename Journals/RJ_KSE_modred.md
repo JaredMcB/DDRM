@@ -1612,4 +1612,6 @@ Get a run of data that agrees with the 2017 paper.
 
 # Thursday, December 17, 2020
 
-The thing to look for is that the energy decays. 
+The thing to look for is that the energy decays exponentially.
+
+3:58 PM - I have been trying to fix the KSE solver. 
