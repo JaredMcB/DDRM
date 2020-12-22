@@ -84,8 +84,6 @@ function my_KSE_solver(
             tt[ni] = t
         end
     end
-    # Energy spectrum
-    EE = log.(abs.(vv).^2)
 
     start = n_disc+1
     uu[:,start:end], vv[:,start:end], tt[1:end-start+1]
