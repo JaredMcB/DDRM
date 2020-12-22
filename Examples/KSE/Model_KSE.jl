@@ -16,7 +16,7 @@ function my_KSE_solver(
     ## Spatial grid and initial conditions:
     x = P*(1:N)/N
     u = g.(x)
-    v = fft(u)/N
+    v = fft(u)
 
     ## Precompute various ETDRK4 scalar quantities:
     q = 2π/P*[0:N÷2-1; 0; N÷2-N+1:-1]
