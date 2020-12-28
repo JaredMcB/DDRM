@@ -1634,4 +1634,58 @@ One thing I noticed is that I was actually only using half as many modes as I th
 
 # Monday, December 28, 2020
 
-12:00 PM - The goal for today is to get my KSE solver working. I'll start by running the the oldest version that worked then move towards where I want it to go makeing sure there are no NaN's I will mostly just focus on the 2017 paper parameters. 
+12:00 PM - The goal for today is to get my KSE solver working. I'll start by running the the oldest version that worked then move towards where I want it to go makeing sure there are no NaN's I will mostly just focus on the 2017 paper parameters. I will being testing them using the KSE script "Aliasing_KSE.jl".
+
+12:10 PM ran current `my_KSE_solver` from "Model_KSE.jl".
+```julia
+kse  = include("Model_KSE.jl")
+
+T        = 1000 # Length (in seconds) of time of run
+T_disc   = 0    # Length (in seconds) of time discarded
+P        = 2π/sqrt(0.085)  # Period
+N        = 96  # Number of fourier modes used
+h        = .001  # Timestep
+g        = x -> cos(x/16)*(1 + sin.(x/16))
+obs_gap  = 100 #floor(Int, T/h/100)
+
+Δt = h*obs_gap
+
+uu_a, vv_a, tt   =  @time kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap);
+```
+And I get
+```
+julia> findfirst(isnan,sum(uu_a[:,:],dims = 1))
+CartesianIndex(1, 3635)
+```
+I would like to checkout and old working version. So I went back to just before I made the file a `module` this was commit: `1be8fb7c36cfb96562020ae8cf6a8b09f7db2b7c`. I run exactly the same above and get
+```
+julia> findfirst(isnan,sum(uu_a[:,:],dims = 1))
+
+julia>
+```
+Which I believe means it returned `Nothing`. That is, there were no `NaN`'s. I also checked it by looking at `sum(uu_a[:,end])` which returned `≈103.0900`.
+
+So, here there is my starting point.
+
+1:35 PM - I have been comparing the performance of my code with that of Trefethens (in MatLab). Here is a summary:
+When I run the original parameters:
+```julia
+T = 150
+P = 32π # Period
+N = 128 # Number of fourier modes used
+h = 1/4 # Timestep
+g = x -> cos(x/16)*(1 + sin.(x/16)) # Initial condition function
+T_disc = 0
+n_gap = 6 # 1 +  No. of EDTRK4 steps between reported data
+```
+The solutions are very close. But when I run the following:
+```julia
+T = 1500
+P = 32π # Period
+N = 128 # Number of fourier modes used
+h = 1/4 # Timestep
+g = x -> cos(x/16)*(1 + sin.(x/16)) # Initial condition function
+T_disc = 0
+n_gap = 60 # 1 +  No. of EDTRK4 steps between reported data
+```
+My solution is all `NaN`'s after 23 steps and the Trefethen MatLab code does not get any `NaN`'s. So, there is something different about the implementations. First thing I want to do is run this experiment of Thelio. Then I think I will see if Julia (FFTW) and MatLab do `fft` the same way. 
