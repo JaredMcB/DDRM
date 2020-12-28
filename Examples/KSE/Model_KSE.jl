@@ -1,3 +1,4 @@
+
 module Model_KSE
 
 using FFTW, Statistics
@@ -7,9 +8,9 @@ function my_KSE_solver(
     P :: Real = 32π, # Period
     N :: Int64 = 128, # Number of fourier modes used
     h :: Real = 1/4, # Timestep
-    g = x -> cos(π*x/16)*(1 + sin.(π*x/16)), # Initial condition function
+    g = x -> cos(x/16)*(1 + sin.(x/16)), # Initial condition function
     T_disc = T/2,
-    n_gap = 100 # 1 +  No. of EDTRK4 steps between reported data
+    n_gap = 6 # 1 +  No. of EDTRK4 steps between reported data
     )
 
 
@@ -17,7 +18,6 @@ function my_KSE_solver(
     x = P*(1:N)/N
     u = g.(x)
     v = fft(u)
-
 
     ## Precompute various ETDRK4 scalar quantities:
     q = 2π/P*[0:N÷2-1; 0; N÷2-N+1:-1]
@@ -39,7 +39,6 @@ function my_KSE_solver(
     b = Complex.(zeros(N))
     c = Complex.(zeros(N))
     Nv = Complex.(zeros(N))
-
     Na = Complex.(zeros(N))
     Nb = Complex.(zeros(N))
     Nc = Complex.(zeros(N))
@@ -86,9 +85,10 @@ function my_KSE_solver(
             tt[ni] = t
         end
     end
+    # Energy spectrum
+    EE = log.(abs.(vv).^2)
 
     start = n_disc+1
     uu[:,start:end], vv[:,start:end], tt[1:end-start+1]
 end
-
-end # module
+end #module
