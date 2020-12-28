@@ -18,6 +18,7 @@ function my_KSE_solver(
     u = g.(x)
     v = fft(u)
 
+
     ## Precompute various ETDRK4 scalar quantities:
     q = 2π/P*[0:N÷2-1; 0; N÷2-N+1:-1]
     L = q.^2 - q.^4
@@ -38,6 +39,7 @@ function my_KSE_solver(
     b = Complex.(zeros(N))
     c = Complex.(zeros(N))
     Nv = Complex.(zeros(N))
+
     Na = Complex.(zeros(N))
     Nb = Complex.(zeros(N))
     Nc = Complex.(zeros(N))

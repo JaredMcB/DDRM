@@ -1604,7 +1604,7 @@ I will have to verify this more completely later right now I have to go. But it 
 
 3:12 PM - I am very close to being done with teaching this semester. So, I can start ramping up my research.
 
-Now, the first thing I want to do today is to test the new solvers that have optional aliasing. I need to make sure that code is working. The I will test the different de-aliasing algorthm. So, here is a goal:
+Now, the first thing I want to do today is to test the new solvers that have optional aliasing. I need to make sure that code is working. The I will test the different de-aliasing algorithm. So, here is a goal:
 ##### Goal:
 Get a run of data that agrees with the 2017 paper.
 
@@ -1614,4 +1614,24 @@ Get a run of data that agrees with the 2017 paper.
 
 The thing to look for is that the energy decays exponentially.
 
-3:58 PM - I have been trying to fix the KSE solver. 
+3:58 PM - I have been trying to fix the KSE solver.
+
+
+
+# Friday, December 18, 2020
+
+Today I have been relearning all about aliasing and de-aliasing. So, now I will attempt to summarize what I have learned so far. I wish this had a latex editor.
+
+
+
+# Monday, December 21, 2020
+
+12:21 PM - Today I will rewrite the KSE solver a little bit. I start with an old version that predates recent iterations the idea will be to document all changes made and they worked.
+
+One thing I noticed is that I was actually only using half as many modes as I thought I was. This is because I double count the modes by there conjugates with opposite wave number. These provide no new information since the original  signal is real.
+
+
+
+# Monday, December 28, 2020
+
+12:00 PM - The goal for today is to get my KSE solver working. I'll start by running the the oldest version that worked then move towards where I want it to go makeing sure there are no NaN's I will mostly just focus on the 2017 paper parameters. 
