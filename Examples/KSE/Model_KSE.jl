@@ -1,12 +1,7 @@
 ```
 This version was committed on Aug 20.
 ```
-
-
-
 module Model_KSE
-
-
 
 using FFTW, Statistics
 
@@ -15,7 +10,7 @@ function my_KSE_solver(
     P :: Real = 32π, # Period
     N :: Int64 = 128, # Number of fourier modes used
     h :: Real = 1/4, # Timestep
-    g = x -> cos(π*x/16)*(1 + sin.(π*x/16)), # Initial condition function
+    g = x -> cos(x/16)*(1 + sin.(x/16)), # Initial condition function
     T_disc = T/2,
     n_gap = 100 # 1 +  No. of EDTRK4 steps between reported data
     )
@@ -31,7 +26,7 @@ function my_KSE_solver(
     L = q.^2 - q.^4
     E = exp.(h*L); E2 = exp.(h/2*L)
 
-    M = 32 # no. of pts use in contour integration
+    M = 16 # no. of pts use in contour integration
     r = exp.(im*π*((1:M) .-.5)/M) # roots of unit suggested by Kassam and Trefethen
     LR = h*L*ones(M)' + ones(N)*r' # the second dim varies r the first vaeries L
 
