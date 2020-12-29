@@ -1634,7 +1634,7 @@ One thing I noticed is that I was actually only using half as many modes as I th
 
 # Monday, December 28, 2020
 
-12:00 PM - The goal for today is to get my KSE solver working. I'll start by running the the oldest version that worked then move towards where I want it to go makeing sure there are no NaN's I will mostly just focus on the 2017 paper parameters. I will being testing them using the KSE script "Aliasing_KSE.jl".
+12:00 PM - The goal for today is to get my KSE solver working. I'll start by running the the oldest version that worked then move towards where I want it to go making sure there are no NaN's. I will mostly just focus on the 2017 paper parameters. I will being testing them using the KSE script "Aliasing_KSE.jl".
 
 12:10 PM ran current `my_KSE_solver` from "Model_KSE.jl".
 ```julia
@@ -1747,6 +1747,21 @@ julia> uu
 julia> findfirst(isnan,sum(uu,dims = 1))
 CartesianIndex(1, 23)
 ```
-And so, I get the same results on thelio. I investigated the MatLab `fft` function and found that there algorithm is based off of none other than the `FFTW` library, just like Julia and that the definition for the DFT is the same. So, it is neither of the two problems I suggested earlier. Let me look at the spectrum. I found a few interesting things which I hope to communicate here.
+And so, I get the same results on thelio. I investigated the MatLab `fft` function and found that there algorithm is based off of none other than the `FFTW` library, just like Julia and that the definition for the DFT is the same. So, it is neither of the two problems I suggested earlier. Let me look at the energy spectrum. I found a few interesting things which I hope to communicate here.
 
-First there
+#### Experiment Dec 28, 2020 1
+
+For this experiment I use the Trefethen parameters except that I run it for `T = 1500`. This is just as described above. The interesting piece is when I plot the energy at various times. I did this using the following code.
+```julia
+findfirst(isnan, sum(uu_a,dims = 1))
+
+EE = abs2.(vv)
+
+for i in 100:10:216
+    semilogy(EE[:,i],label = i,lw = 1)
+    legend()
+end
+```
+The blow-up occurred at index 214 with equates to time (214 × `n_gap` × `h` = 214×6/4 = 321). So, we plot the energy profile (|v_k|²; k in [0:N÷2-1; 0; N÷2-N+1:-1]), at each time and what I find is that the energy begins to accumulate at around `k = 13` This seems to be what contributes to the blow up.
+
+Is there supposed to be a conservation of energy? Where is this energy coming from?

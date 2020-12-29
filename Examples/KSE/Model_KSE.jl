@@ -1,5 +1,5 @@
 ```
-This version was committed on Aug 20. 
+This version was committed on Aug 20.
 ```
 
 

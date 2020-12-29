@@ -1,5 +1,5 @@
 
-module Model_KSE
+module Model_KSE_Dec1
 
 using FFTW, Statistics
 
@@ -58,7 +58,7 @@ function my_KSE_solver(
         nv = F*(real(iF*v_pad)).^2
         nv[1:N]
     end
-    # 
+    #
     # ## Not correcting for aliasing
     # F = plan_fft(v)
     # iF = plan_ifft(v)
