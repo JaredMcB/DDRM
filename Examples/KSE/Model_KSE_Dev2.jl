@@ -5,10 +5,10 @@ With the earlier neive from of dealiasing the code runs the full 2017
 run with no Nan's. It also runs the Trefethen data (extended by ten times)
 with no nan's
 
-I made this copy prior to working on the scaling. 
+I made this copy prior to working on the scaling.
 
 ```
-module Model_KSE
+module Model_KSE_Dev2
 
 using FFTW, Statistics
 
