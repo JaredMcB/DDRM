@@ -1765,3 +1765,8 @@ end
 The blow-up occurred at index 214 with equates to time (214 × `n_gap` × `h` = 214×6/4 = 321). So, we plot the energy profile (|v_k|²; k in [0:N÷2-1; 0; N÷2-N+1:-1]), at each time and what I find is that the energy begins to accumulate at around `k = 13` This seems to be what contributes to the blow up.
 
 Is there supposed to be a conservation of energy? Where is this energy coming from?
+
+
+# Tuesday, December 29, 2020
+
+Today I reached way back to get a solver that produces no NaN's. I ran it on the full 2017 parameters and it came out with no NaN's. This is with the naïve de-aliasing. I feel like I have a good undestand of the state of the code. One question I still have is how does Trefethen's code do so well with out de-aliaing? His code run in matlab is stable and does not seem to have the aliasing artifacts I have noticed in my aliased data.   

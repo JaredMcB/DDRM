@@ -1,5 +1,9 @@
 ```
 This version was committed on Aug 20.
+
+With the earlier neive from of dealiasing the code runs the full 2017
+run with no Nan's. It also runs the Trefethen data (extended by ten times)
+with no nan's
 ```
 module Model_KSE
 
