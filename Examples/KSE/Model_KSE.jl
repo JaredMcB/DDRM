@@ -1,5 +1,12 @@
+```
+This version was committed on Aug 20. 
+```
+
+
 
 module Model_KSE
+
+
 
 using FFTW, Statistics
 
@@ -8,9 +15,9 @@ function my_KSE_solver(
     P :: Real = 32π, # Period
     N :: Int64 = 128, # Number of fourier modes used
     h :: Real = 1/4, # Timestep
-    g = x -> cos(x/16)*(1 + sin.(x/16)), # Initial condition function
+    g = x -> cos(π*x/16)*(1 + sin.(π*x/16)), # Initial condition function
     T_disc = T/2,
-    n_gap = 6 # 1 +  No. of EDTRK4 steps between reported data
+    n_gap = 100 # 1 +  No. of EDTRK4 steps between reported data
     )
 
 
@@ -49,20 +56,20 @@ function my_KSE_solver(
     n_disc = floor(Int,T_disc/h/n_gap)
     ℓ = -0.5im*q
 
-    # v_pad = [v; zeros(N)]
-    # F = plan_fft(v_pad)
-    # iF = plan_ifft(v_pad)
-    #
-    # function NonLin(v)
-    #     v_pad = [v; zeros(N)]
-    #     nv = F*(real(iF*v_pad)).^2
-    #     nv[1:N]
-    # end
+    v_pad = [v; zeros(N)]
+    F = plan_fft(v_pad)
+    iF = plan_ifft(v_pad)
 
-    ## Not correcting for aliasing
-    F = plan_fft(v)
-    iF = plan_ifft(v)
-    NonLin(v) = F*(real(iF*v)).^2
+    function NonLin(v)
+        v_pad = [v; zeros(N)]
+        nv = F*(real(iF*v_pad)).^2
+        nv[1:N]
+    end
+
+    # ## Not correcting for aliasing
+    # F = plan_fft(v)
+    # iF = plan_ifft(v)
+    # NonLin(v) = F*(real(iF*v)).^2
 
     vv = complex(zeros(N, n_obs+1)); vv[:,1]= v
     uu = zeros(N, n_obs+1); uu[:,1]= u
