@@ -23,7 +23,7 @@ function my_KSE_solver(
     ## Spatial grid and initial conditions:
     x = P*(1:N)/N
     u = g.(x)
-    v = fft(u)
+    v = fft(u)/N            # The division by N is to effect the DFT I want.
 
     ## Precompute various ETDRK4 scalar quantities:
     q = 2π/P*[0:N÷2-1; 0; N÷2-N+1:-1]
@@ -61,14 +61,14 @@ function my_KSE_solver(
 
     function NonLin(v)
         v_pad = [v; zeros(N)]
-        nv = F*(real(iF*v_pad)).^2
+        nv = F*(real(iF*v_pad)).^2*N
         nv[1:N]
     end
 
     # ## Not correcting for aliasing
     # F = plan_fft(v)
     # iF = plan_ifft(v)
-    # NonLin(v) = F*(real(iF*v)).^2
+    # NonLin(v) = F*(real(iF*v)).^2*N
 
     vv = complex(zeros(N, n_obs+1)); vv[:,1]= v
     uu = zeros(N, n_obs+1); uu[:,1]= u
@@ -85,14 +85,12 @@ function my_KSE_solver(
         @. v =  E*v + Nv*f1 + 2*(Na+Nb)*f2 + Nc*f3
         if n % n_gap == 0
             ni = Int64(n÷n_gap) + 1
-            u = real.(ifft(v))
+            u = real.(ifft(v))*N
             uu[:,ni] = u
             vv[:,ni] = v
             tt[ni] = t
         end
     end
-    # Energy spectrum
-    EE = log.(abs.(vv).^2)
 
     start = n_disc+1
     uu[:,start:end], vv[:,start:end], tt[1:end-start+1]
