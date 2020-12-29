@@ -1688,4 +1688,65 @@ g = x -> cos(x/16)*(1 + sin.(x/16)) # Initial condition function
 T_disc = 0
 n_gap = 60 # 1 +  No. of EDTRK4 steps between reported data
 ```
-My solution is all `NaN`'s after 23 steps and the Trefethen MatLab code does not get any `NaN`'s. So, there is something different about the implementations. First thing I want to do is run this experiment of Thelio. Then I think I will see if Julia (FFTW) and MatLab do `fft` the same way. 
+My solution is all `NaN`'s after 23 steps and the Trefethen MatLab code does not get any `NaN`'s. So, there is something different about the implementations. First thing I want to do is run this experiment of Thelio. Then I think I will see if Julia (FFTW) and MatLab do `fft` the same way. I ran the code in Thelio and got the same results.
+
+```
+julia> kse = include("Model_KSE.jl")
+Main.Model_KSE
+
+julia> uu, vv, tt = kse.my_KSE_solver(;T_disc = 0);
+
+julia> uu
+128×101 Array{Float64,2}:
+ 1.0478    0.96252   0.882964  …   1.2048      1.18154     1.304
+ 1.09273   1.00902   0.92831       1.96644     1.79324     1.55974
+ 1.13432   1.05366   0.972725      2.017       1.55383     0.809059
+ 1.17213   1.09608   1.01596       0.759738    0.155579   -0.761331
+ 1.20573   1.13591   1.05776      -1.16615    -1.52324    -2.03811
+ 1.23473   1.17277   1.09786   …  -2.28915    -2.26304    -2.25764
+ 1.25874   1.20627   1.13595      -2.10622    -1.89944    -1.67577
+ 1.27743   1.23602   1.17174      -1.23856    -1.04149    -0.854294
+ 1.29049   1.26161   1.20491      -0.321678   -0.155334   -0.0508895
+ 1.29766   1.28263   1.23508       0.41455     0.645473    0.756064
+ ⋮                             ⋱                           ⋮
+ 0.570326  0.514955  0.469216     -2.04773    -1.78197    -1.4788
+ 0.624347  0.56359   0.513247  …  -1.34651    -1.10752    -0.908016
+ 0.679155  0.613166  0.558214     -0.514224   -0.305007   -0.221851
+ 0.734333  0.663414  0.603929      0.0714131   0.245902    0.252322
+ 0.789444  0.714051  0.650203      0.3116      0.413137    0.381143
+ 0.844034  0.764787  0.696842      0.264425    0.260785    0.233713
+ 0.89764   0.815318  0.743646  …   0.114244    0.0308104   0.0628739
+ 0.949787  0.865334  0.790409      0.116605    0.0314568   0.161842
+ 1.0       0.914511  0.836921      0.47624     0.444077    0.646349
+
+julia> uu, vv, tt = kse.my_KSE_solver(1500;n_gap = 60,T_disc = 0);
+
+julia> uu
+128×101 Array{Float64,2}:
+ 1.0478    0.512003  0.323489  …  NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.09273   0.539104  0.33607      NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.13432   0.56586   0.351116     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.17213   0.592363  0.371264     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.20573   0.619406  0.398449     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.23473   0.647726  0.432208  …  NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.25874   0.677948  0.468828     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.27743   0.709314  0.501755     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.29049   0.740014  0.524222     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.29766   0.767291  0.532768     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ ⋮                             ⋱         ⋮                        ⋮
+ 0.570326  0.275668  0.190243     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.624347  0.300571  0.206365  …  NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.679155  0.325793  0.222428     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.734333  0.35138   0.238324     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.789444  0.377251  0.253939     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.844034  0.403531  0.269229     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.89764   0.430172  0.284036  …  NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.949787  0.457264  0.298114     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.0       0.484588  0.311193     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+
+julia> findfirst(isnan,sum(uu,dims = 1))
+CartesianIndex(1, 23)
+```
+And so, I get the same results on thelio. I investigated the MatLab `fft` function and found that there algorithm is based off of none other than the `FFTW` library, just like Julia and that the definition for the DFT is the same. So, it is neither of the two problems I suggested earlier. Let me look at the spectrum. I found a few interesting things which I hope to communicate here.
+
+First there
