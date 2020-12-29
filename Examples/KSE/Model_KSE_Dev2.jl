@@ -1,3 +1,13 @@
+```
+This version was committed on Aug 20.
+
+With the earlier neive from of dealiasing the code runs the full 2017
+run with no Nan's. It also runs the Trefethen data (extended by ten times)
+with no nan's
+
+I made this copy prior to working on the scaling. 
+
+```
 module Model_KSE
 
 using FFTW, Statistics
@@ -7,10 +17,9 @@ function my_KSE_solver(
     P :: Real = 32π, # Period
     N :: Int64 = 128, # Number of fourier modes used
     h :: Real = 1/4, # Timestep
-    g = x -> cos(π*x/16)*(1 + sin.(π*x/16)), # Initial condition function
+    g = x -> cos(x/16)*(1 + sin.(x/16)), # Initial condition function
     T_disc = T/2,
-    n_gap = 100, # 1 +  No. of EDTRK4 steps between reported data
-    dealias = true
+    n_gap = 100 # 1 +  No. of EDTRK4 steps between reported data
     )
 
 
@@ -24,7 +33,7 @@ function my_KSE_solver(
     L = q.^2 - q.^4
     E = exp.(h*L); E2 = exp.(h/2*L)
 
-    M = 32 # no. of pts use in contour integration
+    M = 16 # no. of pts use in contour integration
     r = exp.(im*π*((1:M) .-.5)/M) # roots of unit suggested by Kassam and Trefethen
     LR = h*L*ones(M)' + ones(N)*r' # the second dim varies r the first vaeries L
 
@@ -35,31 +44,34 @@ function my_KSE_solver(
 
     ## Some declareations
 
-    a  = Complex.(zeros(N))
-    b  = Complex.(zeros(N))
-    c  = Complex.(zeros(N))
+    a = Complex.(zeros(N))
+    b = Complex.(zeros(N))
+    c = Complex.(zeros(N))
     Nv = Complex.(zeros(N))
     Na = Complex.(zeros(N))
     Nb = Complex.(zeros(N))
     Nc = Complex.(zeros(N))
 
     # Main time-stepping loop
-    n_max  = round(Int,T/h)
-    n_obs  = floor(Int,n_max/n_gap)
+    n_max = round(Int,T/h)
+    n_obs = floor(Int,n_max/n_gap)
     n_disc = floor(Int,T_disc/h/n_gap)
-    ℓ      = -0.5im*q
+    ℓ = -0.5im*q
 
-    Np    = dealias ? N : 0
-    Nh    = ceil(Int,N/2)
-    v_pad = [v[1:Nh]; zeros(2Np); v[Nh+1:end]]
-    F     = plan_fft(v_pad)        # julia's ifft is my fft for this problem.
-    iF    = plan_ifft(v_pad)         # julia's fft is my ifft for this problem.
+    v_pad = [v; zeros(N)]
+    F = plan_fft(v_pad)
+    iF = plan_ifft(v_pad)
 
-    NonLin = function (v)
-        v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
-        nv    = F*(real(iF*v_pad)).^2
+    function NonLin(v)
+        v_pad = [v; zeros(N)]
+        nv = F*(real(iF*v_pad)).^2
         nv[1:N]
-        end
+    end
+
+    # ## Not correcting for aliasing
+    # F = plan_fft(v)
+    # iF = plan_ifft(v)
+    # NonLin(v) = F*(real(iF*v)).^2
 
     vv = complex(zeros(N, n_obs+1)); vv[:,1]= v
     uu = zeros(N, n_obs+1); uu[:,1]= u
@@ -88,5 +100,4 @@ function my_KSE_solver(
     start = n_disc+1
     uu[:,start:end], vv[:,start:end], tt[1:end-start+1]
 end
-
-end # module
+end #module
