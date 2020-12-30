@@ -1769,4 +1769,8 @@ Is there supposed to be a conservation of energy? Where is this energy coming fr
 
 # Tuesday, December 29, 2020
 
-Today I reached way back to get a solver that produces no NaN's. I ran it on the full 2017 parameters and it came out with no NaN's. This is with the naïve de-aliasing. I feel like I have a good undestand of the state of the code. One question I still have is how does Trefethen's code do so well with out de-aliaing? His code run in matlab is stable and does not seem to have the aliasing artifacts I have noticed in my aliased data.   
+Today I reached way back to get a solver that produces no NaN's. I ran it on the full 2017 parameters and it came out with no NaN's. This is with the naïve de-aliasing. I feel like I have a good understand of the state of the code. One question I still have is how does Trefethen's code do so well with out de-aliasing? His code run in MATLAB is stable and does not seem to have the aliasing artifacts I have noticed in my aliased data.   
+
+2:41 PM - Now I attempt to change the scaling, this is basically a change in definition of the DFT I am using. I changed the scaling and it all works just find testing it on the Trfethen code I get the same solution.
+
+3:57 PM - Now I will change the de-aliasing routine. Before I did that I wanted to address the issue of saying I am using so many Fourier modes but because the process is real there half on the modes are just the conjugates of the other so, there really is only half the information in it. 

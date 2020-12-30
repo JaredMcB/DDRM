@@ -59,7 +59,7 @@ function my_KSE_solver(
 
     padding = aliasing ? 0 : N
 
-    v_pad = [v; zeros(padding)]
+    v_pad = [v[1:n]; zeros(padding);v[n+1:N]]
     F = plan_fft(v_pad)
     iF = plan_ifft(v_pad)
 
@@ -67,9 +67,9 @@ function my_KSE_solver(
         NonLin = v -> F*(real(iF*v)).^2*N
     else
         NonLin = function (v)
-            v_pad = [v; zeros(padding)]
-            nv = F*(real(iF*v_pad)).^2*N
-            nv[1:N]
+            v_pad = [v[1:n]; zeros(padding);v[n+1:N]]
+            nv = F*(real(iF*v_pad)).^2*4N
+            [nv[1:n]; nv[N+n+1:2N]]
         end
     end
 
