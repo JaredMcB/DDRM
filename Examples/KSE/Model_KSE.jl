@@ -12,13 +12,15 @@ using FFTW, Statistics
 function my_KSE_solver(
     T :: Real = 150; # Length (in seconds) of time of run
     P :: Real = 32π, # Period
-    N :: Int64 = 128, # Number of fourier modes used
+    n :: Int64 = 64, # Number of fourier modes used
     h :: Real = 1/4, # Timestep
     g = x -> cos(x/16)*(1 + sin.(x/16)), # Initial condition function
     T_disc = T/2,
-    n_gap = 100 # 1 +  No. of EDTRK4 steps between reported data
+    n_gap = 100, # 1 +  No. of EDTRK4 steps between reported data
+    aliasing = false
     )
 
+    N = 2n
 
     ## Spatial grid and initial conditions:
     x = P*(1:N)/N
@@ -26,7 +28,7 @@ function my_KSE_solver(
     v = fft(u)/N            # The division by N is to effect the DFT I want.
 
     ## Precompute various ETDRK4 scalar quantities:
-    q = 2π/P*[0:N÷2-1; 0; N÷2-N+1:-1]
+    q = 2π/P*[0:n-1;0; -n+1:-1]
     L = q.^2 - q.^4
     E = exp.(h*L); E2 = exp.(h/2*L)
 
@@ -55,20 +57,21 @@ function my_KSE_solver(
     n_disc = floor(Int,T_disc/h/n_gap)
     ℓ = -0.5im*q
 
-    v_pad = [v; zeros(N)]
+    padding = aliasing ? 0 : N
+
+    v_pad = [v; zeros(padding)]
     F = plan_fft(v_pad)
     iF = plan_ifft(v_pad)
 
-    function NonLin(v)
-        v_pad = [v; zeros(N)]
-        nv = F*(real(iF*v_pad)).^2*N
-        nv[1:N]
+    if aliasing
+        NonLin = v -> F*(real(iF*v)).^2*N
+    else
+        NonLin = function (v)
+            v_pad = [v; zeros(padding)]
+            nv = F*(real(iF*v_pad)).^2*N
+            nv[1:N]
+        end
     end
-
-    # ## Not correcting for aliasing
-    # F = plan_fft(v)
-    # iF = plan_ifft(v)
-    # NonLin(v) = F*(real(iF*v)).^2*N
 
     vv = complex(zeros(N, n_obs+1)); vv[:,1]= v
     uu = zeros(N, n_obs+1); uu[:,1]= u
