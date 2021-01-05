@@ -28,19 +28,21 @@ uu_o, vv_o, tt   = @time ksed2.my_KSE_solver(T; P, N, h, g, n_gap = obs_gap);
 
 
 # Trefethen parameters.
-uu, vv, tt = kse.my_KSE_solver(150;n = 64,T_disc = 0, n_gap = 6,aliasing = false)
+uu, vv, tt = kse.my_KSE_solver(1500;n = 64,T_disc = 0, n_gap = 6,aliasing = false)
 uu
 
 UU = uu
 VV = vv
 
 findfirst(isnan, sum(UU,dims = 1))
-EE = abs2.(VV)
+EE = a
 
-semilogy(mean(EE,dims=2)*2N^2,label = "aliasing
+N = 128
+
+semilogy(mean(EE[:,240],dims=2)*2N^2,label = "aliasing
 controled")
 legend()
-for i in 1:10:100
+for i in 1:20:200
     semilogy(EE[:,i],label = i,lw = 1)
     legend()
 end

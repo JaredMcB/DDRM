@@ -1758,7 +1758,7 @@ findfirst(isnan, sum(uu_a,dims = 1))
 EE = abs2.(vv)
 
 for i in 100:10:216
-    semilogy(EE[:,i],label = i,lw = 1)
+    semilogy(EE[:,i],label = i,lw  = 1)
     legend()
 end
 ```
@@ -1771,6 +1771,20 @@ Is there supposed to be a conservation of energy? Where is this energy coming fr
 
 Today I reached way back to get a solver that produces no NaN's. I ran it on the full 2017 parameters and it came out with no NaN's. This is with the naïve de-aliasing. I feel like I have a good understand of the state of the code. One question I still have is how does Trefethen's code do so well with out de-aliasing? His code run in MATLAB is stable and does not seem to have the aliasing artifacts I have noticed in my aliased data.   
 
-2:41 PM - Now I attempt to change the scaling, this is basically a change in definition of the DFT I am using. I changed the scaling and it all works just find testing it on the Trfethen code I get the same solution.
+2:41 PM - Now I attempt to change the scaling, this is basically a change in definition of the DFT I am using. I changed the scaling and it all works just find testing it on the Trefethen code I get the same solution.
 
-3:57 PM - Now I will change the de-aliasing routine. Before I did that I wanted to address the issue of saying I am using so many Fourier modes but because the process is real there half on the modes are just the conjugates of the other so, there really is only half the information in it. 
+3:57 PM - Now I will change the de-aliasing routine. Before I did that I wanted to address the issue of saying I am using so many Fourier modes but because the process is real there half on the modes are just the conjugates of the other so, there really is only half the information in it.
+
+So, what I did was set a new parameter `n` and set `N=2n`.
+
+
+# Wednesday, December 30, 2020
+
+12:03 PM - Today I will start with verifying that the code is de-aliasing in an appropriate way. So, here is the setting:  
+
+
+# Monday, January 4, 2021
+
+10:00 AM -  I have been writing a note on aliasing and de-aliasing. I feel like I understand it pretty well. However, I can't explain why Trefethen's MatLab code is more stable than mine is. I think I will give myself 2 hours (till about noon) and then I will look at Dr. Lin's code to see how I might tweak mine.
+
+3:00 PM - I worked on the tutorial and did some interesting calculations. But I did not achieve what I set out to do. Though I do feel more comfortable with the complexities in the indexing between the mathematical DFT and the numerical `fft`. 

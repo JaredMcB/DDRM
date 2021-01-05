@@ -14,7 +14,7 @@ function my_KSE_solver(
     P :: Real = 32π, # Period
     n :: Int64 = 64, # Number of fourier modes used
     h :: Real = 1/4, # Timestep
-    g = x -> cos(x/16)*(1 + sin.(x/16)), # Initial condition function
+    g = x -> cos(x/16)*(1 + sin(x/16)), # Initial condition function
     T_disc = T/2,
     n_gap = 100, # 1 +  No. of EDTRK4 steps between reported data
     aliasing = false
@@ -57,19 +57,23 @@ function my_KSE_solver(
     n_disc = floor(Int,T_disc/h/n_gap)
     ℓ = -0.5im*q
 
-    padding = aliasing ? 0 : N
+    pad = aliasing ? 0 : N*3÷2
 
-    v_pad = [v[1:n]; zeros(padding);v[n+1:N]]
+    v_pad = [v[1:n]; zeros(pad);v[n+1:N]]
+    K = size(v_pad,1)
     F = plan_fft(v_pad)
     iF = plan_ifft(v_pad)
+
+    cyc(n,N)::Int = (n % N + N) % N +1
 
     if aliasing
         NonLin = v -> F*(real(iF*v)).^2*N
     else
         NonLin = function (v)
-            v_pad = [v[1:n]; zeros(padding);v[n+1:N]]
-            nv = F*(real(iF*v_pad)).^2*4N
-            [nv[1:n]; nv[N+n+1:2N]]
+            [sum(v[cyc(l,N)]*v[cyc(k-l,N)] for l = max(-N/2+1,k-N/2):min(N/2,k+N/2-1)) for k = Int.([0:N/2;-N/2+1:-1])]/N
+            # v_pad = [v[1:n]; zeros(pad);v[n+1:N]]
+            # nv = F*(real(iF*v_pad)).^2*K/N
+            # [nv[1:n]; nv[end-n+1:end]]
         end
     end
 
