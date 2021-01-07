@@ -28,7 +28,7 @@ uu_o, vv_o, tt   = @time ksed2.my_KSE_solver(T; P, N, h, g, n_gap = obs_gap);
 
 
 ## Trefethen parameters.
-uu, vv, tt = kse.my_KSE_solver(150;
+uu, vv, tt = kse.my_KSE_solver(1500;
                                N = 128,
                                T_disc = 0,
                                n_gap = 6,
@@ -41,12 +41,13 @@ title("KSE solution at T = 150 (both with aliasing)")
 UU = uu
 VV = vv
 
+
 ender = findfirst(isnan, sum(UU,dims = 1))[2]-5
 EE = abs2.(VV)
 
 N = 128
 i += 1
-semilogy(mean(EE[:,:],dims=2)*2N^2,label = "me (Julia) $i")
+semilogy(mean(EE[:,1:ender],dims=2)*2N^2,label = "me (Julia) $i")
 title("Energy spectrum with aliasing")
 legend()
 for i in 1:20:200
