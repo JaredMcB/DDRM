@@ -16,9 +16,9 @@ module ks
 
 Complex128 = Complex{Float64}
 
-include("WienerROM/Util/util.jl")
-include("WienerROM/Extra/fftwutil.jl")
-include("WienerROM/Extra/etdrk.jl")
+include("util.jl")      #include("WienerROM/Util/util.jl")
+include("fftwutil.jl")  #include("WienerROM/Extra/fftwutil.jl")
+include("etdrk.jl")     #include("WienerROM/Extra/etdrk.jl")
 
 using FFTW,.fftwutil,.etdrk
 
@@ -46,21 +46,21 @@ function make_ks_field(N; alpha=1.0, beta=1.0, L=2*pi,
     spec = [ dispersion(C*k) for k=1:N ]
 
     ## function to evaluate nonlinear term
-    
+
     function ks_field!(U,F)
 
         Freal[1] = 0.0
-        
+
         let i  = 2,
             ii = N3
-            
+
             for k=1:N
                 Freal[i]  = U[k].re
                 Freal[ii] = U[k].im
                 i = i+1
                 ii = ii-1
             end
-            
+
             while i <= ii
                 Freal[i] = Freal[ii] = 0.0
                 i = i+1
@@ -145,7 +145,7 @@ function run_ks(init, nsteps, dt;
             onebigstep!(n)
         end
     end
-    
+
     return z
 end
 
@@ -214,7 +214,7 @@ end
 function u__(u::Vector{Complex128}, j::Int)
 
     K = length(u)  # num modes, Fei's notation
-    
+
     if 1 <= j <= K
         return u[j]
     elseif K < j <= 2*K
@@ -243,7 +243,7 @@ function make_rk4_stepper(f!, dt, thetype, ndim)
     k3   = zeros(thetype, ndim)
     tmp  = zeros(thetype, ndim)
     xout = zeros(thetype, ndim)
-    
+
     function step(x,xx)
         f!(x,k0)
         for k=1:ndim
@@ -333,7 +333,7 @@ function make_observer_with_aim(dt, num_modes; flags...)
     function observe(z,n)
 
         thestepper(z[n], znext)
-        
+
         for k=1:K
             bigmat[k,k]   = z[n][k]
             bigmat[k,K+k] = (znext[k]-z[n][k])/dt
@@ -361,12 +361,12 @@ function make_observer_without_aim(dt, num_modes; aim=true, flags...)
     function observe(z,n)
 
         thestepper(z[n], znext)
-        
+
         for k=1:K
             bigmat[k,k]   = z[n][k]
             bigmat[k,K+k] = (znext[k]-z[n][k])/dt
         end
-        
+
         return bigmat
     end
 end
