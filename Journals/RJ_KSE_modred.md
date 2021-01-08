@@ -1787,4 +1787,10 @@ So, what I did was set a new parameter `n` and set `N=2n`.
 
 10:00 AM -  I have been writing a note on aliasing and de-aliasing. I feel like I understand it pretty well. However, I can't explain why Trefethen's MatLab code is more stable than mine is. I think I will give myself 2 hours (till about noon) and then I will look at Dr. Lin's code to see how I might tweak mine.
 
-3:00 PM - I worked on the tutorial and did some interesting calculations. But I did not achieve what I set out to do. Though I do feel more comfortable with the complexities in the indexing between the mathematical DFT and the numerical `fft`. 
+3:00 PM - I worked on the tutorial and did some interesting calculations. But I did not achieve what I set out to do. Though I do feel more comfortable with the complexities in the indexing between the mathematical DFT and the numerical `fft`.
+
+
+
+# Tuseday, January 5, 2021
+
+12:36 PM - Though I have been going through the code very carefully, which processes has been facilitated by writing the de-aliasing tutorial and the FFTW tutorial I have not beable to identify why the solver is unstable, when it seems to mimic exactly Trefethen's solver in MATLAB. 
