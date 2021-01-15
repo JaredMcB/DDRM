@@ -1544,7 +1544,7 @@ We discussed this at length and concluded that the de-aliasing lines of code whe
 
 2:23 PM - I have been working on this dealiasing code. But it has proven very enigmatic to my methods which are perhaps too sloppy. When I tried rerunning, what I thought was exactly the same code as yesterday, the solution was populated entirely of `NaN`s. I went back to the Trefethen problem and was able to reproduce those results. For the past few hours I have been investigating this issue and feel no closer to it's resolution. My methods of investigation are way too causal. This is why I am grateful for this journal. I need it to help me systematically investigate the problem. Without it, I seem to just run a bunch of things and try to remember it all. I am taking a break now to grade and will return with fresh eyes. I think it will be really good and worth while to write a tutorial about aliasing with regards to KSE (geared to an undergraduate audience I guess)
 
-4:54 PM - Very interesting! I have been struggleing with a coding problem I had coded, with in my solver:
+4:54 PM - Very interesting! I have been struggling with a coding problem I had coded, with in my solver:
 ```julia
 if aliasing
     Nh    = ceil(Int,N/2)
@@ -1793,4 +1793,29 @@ So, what I did was set a new parameter `n` and set `N=2n`.
 
 # Tuseday, January 5, 2021
 
-12:36 PM - Though I have been going through the code very carefully, which processes has been facilitated by writing the de-aliasing tutorial and the FFTW tutorial I have not beable to identify why the solver is unstable, when it seems to mimic exactly Trefethen's solver in MATLAB. 
+12:36 PM - Though I have been going through the code very carefully, which processes has been facilitated by writing the de-aliasing tutorial and the FFTW tutorial I have not beable to identify why the solver is unstable, when it seems to mimic exactly Trefethen's solver in MATLAB.
+
+4:25 PM -  I have been working on a large communication to Dr. Lin in a google doc. Here is how I got the first graphic
+```julia
+uu, vv, tt = ksed2.my_KSE_solver(150;
+                               N = 128,
+                               T_disc = 0,
+                               n_gap = 6)
+uu
+
+plot(32π*(0:127)/128,uu[:,end], label = "me (Julia)")
+title("KSE solution at T = 150 (both with aliasing)")
+```
+
+
+# Thursday, January 14, 2021
+
+Today the goal is to write out algorithm by hand. Just, go through the whole routine, almost from scratch.
+
+
+
+# Friday, January 15, 2021
+
+7:22 AM - The plan today is to completely rewrite a new KSE solver. I hope to have a complete first draft by noon. Basically, this is nothing mare than a system of ODE's though nonlinear. So, first (1) I will write my ODE solver using ETDRK4 using the Kassam-Trefethen approach of writing the division as a contour integral. The solver will be of the usual general form of `d/dt(x) = f(x)`. The principal inputs will be the function `f` (in-place function, like Dr. Lin does, I think), `h` time step. Then I will write a function for the RHS, the "stepper" as it were, complete with de-aliasing. So, that is really all, I think. two main parts.
+
+12:16 PM I have a first complete draft of the ODE solver capable of using ETDR4. I am testing this. Hopefully tommorw I can have it working. 
