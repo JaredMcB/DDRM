@@ -12,7 +12,7 @@ Complex128 = Complex{Float64}
 
 function my_ODE_solver(scheme,
                        init,
-                       RHS :: Function;
+                       F :: Function;
                        steps,           # after discard
                        discard,         # this is in steps
                        h,
@@ -26,7 +26,7 @@ function my_ODE_solver(scheme,
 
         # main stepping loop
         temp = init
-        for n = 1:steps_tot
+        for n = 1:steps+discard
                 temp = step!(temp,temp)                               # advance state
                 if (n > discard) & ((n - discard) % gap == 1)   # save state
                         x[:,(n-discard-1)÷gap+1] = temp
@@ -74,6 +74,12 @@ function scheme_ETDRK4(L,       # (linear part) Assumed to be diagonal here, jus
                @. v[:] =  E*v + Nv*f1 + 2*(Na+Nb)*f2 + Nc*f3
                v
        end
+end
+
+function scheme_FE(F,h)
+        step! = function (u,v)
+                v[:] = u + h*F(u)
+        end
 end
 
 
