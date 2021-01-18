@@ -1,4 +1,4 @@
-ks = include("C:/Users/JaredMcBride/Desktop/DDMR/klin/ks.jl")
+ks = include("ks.jl")
 at    = include("../../Tools/AnalysisToolbox.jl")
 
 
