@@ -8,11 +8,13 @@ Discription: This is a module containing a KSE solver that works better than the
 
 module myODE_solver
 
+using Statistics: mean
+
 Complex128 = Complex{Float64}
 
 function my_ODE_solver(scheme,
-                       init,
-                       F :: Function;
+                       init;
+                       F,
                        steps,           # after discard
                        discard,         # this is in steps
                        h,
@@ -22,15 +24,16 @@ function my_ODE_solver(scheme,
         n = size(init,1) # Dimension of system
         x = zeros(Complex128,n,(steps - 1) ÷ gap + 1)
 
-        step! = scheme_RK4(F, h)
+        # if we use a more gerenal one step method
+        step! = scheme(F, h)
 
         # main stepping loop
-        temp = init
+        temp = copy(init)
         for n = 1:steps+discard
-                temp = step!(temp,temp)                               # advance state
-                if (n > discard) & ((n - discard) % gap == 1)   # save state
+                if (n > discard) & ((n - discard - 1) % gap == 0)   # save state
                         x[:,(n-discard-1)÷gap+1] = temp
                 end
+                temp = step!(temp,temp)                               # advance state
         end
         x
 end
@@ -47,9 +50,11 @@ function scheme_RK4(F, h) # Assume autonomus RHS
 end
 
 
-function scheme_ETDRK4(L,       # (linear part) Assumed to be diagonal here, just Col vector
-                       NonLin,  # Nonlinear part
+function scheme_ETDRK4(F,       # packet with diagonal linear part and nonlinear part seperated
                        h)       # Assume autonomus RHS
+
+       L       = F[1]           # (linear part) Assumed to be diagonal here, just Col vector
+       NonLin  = F[2]           # Nonlinear part
 
        N = size(L,1)
        E = exp.(h*L); E2 = exp.(h/2*L)
@@ -63,22 +68,26 @@ function scheme_ETDRK4(L,       # (linear part) Assumed to be diagonal here, jus
        f2 = h*real(mean((2 .+ LR+exp.(LR).*(-2 .+ LR))./LR.^3,dims=2))[:]
        f3 = h*real(mean((-4 .- 3*LR-LR.^2+exp.(LR).*(4 .- LR))./LR.^3,dims=2))[:]
 
+       a = Complex.(zeros(N)) # required because of the @. macro
+       b = Complex.(zeros(N))
+       c = Complex.(zeros(N))
+
        function step!(u,v)
                Nu = NonLin(u)
                @.  a  =  E2*u + Q*Nu
                Na = NonLin(a)
-               @. b  =  E2*v + Q*Na
+               @. b  =  E2*u + Q*Na
                Nb = NonLin(b)
-               @. c  =  E2*a + Q*(2Nb-Nv)
+               @. c  =  E2*a + Q*(2Nb-Nu)
                Nc = NonLin(c)
-               @. v[:] =  E*v + Nv*f1 + 2*(Na+Nb)*f2 + Nc*f3
+               @. v[:] =  E*u + Nu*f1 + 2*(Na+Nb)*f2 + Nc*f3
                v
        end
 end
 
 function scheme_FE(F,h)
         step! = function (u,v)
-                v[:] = u + h*F(u)
+                v[:] = u + h*(F(u))
         end
 end
 
