@@ -12,7 +12,7 @@ this file.
 
 """
 
-module Model_KSE
+module myKSE_solver
 
 using FFTW
 using LinearAlgebra: diagm  #Solely for using this with FE or RK4 solvers
@@ -50,15 +50,15 @@ function my_KSE_solver(
 
     v_pad = [v[1:n+1]; zeros(pad); v[n+2:N]]
     K = size(v_pad,1)
-    F = plan_fft(v_pad)
-    iF = plan_ifft(v_pad)
+    Fp = plan_fft(v_pad)
+    iFp = plan_ifft(v_pad)
 
     if aliasing
-        NonLin = v -> ℓ .* (F*(real(iF*v)).^2)*N
+        NonLin = v -> ℓ .* (Fp*(real(iFp*v)).^2)*N
     else
         NonLin = function (v)
             v_pad = [v[1:n+1]; zeros(pad);v[n+2:N]]
-            nv = F*(real(iF*(v_pad)).^2)*K/N
+            nv = Fp*(real(iFp*(v_pad)).^2)*K/N
             Nv_dealiased = ℓ .* [nv[1:n+1]; nv[end-n+1:end]]
             # ifftshift(conv(fftshift(v),fftshift(v))[N-(n-1):N+n])/N
             # v_pad = [v[1:n]; zeros(pad);v[n+1:N]]
@@ -73,7 +73,7 @@ function my_KSE_solver(
 
     F = x -> diagm(L)*x + NonLin(x)     #Solely for using this with FE or RK4 solvers
 
-    F_etd = [L, Nonlin]
+    F_etd = [L, NonLin]
 
     steps   = ceil(Int,T/h)
     discard = ceil(Int,T_disc/h)
@@ -84,7 +84,7 @@ function my_KSE_solver(
         discard,
         h,
         gap = n_gap)
-    
 
 
+end
 end #module
