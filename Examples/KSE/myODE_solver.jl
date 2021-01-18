@@ -18,7 +18,7 @@ function my_ODE_solver(scheme,
                        steps,           # after discard
                        discard,         # this is in steps
                        h,
-                       gap,
+                       gap,             # so output is (steps - 1) ÷ gap + 1 long
                        flags...)
 
         n = size(init,1) # Dimension of system
