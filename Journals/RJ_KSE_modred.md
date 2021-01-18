@@ -1793,7 +1793,7 @@ So, what I did was set a new parameter `n` and set `N=2n`.
 
 # Tuseday, January 5, 2021
 
-12:36 PM - Though I have been going through the code very carefully, which processes has been facilitated by writing the de-aliasing tutorial and the FFTW tutorial I have not beable to identify why the solver is unstable, when it seems to mimic exactly Trefethen's solver in MATLAB.
+12:36 PM - Though I have been going through the code very carefully, which processes has been facilitated by writing the de-aliasing tutorial and the FFTW tutorial I have not been able to identify why the solver is unstable, when it seems to mimic exactly Trefethen's solver in MATLAB.
 
 4:25 PM -  I have been working on a large communication to Dr. Lin in a google doc. Here is how I got the first graphic
 ```julia
@@ -1818,4 +1818,16 @@ Today the goal is to write out algorithm by hand. Just, go through the whole rou
 
 7:22 AM - The plan today is to completely rewrite a new KSE solver. I hope to have a complete first draft by noon. Basically, this is nothing mare than a system of ODE's though nonlinear. So, first (1) I will write my ODE solver using ETDRK4 using the Kassam-Trefethen approach of writing the division as a contour integral. The solver will be of the usual general form of `d/dt(x) = f(x)`. The principal inputs will be the function `f` (in-place function, like Dr. Lin does, I think), `h` time step. Then I will write a function for the RHS, the "stepper" as it were, complete with de-aliasing. So, that is really all, I think. two main parts.
 
-12:16 PM I have a first complete draft of the ODE solver capable of using ETDR4. I am testing this. Hopefully tommorw I can have it working. 
+12:16 PM I have a first complete draft of the ODE solver capable of using ETDR4. I am testing this. Hopefully tomorrow I can have it working.
+
+
+
+# Saturday, January 16, 2021
+
+4:58 PM - I am going to test the code and hopefully get the ODE' solver working.
+
+# Monday, January 18, 2021
+
+1:19 PM - Tested the "myODE_solver.jl" using a diagonal linear example, a stiff example, and Lorenz63. It looks like it is working in all cases. The task now is to us it KSE.
+
+3:39 PM -  I tested "myKSE_solver.jl" and got the same results as the oldder code, "Model_KSE.jl". I think that there is something then wrong with my dealiased nonlinear part. I will look at that tomorrow.
