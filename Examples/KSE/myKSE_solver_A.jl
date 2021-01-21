@@ -12,7 +12,7 @@ this file.
 
 """
 
-module myKSE_solver
+module myKSE_solver_A
 
 using FFTW
 using LinearAlgebra: diagm  #Solely for using this with FE or RK4 solvers
@@ -26,8 +26,7 @@ function my_KSE_solver(
     h :: Real = 1/4,    # Timestep
     g = x -> cos(x/16)*(1 + sin(x/16)),     # Initial condition function
     T_disc = T/2,
-    n_gap = 100,        # 1 +  No. of EDTRK4 steps between reported data
-    aliasing = false
+    n_gap = 100        # 1 +  No. of EDTRK4 steps between reported data
     )
 
     N = 2n+1
@@ -46,28 +45,14 @@ function my_KSE_solver(
 
     # Nonlinear part
     ℓ = -0.5im*q
-    pad = aliasing ? 0 : ceil(Int,6N)
+    pad = 0
     println("Pad: $pad")
     v_pad = [v[1:n+1]; zeros(pad); v[n+2:N]]
     K = size(v_pad,1)
     Fp = plan_fft(v_pad)
     iFp = plan_bfft(v_pad)
 
-    if aliasing
-        NonLin = v -> ℓ .* fft(real(bfft(v)).^2)/K
-    else
-        NonLin = function (v)
-            println("Hurry!")
-            v_pad = [v[1:n+1]; zeros(pad);v[n+2:N]]
-            nv = fft(real(bfft(v_pad)).^2)/K
-            Nv_dealiased = ℓ .* [nv[1:n+1]; nv[end-n+1:end]]
-            # ifftshift(conv(fftshift(v),fftshift(v))[N-(n-1):N+n])/N
-            # v_pad = [v[1:n]; zeros(pad);v[n+1:N]]
-            # nv = F*(real(iF*v_pad)).^2*K/N
-            # [nv[1:n]; nv[end-n+1:end]]
-        end
-    end
-
+    NonLin = v -> ℓ .* (Fp*real(iFp*v).^2/K)
 
     ## Now we Now we use the solver
     scheme = mos.scheme_ETDRK4

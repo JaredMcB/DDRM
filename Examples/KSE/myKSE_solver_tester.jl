@@ -4,10 +4,13 @@ using PyPlot
 
 at    = include("../../Tools/AnalysisToolbox.jl")
 mykse = include("myKSE_solver.jl")
+mykse_NA = include("myKSE_solver_NA.jl")
+mykse_A = include("myKSE_solver_A.jl")
+
 kse   =  include("Model_kse.jl")
 
 ## Kassam and Trefethen paramaters
-T       = 1500
+T       = 150
 P       = 32π
 n       = 64
 h       = 1/4
@@ -17,19 +20,19 @@ n_gap   = 6
 aliasing= true
 
 # My New Solver
-vv = mykse.my_KSE_solver(T;
+vv = mykse_NA.my_KSE_solver(T;
                         P,
                         n,
                         h,
                         g,
                         T_disc,
-                        n_gap,
-                        aliasing)
+                        n_gap)
 
 uu = real((2n+1)*ifft(vv,1))
 ender = findfirst(isnan, sum(uu,dims = 1))[2]-10
-H1 = imshow(reverse(uu[:,1:ender]',dims = 1), extent=[0,P,0,150], aspect="auto")
-
+figure()
+H1 = imshow(reverse(reverse(uu[:,1:end]',dims = 1),dims = 2), extent=[0,P,0,150], aspect="auto")
+title("Aliasing = $aliasing")
 EE = abs2.(vv)
 figure()
 semilogy(mean(EE[:,1:ender],dims=2),label = "me (Julia) $i")

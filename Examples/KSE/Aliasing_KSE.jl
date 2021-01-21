@@ -28,13 +28,13 @@ uu_o, vv_o, tt   = @time ksed2.my_KSE_solver(T; P, N, h, g, n_gap = obs_gap);
 
 
 ## Trefethen parameters.
-uu, vv, tt = kse.my_KSE_solver(1500;
+uu, vv, tt = kse.my_KSE_solver(150;
                                N = 128,
                                T_disc = 0,
                                n_gap = 6,
-                               aliasing = false)
+                               aliasing = true)
 uu
-
+H1 = imshow(reverse(reverse(uu,dims = 2),dims = 1)', extent=[0,P,0,150], aspect="auto")
 plot(32π*(0:127)/128,uu[:,end], label = "me (Julia)")
 title("KSE solution at T = 150 (both with aliasing)")
 

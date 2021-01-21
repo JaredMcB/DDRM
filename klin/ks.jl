@@ -46,9 +46,14 @@ function make_ks_field(N; alpha=1.0, beta=1.0, L=2*pi,
     spec = [ dispersion(C*k) for k=1:N ]
 
     ## function to evaluate nonlinear term
-
     function ks_field!(U,F)
+        """
+        This function takes in U and puts anser in to F
 
+        U is just the vector of the (N) lowest complex valued modes
+
+        First it fills in Freal from U
+        """
         Freal[1] = 0.0
 
         let i  = 2,

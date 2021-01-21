@@ -1831,3 +1831,5 @@ Today the goal is to write out algorithm by hand. Just, go through the whole rou
 1:19 PM - Tested the "myODE_solver.jl" using a diagonal linear example, a stiff example, and Lorenz63. It looks like it is working in all cases. The task now is to us it KSE.
 
 3:39 PM -  I tested "myKSE_solver.jl" and got the same results as the oldder code, "Model_KSE.jl". I think that there is something then wrong with my dealiased nonlinear part. I will look at that tomorrow.
+
+Tomorrow I will look at Dr. Lin's dealiased nonlinear part. This will involve looking up functions like `make_r2r` in FFTW. If I use that does it work? Also, I wonder if my ETDRK4 solve is no good because it dosen't seem to have much of an advantage over RK4. Maybe I will throw something on stack overflow about ETDRK4.

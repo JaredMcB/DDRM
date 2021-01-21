@@ -1,20 +1,23 @@
+using PyPlot
+using FFTW
+
 ks = include("ks.jl")
-at    = include("../../Tools/AnalysisToolbox.jl")
+at = include("../Tools/AnalysisToolbox.jl")
 
 
 P = 32π
-steps = 100
+steps = 1000
 N = 128
 
 # Trefethen
 vv = ks.run_ks(steps,1.5;
              nsubsteps = 6,
-             verbose = false)
+             verbose = false, L = P)
 
 # get solution
-uu = real(N*ifft([zeros(1, steps+1); vv; zeros(1, steps+1); reverse(conj(vv),dims = 1)],1))
+uu = real(N*ifft([zeros(1, steps+1); vv; reverse(conj(vv),dims = 1)],1))
 
-H1 = imshow(uu, extent=[0,P,0,150], aspect="auto")
+H1 = imshow(reverse(reverse(uu',dims = 1),dims = 2), extent=[0,P,0,150], aspect="auto")
 uu
 v = ks.kt_init()
 
