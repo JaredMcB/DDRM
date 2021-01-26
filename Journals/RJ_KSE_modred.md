@@ -1869,7 +1869,7 @@ q = 2π/P*[0:n; -n:-1]
 
 
 ## Dr. Lins function
-fillout(v::Array{Complex{Float64},1}) = [0; v; reverse(conj(v),dims = 1)]
+fillout(v::Array{Complex{Float64},1}) = [0; v; reverse(conj(v))]
 
 NonLin! = ks.make_ks_field(n; alpha = 0, beta = 0, L = P)
 
@@ -1907,3 +1907,26 @@ findall(x -> x>1e-15, abs.(NonLinNA(v) - NonLin(v)))
 ```
 
 Then I use Dr. Lins function in my ODE solver and get the same thing as with my own function.
+
+
+
+# Tuesday, January 26, 2021
+
+8:12 AM - Today I want to put my nonlinear implementation into Dr. Lin's ODE solver.
+
+12:32 AM - I got my function to run in Dr. Lin's ODE solver. I also discovered that the above is can be corrected by the following: (observe the difference in the `v_pad = ...` line)
+
+```julia
+## My function
+pad = (3N+1)÷2
+K = N + pad
+NonLinNA = function (v)
+    v_pad = [0; v[2:n+1]; zeros(pad);v[n+2:N]]
+    nv = fft(bfft(v_pad).^2)/K
+    Nv_dealiased = ℓ .* [nv[1:n+1]; nv[end-n+1:end]]
+    # ifftshift(conv(fftshift(v),fftshift(v))[N-(n-1):N+n])/N
+    # v_pad = [v[1:n]; zeros(pad);v[n+1:N]]
+    # nv = F*(real(iF*v_pad)).^2*K/N
+    # [nv[1:n]; nv[end-n+1:end]]
+end
+```
