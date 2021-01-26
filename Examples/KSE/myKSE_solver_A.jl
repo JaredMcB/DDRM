@@ -1,6 +1,9 @@
 """
-Title: myKSE_solver.jl
+Title: myKSE_solver_A.jl
 author: Jared McBride (18 Jan 2021; American Fork, Utah)
+
+This is basically a copy of myKSE_solver.jl for which aliasing is not a flag but
+is assumed. This code DOES NOT correct for aliasing.
 
 After several weeks during the holidays to produce alias free solutions to KSE
 using the frame work of Kassam and Trefethen (found in FOURTH-ORDER

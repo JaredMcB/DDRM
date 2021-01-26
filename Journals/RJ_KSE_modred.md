@@ -1833,3 +1833,77 @@ Today the goal is to write out algorithm by hand. Just, go through the whole rou
 3:39 PM -  I tested "myKSE_solver.jl" and got the same results as the oldder code, "Model_KSE.jl". I think that there is something then wrong with my dealiased nonlinear part. I will look at that tomorrow.
 
 Tomorrow I will look at Dr. Lin's dealiased nonlinear part. This will involve looking up functions like `make_r2r` in FFTW. If I use that does it work? Also, I wonder if my ETDRK4 solve is no good because it dosen't seem to have much of an advantage over RK4. Maybe I will throw something on stack overflow about ETDRK4.
+
+
+
+# Saturday, January 17, 2021
+
+2:20 PM - I have been comparing Dr. Lin's implementation and my own of the KSE solver. Here is what I conclude so far:
+
+Dr. Lin's nonlinear implementation is different from mine. Here is the evidence:
+```julia
+using FFTW
+ks   = include("C:/Users/JaredMcBride/Desktop/DDMR/klin/ks.jl")
+
+
+## Set up
+T       = 150
+P       = 32π
+n       = 64
+h       = 1/4
+g       = x -> cos(x/16)*(1 + sin(x/16))
+T_disc  = 0
+n_gap   = 6
+aliasing= true
+
+N = 2n+1
+
+# Spatial grid and initial conditions:
+x = P*(0:N-1)/N
+u = g.(x)
+v = fft(u)/N        # The division by N is to effect the DFT I want.
+
+# Now we set up the equations
+q = 2π/P*[0:n; -n:-1]
+ℓ = -0.5im*q
+
+
+## Dr. Lins function
+fillout(v::Array{Complex{Float64},1}) = [0; v; reverse(conj(v),dims = 1)]
+
+NonLin! = ks.make_ks_field(n; alpha = 0, beta = 0, L = P)
+
+NonLin = function (v)
+    u = zeros(Complex{Float64},n)
+    NonLin!(v[2:n+1],u)
+    fillout(u)
+end
+
+## My function
+pad = (3N+1)÷2
+K = N + pad
+NonLinNA = function (v)
+    v_pad = [v[1:n+1]; zeros(pad);v[n+2:N]]
+    nv = fft(bfft(v_pad).^2)/K
+    Nv_dealiased = ℓ .* [nv[1:n+1]; nv[end-n+1:end]]
+    # ifftshift(conv(fftshift(v),fftshift(v))[N-(n-1):N+n])/N
+    # v_pad = [v[1:n]; zeros(pad);v[n+1:N]]
+    # nv = F*(real(iF*v_pad)).^2*K/N
+    # [nv[1:n]; nv[end-n+1:end]]
+end
+
+# simple little diff function
+Diff(x,y) = maximum(abs.(x - y))
+
+Diff(NonLinNA(v),NonLin(v))
+
+#However
+
+v = fft(randn(N))/N
+v = fft(u)/N
+
+Diff(NonLinNA(v),NonLin(v))
+findall(x -> x>1e-15, abs.(NonLinNA(v) - NonLin(v)))
+```
+
+Then I use Dr. Lins function in my ODE solver and get the same thing as with my own function.

@@ -2,6 +2,10 @@
 Title: myKSE_solver.jl
 author: Jared McBride (18 Jan 2021; American Fork, Utah)
 
+This code is basically a copy of myKSE_solver.jl, but does not contain aliasing
+as a flag. Instead dealiasing is built in. This code attempts to CORRECT for
+aliasing.  
+
 After several weeks during the holidays to produce alias free solutions to KSE
 using the frame work of Kassam and Trefethen (found in FOURTH-ORDER
 TIME-STEPPING FOR STIFF PDEs∗, 2005) I started again with a different approach.

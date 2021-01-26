@@ -59,7 +59,7 @@ function scheme_ETDRK4(F,       # packet with diagonal linear part and nonlinear
        N = size(L,1)
        E = exp.(h*L); E2 = exp.(h/2*L)
 
-       M = 16                          # no. of pts use in contour integration
+       M = 64                          # no. of pts use in contour integration
        r = exp.(im*π*((1:M) .-.5)/M)   # roots of unit suggested by Kassam and Trefethen
        LR = h*L*ones(M)' + ones(N)*r'  # the second dim varies r the first vaeries L
 
