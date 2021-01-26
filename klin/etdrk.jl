@@ -83,19 +83,19 @@ function make_etdrk4_stepper(eval_nonlin!::Function,
                      Fc[k] * hv3[k] )
         end
     end
-     
+
     function stepper(U, nsteps::Number)
         stepper(U,nsteps,V)
         return V
     end
-        
+
     function stepper(U, nsteps::Number, V)
         stepper(U,V)
         for n=2:nsteps
             stepper(V,V)
         end
     end
-        
+
     return stepper
 end
 
@@ -109,7 +109,7 @@ end
 ## cancellations, the exact expressions may not be
 ## numerically accurate.  In such cases, it's better to
 ## evaluate the functions by e.g. contour
-## integration. 
+## integration.
 
 ## Here we automatically switch between exact formula and
 ## interpolation when necessary; interpolation data is
@@ -189,7 +189,7 @@ function circle_mean_1(f::Function, z;
     if abs(z-r) < 0.5 || abs(z+r) < 0.5
         r += 1
     end
-    
+
     sum::Complex128 = 0.0+0.0im
     for i=1:(n-1)
         sum += f(z+r*exp(im*i*dt))
@@ -224,7 +224,7 @@ function circle_mean_diff_1(f::Function, z;
     if abs(z-r) < 0.5 || abs(z+r) < 0.5
         r += 1
     end
-    
+
     sum::Complex128 = 0.0+0.0im
     for i=1:(n-1)
         c = r*exp(im*i*dt)
