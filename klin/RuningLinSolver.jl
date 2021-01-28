@@ -6,17 +6,17 @@ at = include("../Tools/AnalysisToolbox.jl")
 
 
 P = 32π
-steps = 1000
+steps = 100
 N = 128
 
 # Trefethen
-vv_myA = ks.run_ks(steps,1.5;
+vv = ks.run_ks(steps,1.5;
              nsubsteps = 6,
              verbose = false, L = P)
 
 # get solution
-# uu = real(N*ifft([zeros(1, steps+1); vv; reverse(conj(vv),dims = 1)],1))
-# H1 = imshow(reverse(reverse(uu',dims = 1),dims = 2), extent=[0,P,0,150], aspect="auto")
+uu = real(N*ifft([zeros(1, steps+1); vv; reverse(conj(vv),dims = 1)],1))
+H1 = imshow(reverse(reverse(uu',dims = 1),dims = 2), extent=[0,P,0,150], aspect="auto")
 
 
 VV = [vv_lin, vv_myNA, vv_myA]

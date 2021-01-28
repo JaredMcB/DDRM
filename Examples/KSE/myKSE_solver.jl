@@ -18,6 +18,7 @@ using FFTW
 using LinearAlgebra: diagm  #Solely for using this with FE or RK4 solvers
 
 mos = include("myODE_solver.jl")
+mETD = include("myETDRK4_scheme.jl")
 
 function my_KSE_solver(
     T :: Real = 150;    # Length (in seconds) of time of run
@@ -70,7 +71,7 @@ function my_KSE_solver(
 
 
     ## Now we Now we use the solver
-    scheme = mos.scheme_ETDRK4
+    scheme = mETD.scheme_ETDRK4
 
     F = x -> diagm(L)*x + NonLin(x)     #Solely for using this with FE or RK4 solvers
 

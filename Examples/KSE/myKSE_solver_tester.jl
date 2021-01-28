@@ -4,8 +4,8 @@ using PyPlot
 
 at    = include("../../Tools/AnalysisToolbox.jl")
 mykse = include("myKSE_solver.jl")
-mykse_NA = include("myKSE_solver_NA.jl")
-mykse_A = include("myKSE_solver_A.jl")
+# mykse_NA = include("myKSE_solver_NA.jl")
+# mykse_A = include("myKSE_solver_A.jl")
 
 kse   =  include("Model_kse.jl")
 
@@ -20,7 +20,7 @@ n_gap   = 6
 aliasing= true
 
 # My New Solver
-vv = mykse_NA.my_KSE_solver(T;
+vv = mykse.my_KSE_solver(T;
                         P,
                         n,
                         h,

@@ -4,7 +4,7 @@ author: Jared McBride (18 Jan 2021; American Fork, Utah)
 
 This code is basically a copy of myKSE_solver.jl, but does not contain aliasing
 as a flag. Instead dealiasing is built in. This code attempts to CORRECT for
-aliasing.  
+aliasing.
 
 After several weeks during the holidays to produce alias free solutions to KSE
 using the frame work of Kassam and Trefethen (found in FOURTH-ORDER
@@ -49,7 +49,7 @@ function my_KSE_solver(
 
     # Nonlinear part
     ℓ = -0.5im*q
-    pad = ceil(Int,6N)
+    pad = ceil(Int,N)
     println("Pad: $pad")
     v_pad = [v[1:n+1]; zeros(pad); v[n+2:N]]
     K = size(v_pad,1)

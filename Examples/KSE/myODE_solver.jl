@@ -91,7 +91,4 @@ function scheme_FE(F,h)
         end
 end
 
-
-
-
 end #module
