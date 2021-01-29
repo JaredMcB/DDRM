@@ -31,6 +31,9 @@ function scheme_ETDRK4(F,       # packet with diagonal linear part and nonlinear
     L       = F[1]           # (linear part) Assumed to be diagonal here, just Col vector
     NonLin  = F[2]           # Nonlinear part
 
+    M = 40000
+
+
     N = size(L,1)
     E = exp.(h*L)
     E2 = exp.(h/2*L)
@@ -40,10 +43,10 @@ function scheme_ETDRK4(F,       # packet with diagonal linear part and nonlinear
     f_beta(z)  = (2 + z + exp(z)*(-2 + z))/z^3
     f_gamma(z) = (-4 - 3z - z^2 + exp(z)*(4 - z))/z^3
 
-    F_Q = cont_quad(f_Q;N)
-    F_alpha = cont_quad(f_alpha;N)
-    F_beta = cont_quad(f_beta;N)
-    F_gamma = cont_quad(f_gamma;N)
+    F_Q = cont_quad(f_Q;N,M)
+    F_alpha = cont_quad(f_alpha;N,M)
+    F_beta = cont_quad(f_beta;N,M)
+    F_gamma = cont_quad(f_gamma;N,M)
 
     Q     = h*F_Q(h*L)
     alpha = h*F_alpha(h*L)
@@ -53,6 +56,7 @@ function scheme_ETDRK4(F,       # packet with diagonal linear part and nonlinear
     a = Complex.(zeros(N)) # required because of the @. macro
     b = Complex.(zeros(N))
     c = Complex.(zeros(N))
+    V = Complex.(zeros(N))
 
     function step!(u,v)
            Nu = NonLin(u)
@@ -62,8 +66,8 @@ function scheme_ETDRK4(F,       # packet with diagonal linear part and nonlinear
            Nb = NonLin(b)
            @. c  =  E2*a + Q*(2Nb-Nu)
            Nc = NonLin(c)
-           @. v[:] =  E*u + alpha*Nu + 2beta*(Na+Nb) + gamma*Nc
-           v
+           @. V =  E*u + alpha*Nu + 2beta*(Na+Nb) + gamma*Nc
+           v[:] = [0; V[2:(N-1)÷2+1]; reverse(conj.(V[2:(N-1)÷2+1]))]
     end
 end
 
