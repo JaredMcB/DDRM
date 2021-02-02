@@ -1,4 +1,4 @@
-# Monday, November 23, 2020
+Nonlinear# Monday, November 23, 2020
 
 11:31 AM - Here I start again, (though much wiser now) my study of model reduction by the Weiner projection of the KSE model. So, to get started I will need some data. I will us the data I produced last summer from parameters used by Lu, Lin and Chorin in
 
@@ -1930,3 +1930,40 @@ NonLinNA = function (v)
     # [nv[1:n]; nv[end-n+1:end]]
 end
 ```
+
+
+
+# Monday, February 2, 2021
+
+9:16 AM - On Friday of last week Dr. Lin and I mad a big breakthrough in the stability of my solver. The issue with stability seemed to be that the symmetry (conjugate symmetry) in the Fourier modes was not being persevered. This had the effect of creating a pile-up (of energy) in the linear modes. I fixed this by enforcing the symmetry in the solver the ETDRK4 stepper. as shown here:
+
+```julia
+function step!(u,v)
+       Nu = NonLin(u)
+       @.  a  =  E2*u + Q*Nu
+       Na = NonLin(a)
+       @. b  =  E2*u + Q*Na
+       Nb = NonLin(b)
+       @. c  =  E2*a + Q*(2Nb-Nu)
+       Nc = NonLin(c)
+       @. V =  E*u + alpha*Nu + 2beta*(Na+Nb) + gamma*Nc
+       v[:] = [0; V[2:(N-1)÷2+1]; reverse(conj.(V[2:(N-1)÷2+1]))]
+end
+```
+
+However, after I did this some other things appear to have gone wrong, which I am currently investigating. For one things the autocorrelations seem to have steeper decay than that of Dr. Lin's. Another is that the energy spectrum flattens out at 1e-7 rather then 1e-37 for Dr. Lin's. The last observation is with regard to a time series of 1000 observations. The steps size is 1e-3 and we observe every 100 steps.
+
+11:15 AM - It looks like I found the bug. it read
+```julia
+function NonLin(v)
+    v_pad[2:n+1]        = v[2:n+1]
+    v_pad[end-n+1:end]  = v[n+2:end]
+    nv = Fp*(real(iFp*(v_pad)).^2)/K
+    return ℓ .* [nv[1:n+1];v_pad[end-n+1:end]]
+end
+```
+but it should have read (and now does)
+```julia
+    return ℓ .* [nv[1:n+1];nv[end-n+1:end]]
+```
+I made this change and now things seem to be working much better. It resembles the Kassam-Trefethen code in the transient part and is stable. An interesting note: when I only enforced symmetry in the NonLinear function the code was still unstable. So, I returned the symmetry enforcement to the stepper and that fixed the problem.
