@@ -46,7 +46,7 @@ function my_KSE_solver(
     # Nonlinear part
     ℓ = -0.5im*q
 
-    K = 3N + 1
+    K = 3n + 1
     v_pad = zeros(ComplexF64,K)
     Fp = plan_fft(v_pad)
     iFp = plan_bfft(v_pad)
@@ -55,8 +55,10 @@ function my_KSE_solver(
         v_pad[2:n+1]        = v[2:n+1]
         v_pad[end-n+1:end]  = v[n+2:end]
         nv = Fp*(real(iFp*(v_pad)).^2)/K
-        F[:] = ℓ .* [nv[0:n+1];v_pad[end-n+1:end]
+        return ℓ .* [nv[1:n+1];nv[end-n+1:end]]
     end
+
+
 
 
     ## Now we Now we use the solver
