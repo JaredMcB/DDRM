@@ -67,7 +67,9 @@ function scheme_ETDRK4(F,       # packet with diagonal linear part and nonlinear
            @. c  =  E2*a + Q*(2Nb-Nu)
            Nc = NonLin(c)
            @. V =  E*u + alpha*Nu + 2beta*(Na+Nb) + gamma*Nc
-           v[:] = [0; V[2:(N-1)÷2+1]; reverse(conj.(V[2:(N-1)÷2+1]))]
+           v[:] = [0; V[2:(N-1)÷2+1]; reverse(conj.(V[2:(N-1)÷2+1]))]  
+           # it is not enough to control symmetry in the non linear part it must
+           # also be controled in the linear part.
     end
 end
 
