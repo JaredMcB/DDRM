@@ -11,20 +11,20 @@ using JLD
 using DSP: conv # For conv function in Psi
 using Dates
 
-kse = include("Model_KSE.jl")
+kse = include("myKSE_solver.jl")
 
-gen = "linn"     # this is just a reference designation it shows up in the
+gen = "lin"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
 T        = 10^5 # Length (in seconds) of time of run
 T_disc   = 10^5 ÷ 2 # Length (in seconds) of time discarded
 P        = 2π/sqrt(0.085)  # Period
-N        = 96  # Number of fourier modes used
+n        = 96  # Number of fourier modes used
 h        = 1e-3 # Timestep
 g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
 obs_gap  = 100
 
-uu, vv, tt =  kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
+uu, vv, tt =  kse.my_KSE_solver(T; T_disc, P, n, h, g, n_gap = obs_gap)
 
 paramaters = Dict(
    "gen" => gen,
