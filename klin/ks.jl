@@ -20,6 +20,8 @@ include("util.jl")      #include("WienerROM/Util/util.jl")
 include("fftwutil.jl")  #include("WienerROM/Extra/fftwutil.jl")
 include("etdrk.jl")     #include("WienerROM/Extra/etdrk.jl")
 
+mKSE = include("myKSE_field.jl")                                            #_#
+
 using FFTW,.fftwutil,.etdrk
 
 
@@ -46,9 +48,14 @@ function make_ks_field(N; alpha=1.0, beta=1.0, L=2*pi,
     spec = [ dispersion(C*k) for k=1:N ]
 
     ## function to evaluate nonlinear term
-
     function ks_field!(U,F)
+        """
+        This function takes in U and puts anser in to F
 
+        U is just the vector of the (N) lowest complex valued modes
+
+        First it fills in Freal from U
+        """
         Freal[1] = 0.0
 
         let i  = 2,
@@ -88,12 +95,15 @@ end
 ######################################################
 ## Solver
 
+field = true ? mKSE.make_myKSE_field : make_ks_field                        #_#
+
+
 export   make_ks_stepper
 function make_ks_stepper(N, dt; alpha=1.0, beta=1.0, L=2*pi,
                          dispersion = v->alpha*v^2-beta*v^4,
                          delay=60.0)
 
-    step! = make_etdrk4_stepper(make_ks_field(N; alpha=0., beta=0., L=L),
+    step! = make_etdrk4_stepper(field(N; alpha=0., beta=0., L=L),           #_#
                                 [ dispersion(2*pi*k/L) for k=1:N ],
                                 dt)
 end

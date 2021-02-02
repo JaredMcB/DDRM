@@ -1,10 +1,15 @@
-```
+"""
 This version was committed on Aug 20.
 
 With the earlier neive from of dealiasing the code runs the full 2017
 run with no Nan's. It also runs the Trefethen data (extended by ten times)
 with no nan's
-```
+
+I worked on it a while and could not get the code to dealias. So, I started over
+    with a different a approach. The result is the stand-alone )DE solver
+    "myOde_solver" with ETDrk4 capabilities. I use that model in the smodel
+    myKSE_solver.jl. This was on Jan 18, 2021.
+"""
 module Model_KSE
 
 using FFTW, Statistics

@@ -1,4 +1,4 @@
-# Monday, November 23, 2020
+Nonlinear# Monday, November 23, 2020
 
 11:31 AM - Here I start again, (though much wiser now) my study of model reduction by the Weiner projection of the KSE model. So, to get started I will need some data. I will us the data I produced last summer from parameters used by Lu, Lin and Chorin in
 
@@ -1544,7 +1544,7 @@ We discussed this at length and concluded that the de-aliasing lines of code whe
 
 2:23 PM - I have been working on this dealiasing code. But it has proven very enigmatic to my methods which are perhaps too sloppy. When I tried rerunning, what I thought was exactly the same code as yesterday, the solution was populated entirely of `NaN`s. I went back to the Trefethen problem and was able to reproduce those results. For the past few hours I have been investigating this issue and feel no closer to it's resolution. My methods of investigation are way too causal. This is why I am grateful for this journal. I need it to help me systematically investigate the problem. Without it, I seem to just run a bunch of things and try to remember it all. I am taking a break now to grade and will return with fresh eyes. I think it will be really good and worth while to write a tutorial about aliasing with regards to KSE (geared to an undergraduate audience I guess)
 
-4:54 PM - Very interesting! I have been struggleing with a coding problem I had coded, with in my solver:
+4:54 PM - Very interesting! I have been struggling with a coding problem I had coded, with in my solver:
 ```julia
 if aliasing
     Nh    = ceil(Int,N/2)
@@ -1793,4 +1793,177 @@ So, what I did was set a new parameter `n` and set `N=2n`.
 
 # Tuseday, January 5, 2021
 
-12:36 PM - Though I have been going through the code very carefully, which processes has been facilitated by writing the de-aliasing tutorial and the FFTW tutorial I have not beable to identify why the solver is unstable, when it seems to mimic exactly Trefethen's solver in MATLAB. 
+12:36 PM - Though I have been going through the code very carefully, which processes has been facilitated by writing the de-aliasing tutorial and the FFTW tutorial I have not been able to identify why the solver is unstable, when it seems to mimic exactly Trefethen's solver in MATLAB.
+
+4:25 PM -  I have been working on a large communication to Dr. Lin in a google doc. Here is how I got the first graphic
+```julia
+uu, vv, tt = ksed2.my_KSE_solver(150;
+                               N = 128,
+                               T_disc = 0,
+                               n_gap = 6)
+uu
+
+plot(32π*(0:127)/128,uu[:,end], label = "me (Julia)")
+title("KSE solution at T = 150 (both with aliasing)")
+```
+
+
+# Thursday, January 14, 2021
+
+Today the goal is to write out algorithm by hand. Just, go through the whole routine, almost from scratch.
+
+
+
+# Friday, January 15, 2021
+
+7:22 AM - The plan today is to completely rewrite a new KSE solver. I hope to have a complete first draft by noon. Basically, this is nothing mare than a system of ODE's though nonlinear. So, first (1) I will write my ODE solver using ETDRK4 using the Kassam-Trefethen approach of writing the division as a contour integral. The solver will be of the usual general form of `d/dt(x) = f(x)`. The principal inputs will be the function `f` (in-place function, like Dr. Lin does, I think), `h` time step. Then I will write a function for the RHS, the "stepper" as it were, complete with de-aliasing. So, that is really all, I think. two main parts.
+
+12:16 PM I have a first complete draft of the ODE solver capable of using ETDR4. I am testing this. Hopefully tomorrow I can have it working.
+
+
+
+# Saturday, January 16, 2021
+
+4:58 PM - I am going to test the code and hopefully get the ODE' solver working.
+
+# Monday, January 18, 2021
+
+1:19 PM - Tested the "myODE_solver.jl" using a diagonal linear example, a stiff example, and Lorenz63. It looks like it is working in all cases. The task now is to us it KSE.
+
+3:39 PM -  I tested "myKSE_solver.jl" and got the same results as the oldder code, "Model_KSE.jl". I think that there is something then wrong with my dealiased nonlinear part. I will look at that tomorrow.
+
+Tomorrow I will look at Dr. Lin's dealiased nonlinear part. This will involve looking up functions like `make_r2r` in FFTW. If I use that does it work? Also, I wonder if my ETDRK4 solve is no good because it dosen't seem to have much of an advantage over RK4. Maybe I will throw something on stack overflow about ETDRK4.
+
+
+
+# Saturday, January 17, 2021
+
+2:20 PM - I have been comparing Dr. Lin's implementation and my own of the KSE solver. Here is what I conclude so far:
+
+Dr. Lin's nonlinear implementation is different from mine. Here is the evidence:
+```julia
+using FFTW
+ks   = include("C:/Users/JaredMcBride/Desktop/DDMR/klin/ks.jl")
+
+
+## Set up
+T       = 150
+P       = 32π
+n       = 64
+h       = 1/4
+g       = x -> cos(x/16)*(1 + sin(x/16))
+T_disc  = 0
+n_gap   = 6
+aliasing= true
+
+N = 2n+1
+
+# Spatial grid and initial conditions:
+x = P*(0:N-1)/N
+u = g.(x)
+v = fft(u)/N        # The division by N is to effect the DFT I want.
+
+# Now we set up the equations
+q = 2π/P*[0:n; -n:-1]
+ℓ = -0.5im*q
+
+
+## Dr. Lins function
+fillout(v::Array{Complex{Float64},1}) = [0; v; reverse(conj(v))]
+
+NonLin! = ks.make_ks_field(n; alpha = 0, beta = 0, L = P)
+
+NonLin = function (v)
+    u = zeros(Complex{Float64},n)
+    NonLin!(v[2:n+1],u)
+    fillout(u)
+end
+
+## My function
+pad = (3N+1)÷2
+K = N + pad
+NonLinNA = function (v)
+    v_pad = [v[1:n+1]; zeros(pad);v[n+2:N]]
+    nv = fft(bfft(v_pad).^2)/K
+    Nv_dealiased = ℓ .* [nv[1:n+1]; nv[end-n+1:end]]
+    # ifftshift(conv(fftshift(v),fftshift(v))[N-(n-1):N+n])/N
+    # v_pad = [v[1:n]; zeros(pad);v[n+1:N]]
+    # nv = F*(real(iF*v_pad)).^2*K/N
+    # [nv[1:n]; nv[end-n+1:end]]
+end
+
+# simple little diff function
+Diff(x,y) = maximum(abs.(x - y))
+
+Diff(NonLinNA(v),NonLin(v))
+
+#However
+
+v = fft(randn(N))/N
+v = fft(u)/N
+
+Diff(NonLinNA(v),NonLin(v))
+findall(x -> x>1e-15, abs.(NonLinNA(v) - NonLin(v)))
+```
+
+Then I use Dr. Lins function in my ODE solver and get the same thing as with my own function.
+
+
+
+# Tuesday, January 26, 2021
+
+8:12 AM - Today I want to put my nonlinear implementation into Dr. Lin's ODE solver.
+
+12:32 AM - I got my function to run in Dr. Lin's ODE solver. I also discovered that the above is can be corrected by the following: (observe the difference in the `v_pad = ...` line)
+
+```julia
+## My function
+pad = (3N+1)÷2
+K = N + pad
+NonLinNA = function (v)
+    v_pad = [0; v[2:n+1]; zeros(pad);v[n+2:N]]
+    nv = fft(bfft(v_pad).^2)/K
+    Nv_dealiased = ℓ .* [nv[1:n+1]; nv[end-n+1:end]]
+    # ifftshift(conv(fftshift(v),fftshift(v))[N-(n-1):N+n])/N
+    # v_pad = [v[1:n]; zeros(pad);v[n+1:N]]
+    # nv = F*(real(iF*v_pad)).^2*K/N
+    # [nv[1:n]; nv[end-n+1:end]]
+end
+```
+
+
+
+# Monday, February 2, 2021
+
+9:16 AM - On Friday of last week Dr. Lin and I mad a big breakthrough in the stability of my solver. The issue with stability seemed to be that the symmetry (conjugate symmetry) in the Fourier modes was not being persevered. This had the effect of creating a pile-up (of energy) in the linear modes. I fixed this by enforcing the symmetry in the solver the ETDRK4 stepper. as shown here:
+
+```julia
+function step!(u,v)
+       Nu = NonLin(u)
+       @.  a  =  E2*u + Q*Nu
+       Na = NonLin(a)
+       @. b  =  E2*u + Q*Na
+       Nb = NonLin(b)
+       @. c  =  E2*a + Q*(2Nb-Nu)
+       Nc = NonLin(c)
+       @. V =  E*u + alpha*Nu + 2beta*(Na+Nb) + gamma*Nc
+       v[:] = [0; V[2:(N-1)÷2+1]; reverse(conj.(V[2:(N-1)÷2+1]))]
+end
+```
+
+However, after I did this some other things appear to have gone wrong, which I am currently investigating. For one things the autocorrelations seem to have steeper decay than that of Dr. Lin's. Another is that the energy spectrum flattens out at 1e-7 rather then 1e-37 for Dr. Lin's. The last observation is with regard to a time series of 1000 observations. The steps size is 1e-3 and we observe every 100 steps.
+
+11:15 AM - It looks like I found the bug. it read
+```julia
+function NonLin(v)
+    v_pad[2:n+1]        = v[2:n+1]
+    v_pad[end-n+1:end]  = v[n+2:end]
+    nv = Fp*(real(iFp*(v_pad)).^2)/K
+    return ℓ .* [nv[1:n+1];v_pad[end-n+1:end]]
+end
+```
+but it should have read (and now does)
+```julia
+    return ℓ .* [nv[1:n+1];nv[end-n+1:end]]
+```
+I made this change and now things seem to be working much better. It resembles the Kassam-Trefethen code in the transient part and is stable. An interesting note: when I only enforced symmetry in the NonLinear function the code was still unstable. So, I returned the symmetry enforcement to the stepper and that fixed the problem.
