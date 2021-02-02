@@ -31,7 +31,7 @@ function scheme_ETDRK4(F,       # packet with diagonal linear part and nonlinear
     L       = F[1]           # (linear part) Assumed to be diagonal here, just Col vector
     NonLin  = F[2]           # Nonlinear part
 
-    M = 40000
+    M = 1000
 
 
     N = size(L,1)
