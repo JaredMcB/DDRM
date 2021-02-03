@@ -1967,3 +1967,21 @@ but it should have read (and now does)
     return ℓ .* [nv[1:n+1];nv[end-n+1:end]]
 ```
 I made this change and now things seem to be working much better. It resembles the Kassam-Trefethen code in the transient part and is stable. An interesting note: when I only enforced symmetry in the NonLinear function the code was still unstable. So, I returned the symmetry enforcement to the stepper and that fixed the problem.
+
+#### Experiment Feb 2, 2021 1 (run on thelio)
+
+This experiment was run on thelio. I just ran the following:
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> nice julia KSE_data_gen.jl
+at> <EOT>
+job 178 at Tue Feb  2 12:26:00 2021
+```
+
+This is to get a data set to work with.  After the data is made I will analyze it and test it against Dr. Lin's solver for reference. I will test
+1. the trajectories
+2. the autocorrelation functions
+3. the energy spectrum
+
+these tests will be conducted in a notebook kept on thelio. There I will run Dr. lin's code and save it in the same folder with my data. 
