@@ -17,7 +17,7 @@ gen = "lin"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
 T        = 10^3 # Length (in seconds) of time of run
-T_disc   = 10^3 ÷ 2 # Length (in seconds) of time discarded (taken from T)
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
 P        = 2π/sqrt(0.085)  # Period
 n        = 96  # Number of fourier modes used
 h        = 1e-3 # Timestep
@@ -28,7 +28,7 @@ obs_gap  = 100
 steps   = ceil(Int,T/h)
 discard = ceil(Int,T_disc/h)
 
-vv = ks.run_ks(ks.fei_init(),steps, .1;
+@time vv = ks.run_ks(ks.fei_init(),steps, .1;
              nsubsteps = obs_gap,
              verbose = false, L = P)
 
