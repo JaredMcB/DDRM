@@ -1984,4 +1984,65 @@ This is to get a data set to work with.  After the data is made I will analyze i
 2. the autocorrelation functions
 3. the energy spectrum
 
-these tests will be conducted in a notebook kept on thelio. There I will run Dr. lin's code and save it in the same folder with my data. 
+these tests will be conducted in a notebook kept on thelio. There I will run Dr. lin's code and save it in the same folder with my data.
+
+The was not computed because of a typo.
+
+
+# Wednesday, February 3, 2021
+
+12:51 PM - I am going to retry the experiment from yesterday.
+
+#### Experiment Feb 3, 2021 1 (run on thelio)
+
+This experiment just produces data using Dr. Lins code.
+I executed the experiment with the following:
+```
+jaredm@thelio:~/DDMR/klin$ batch
+warning: commands will be executed using /bin/sh
+at> julia RuningLinSolver.jl
+at> <EOT>
+job 180 at Wed Feb  3 12:24:00 2021
+```
+
+This had the following parameters:
+```julia
+T        = 10^3 # Length (in seconds) of time of run
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
+P        = 2π/sqrt(0.085)  # Period
+n        = 96  # Number of fourier modes used
+h        = 1e-3 # Timestep
+g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
+obs_gap  = 100
+```
+
+#### Experiment Feb 3, 2021 2 (run on thelio)
+Now I want to run my code for the same length (`T = 10^3`)
+
+I used
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_data_gen.jl
+at> <EOT>
+job 182 at Wed Feb  3 13:02:00 2021
+```
+
+#### Experiment Feb 3, 2021 3 (run on thelio)
+
+Ploughing in hope that these data generators agree I went a head and ran my solver for `T = 10^5` which is what was used in the 2017 paper. I wrote
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_data_gen.jl
+at> <EOT>
+job 181 at Wed Feb  3 12:48:00 2021
+```
+
+and had
+```julia
+T        = 10^5 # Length (in seconds) of time of run
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
+```
+
+Now, I wait for them to finish.  
