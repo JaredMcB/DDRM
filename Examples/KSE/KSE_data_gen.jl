@@ -24,14 +24,14 @@ h        = 1e-3 # Timestep
 g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
 obs_gap  = 100
 
-uu, vv, tt =  kse.my_KSE_solver(T; T_disc, P, n, h, g, n_gap = obs_gap)
+vv =  kse.my_KSE_solver(T; T_disc, P, n, h, g, n_gap = obs_gap)
 
 paramaters = Dict(
    "gen" => gen,
     "T" => T,
    "T_disc" => T_disc,
    "P" => P,
-   "N" => N,
+   "n" => n,
    "h" => h,
    "g" => "x -> cos(π*x/16)*(1 + sin.(π*x/16))",
    "obs_gap" => obs_gap,
@@ -45,7 +45,7 @@ sol_file = server ? "../../../data/KSE_Data/KSE_sol_$gen.jld" :
    "Desktop/DDMR/Examples/KSE/Data/KSE_sol_$gen.jld"
 println("Sol save location: " * sol_file)
 
-dat = Dict("dat_uu" => uu, "dat_vv" => vv, "dat_tt" => tt)
+dat = Dict("dat_vv" => vv)
 Data = merge(paramaters, dat)
 save(sol_file, Data)
 println("data saved")
