@@ -16,7 +16,7 @@ ks = include("ks.jl")
 gen = "lin"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
-T        = 10^3 # Length (in seconds) of time of run
+T        = 10^1 # Length (in seconds) of time of run
 T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
 P        = 2π/sqrt(0.085)  # Period
 n        = 96  # Number of fourier modes used
@@ -41,14 +41,13 @@ paramaters = Dict(
    "h" => h,
    "g" => "x -> cos(π*x/16)*(1 + sin.(π*x/16))",
    "obs_gap" => obs_gap,
-   "seed" => seed,
    "tm" => now()
    )
 
 server = startswith(pwd(), "/u5/jaredm") ? true : false
 println("on server = $server")
-sol_file = server ? "../../../data/KSE_Data/ks_sol_$gen.jld" :
-   "Desktop/DDMR/Examples/KSE/Data/ks_sol_$gen.jld"
+sol_file = server ? "../../data/KSE_Data/ks_sol_$gen.jld" :
+   "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_sol_$gen.jld"
 println("Sol save location: " * sol_file)
 
 dat = Dict("dat_vv" => vv)
