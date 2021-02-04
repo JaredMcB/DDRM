@@ -16,8 +16,8 @@ kse = include("myKSE_solver.jl")
 gen = "lin"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
-T        = 10^5 # Length (in seconds) of time of run
-T_disc   = 10^5 ÷ 2 # Length (in seconds) of time discarded
+T        = 10^3 # Length (in seconds) of time of run
+T_disc   = 10^3 ÷ 2 # Length (in seconds) of time discarded
 P        = 2π/sqrt(0.085)  # Period
 n        = 96  # Number of fourier modes used
 h        = 1e-3 # Timestep
