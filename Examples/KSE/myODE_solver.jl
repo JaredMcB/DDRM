@@ -15,7 +15,7 @@ Complex128 = Complex{Float64}
 function my_ODE_solver(scheme,
                        init;
                        F,
-                       steps,           # after discard
+                       steps,           # before discard
                        discard,         # this is in steps
                        h,
                        gap,             # so output is (steps - 1) ÷ gap + 1 long
