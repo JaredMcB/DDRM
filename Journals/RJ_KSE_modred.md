@@ -2090,3 +2090,13 @@ T        = 10^4 # Length (in seconds) of time of run
 T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
 ```
 This should take about 60,000 sec so about 16 hrs 40 mins. Hopefully it will be done sooner.
+
+On this one I got an out of memery error so, after my code had finished I ran it again.
+
+```
+jaredm@thelio:~/DDMR/klin$ batch
+warning: commands will be executed using /bin/sh
+at> julia RuningLinSolver.jl
+at> <EOT>
+job 189 at Thu Feb  4 00:46:00 2021
+```
