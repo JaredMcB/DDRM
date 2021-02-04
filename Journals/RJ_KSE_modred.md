@@ -2081,7 +2081,7 @@ jaredm@thelio:~/DDMR/klin$ batch
 warning: commands will be executed using /bin/sh
 at> julia RuningLinSolver.jl
 at> <EOT>
-job 186 at Thu Feb  4 00:22:00 2021
+job 187 at Thu Feb  4 00:26:00 2021
 ```
 
 and had
