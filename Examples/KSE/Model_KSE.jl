@@ -87,7 +87,7 @@ function my_KSE_solver(
     else
         NonLin = function (v)
             v_pad = [v[1:nc+1]; zeros(pad);v[nc+2:N]]
-            nv = F*(real(iF*(v_pad)).^2)*K/N
+            nv = F*(real(iF*(v_pad)).^2)*K
             Nv_dealiased = [nv[1:nc+1]; nv[end-nf+1:end]]
             # ifftshift(conv(fftshift(v),fftshift(v))[N-(n-1):N+n])/N
             # v_pad = [v[1:n]; zeros(pad);v[n+1:N]]

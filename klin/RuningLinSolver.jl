@@ -16,7 +16,7 @@ ks = include("ks.jl")
 gen = "lin"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
-T        = 10^1 # Length (in seconds) of time of run
+T        = 10^4 # Length (in seconds) of time of run
 T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
 P        = 2π/sqrt(0.085)  # Period
 n        = 96  # Number of fourier modes used
