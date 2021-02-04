@@ -2100,3 +2100,31 @@ at> julia RuningLinSolver.jl
 at> <EOT>
 job 189 at Thu Feb  4 00:46:00 2021
 ```
+
+
+# Thursday, February 4, 2021
+
+2:00 PM -  Today I wrote a Pluto notebook to demonstrate the correctness of the code I used to simulate the KSE solution. I used that and found that the data agreed quite closely (by eye) with the results in the 2017 paper. The notebook is on thelio at `/u5/jaredm/DDMR/Examples/KSE/KSE_data_analyzer.jl`.
+
+So, since the results were favorable I will proceed to runa long run of the data and compute the wiener filter on it. That begin said I ran:
+
+#### Experiment Feb 1, 2021 1 (run on thelio)
+
+This is a long simulation using my KSE solver. I am running it for the purpose using it to compute the Wiener filter.
+
+I wrote the following:
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_data_gen.jl
+at> <EOT>
+job 190 at Thu Feb  4 14:02:00 2021
+```
+and this had
+```julia
+gen = "lin1e5"     # this is just a reference designation it shows up in the
+                # output file. I think of generatrion.
+
+T        = 10^5 # Length (in seconds) of time of run
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded
+```
