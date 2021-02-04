@@ -2045,4 +2045,48 @@ T        = 10^5 # Length (in seconds) of time of run
 T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
 ```
 
-Now, I wait for them to finish.  
+Now, I wait for them to finish.
+
+Again a little error.
+
+I will try again
+
+#### Experiment Feb 3, 2021 4 (run on thelio)
+
+This is just a simulation using my own code. I am running it for the purpose of comparing the results with Dr. Lin's KSE solver. And (pending favorable comparison) using it to compute the Wiener filter.
+
+I wrote the following:
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_data_gen.jl
+at> <EOT>
+job 185 at Thu Feb  4 00:15:00 2021
+```
+
+and had
+```julia
+T        = 10^4 # Length (in seconds) of time of run
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
+```
+This should take about 60,000 sec so about 16 hrs 40 mins. Hopefully it will be done sooner.
+
+#### Experiment Feb 3, 2021 4 (run on thelio)
+
+This is just a simulation using Dr. Lin's code. I am running it for the purpose of comparing the results with my own KSE solver. And (pending favorable comparison) using it to compute the Wiener filter.
+
+I wrote the following:
+```
+jaredm@thelio:~/DDMR/klin$ batch
+warning: commands will be executed using /bin/sh
+at> julia RuningLinSolver.jl
+at> <EOT>
+job 187 at Thu Feb  4 00:26:00 2021
+```
+
+and had
+```julia
+T        = 10^4 # Length (in seconds) of time of run
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
+```
+This should take about 60,000 sec so about 16 hrs 40 mins. Hopefully it will be done sooner.
