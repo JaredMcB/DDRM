@@ -25,10 +25,10 @@ g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
 obs_gap  = 100
 
 
-steps   = ceil(Int,T/h)
-discard = ceil(Int,T_disc/h)
+steps   = ceil(Int,T/h/obs_gap)
+discard = ceil(Int,T_disc/h/obs_gap)
 
-@time vv = ks.run_ks(ks.fei_init(),steps, .1;
+@time vv = ks.run_ks(ks.fei_init(),steps, h*obs_gap;
              nsubsteps = obs_gap,
              verbose = false, L = P)
 
