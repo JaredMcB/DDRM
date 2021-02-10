@@ -1,4 +1,4 @@
-module Model_Reduction_Dev
+module WFMR
 
 using FFTW
 using LinearAlgebra
@@ -43,7 +43,7 @@ function get_wf(
     for n = 1:steps
         pred[:,n] = Psi(signal[:,n])
     end # pred is now even with signal and therefore one step
-        # step behind sig. I.e. pred[:,n] = Psi(sig[:,n-1])
+        # behind sig. I.e. pred[:,n] = Psi(sig[:,n-1])
         # which is what we want so as to ensure the reduced
         # model can run explicitly.
 
