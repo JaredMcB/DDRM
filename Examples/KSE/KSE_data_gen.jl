@@ -13,7 +13,7 @@ using Dates
 
 kse = include("myKSE_solver.jl")
 
-gen = "lin"     # this is just a reference designation it shows up in the
+gen = "lin1e5"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
 T        = 10^5 # Length (in seconds) of time of run
