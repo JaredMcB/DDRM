@@ -15,7 +15,7 @@ gen = "lin1e5"     # this is just a reference designation it shows up in the
 server = startswith(pwd(), "/u5/jaredm") ? true : false
 println("on server = $server")
 
-sol_file = server ? "../../../data/KSE_Data/KSE_sol_$gen.jld" :
+sol_file = server ? "../../../data/KSE_Data/ks_sol_$gen.jld" :
    "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_sol_$gen.jld"
 println("Sol load location: " * sol_file)
 
@@ -103,6 +103,3 @@ println("Wiener filter saved")
 # LD = load("Data\\KSE_sol_wienerfilter.jld")
 # h_wf = LD["dat_h_wf"]
 # println("Wiener filter load
-
-
-h_wf
