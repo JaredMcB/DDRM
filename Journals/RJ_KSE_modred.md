@@ -2201,4 +2201,66 @@ to
 ```
 x = zeros(Complex128,n,(steps - 1 - discard) ÷ gap + 1)
 ```
-in line 25. 
+in line 25.
+
+I am modifying the data on thelio.
+
+Another problem I found was that the data was so lean in my laptop test that 'L' was too large for the data. When I ran "Examples\KSE\KSE_modred_run_script.jl" on my laptop using the 1e3 steps data (5000 samples) it ran without error. So, I retry the experiment now.
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julai KSE_modred_run_script.jl
+at> <EOT>
+job 192 at Tue Feb 16 11:47:00 2021
+```
+Here I got
+```
+sh: 30: julai: not found
+```
+
+Trying again:
+```
+
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_modred_run_script.jl
+at> <EOT>
+job 193 at Tue Feb 16 11:53:00 2021
+```
+Here is the output
+```
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2254804): Gdk-CRITICAL **: 11:54:13.733: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2254804): Gdk-CRITICAL **: 11:54:13.737: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+ERROR: LoadError: OutOfMemoryError()
+Stacktrace:
+ [1] Array at ./boot.jl:410 [inlined]
+ [2] Array{Complex{Float64},3}(::UndefInitializer, ::Tuple{Int64,Int64,Int64}) at ./boot.jl:417
+ [3] similar(::Array{Complex{Float64},3}, ::Type{T} where T, ::Tuple{Int64,Int64,Int64}) at ./array.jl:380
+ [4] cat_similar(::Array{Complex{Float64},3}, ::Type{T} where T, ::Tuple{Int64,Int64,Int64}) at ./abstractarray.jl:1473
+ [5] _cat_t(::Int64, ::Type{T} where T, ::Array{Complex{Float64},3}, ::Vararg{Any,N} where N) at ./abstractarray.jl:1522
+ [6] cat_t(::Type{Complex{Float64}}, ::Array{Complex{Float64},3}, ::Vararg{Any,N} where N; dims::Int64) at ./abstractarray.jl:1518
+ [7] _cat at ./abstractarray.jl:1516 [inlined]
+ [8] #cat#111 at ./abstractarray.jl:1654 [inlined]
+ [9] vector_wiener_filter_fft(::Array{Complex{Float64},2}, ::Array{Complex{Float64},2}; M_out::Int64, par::Int64, nfft::Int64, win::String, n::Int64, p::Int64, ty::String, xspec_est::String, PI::Bool, rtol::Float64, info::Bool) at /u5/jaredm/DDMR/Tools/WFMR.jl:255
+ [10] get_wf(::Array{Complex{Float64},2}, ::typeof(Psi); M_out::Int64, n::Int64, p::Int64, par::Int64, ty::String, xspec_est::String, nfft::Int64, rl::Bool, Preds::Bool, PI::Bool, rtol::Float64, info::Bool) at /u5/jaredm/DDMR/Tools/WFMR.jl:55
+ [11] top-level scope at ./timing.jl:174 [inlined]
+ [12] top-level scope at /u5/jaredm/DDMR/Examples/KSE/KSE_modred_run_script.jl:0
+ [13] include(::Function, ::Module, ::String) at ./Base.jl:380
+ [14] include(::Module, ::String) at ./Base.jl:368
+ [15] exec_options(::Base.JLOptions) at ./client.jl:296
+ [16] _start() at ./client.jl:506
+in expression starting at /u5/jaredm/DDMR/Examples/KSE/KSE_modred_run_script.jl:90
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.934533 seconds (2.04 M allocations: 1.539 GiB, 6.48% gc time)
+Number of CKMS iterations: 1406
+errK errR : 9.282501972805685e-11 8.774406873984876e-15
+122.516710 seconds (458.18 M allocations: 360.726 GiB, 1.94% gc time)
+```
+
+I have been going through the code and have not seen anything that should give a `OutOfMemoryError()`. So, It occured to me to try a smaller dataset. So I am now running another. I don't need to do this! I will run it by cutting off some from the current set. This shorter run did not have an OutOfMemoryError. I will now preform a runtime and memory usage analysis on the Wierer filtering code. I will do it I think, in Typora or just markdown.
