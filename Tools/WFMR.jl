@@ -35,13 +35,13 @@ function get_wf(
     # We would like a presample since we want the
     # times series to be offset by one.
 
-    sig = signal[:,2:end] # sig is now one a head of signal
+    sig = @view signal[:,2:end] # sig is now one a head of signal
     d, steps = size(sig)
     nu = size(Psi(zeros(d,1)),1)
 
-    pred = complex(zeros(nu, steps))
+    pred = zeros(ComplexF64, nu, steps)
     for n = 1:steps
-        pred[:,n] = Psi(signal[:,n])
+        pred[:,n] = Psi(@view signal[:,n])
     end # pred is now even with signal and therefore one step
         # behind sig. I.e. pred[:,n] = Psi(sig[:,n-1])
         # which is what we want so as to ensure the reduced
@@ -63,9 +63,9 @@ function get_pred(signal, Psi)
     d, steps = size(signal)
     nu = size(Psi(zeros(d,1)),1)
 
-    pred = complex(zeros(nu, steps))
+    pred = zeros(ComplexF64, nu, steps))
     for n = 1:steps
-        pred[:,n] = Psi(signal[:,n])
+        pred[:,n] = Psi(@view signal[:,n])
     end
     pred
 end
@@ -242,8 +242,8 @@ function vector_wiener_filter_fft(
 
     stepsx == stepsy || print("X and Y are not the same length. Taking min.")
     steps = minimum([stepsx stepsy])
-    nfft = nfft == 0 ? nfft = nextfastfft(steps) : nfft
-    nffth = Int(floor(nfft/2))
+    nfft = nfft == 0 ? nextfastfft(steps) : nfft
+    nffth = nfft ÷ 2
     L = par
 
     R_pred_smoothed = matrix_autocov_seq(pred; L, steps, nu, win)
@@ -253,12 +253,12 @@ function vector_wiener_filter_fft(
              spectfact_matrix_CKMS(R_pred_smoothed)
 
     l_pad_minus = nfft >= L+1 ? cat(dims = 3,l,zeros(nu,nu,nfft - L - 1)) :
-                               l[:,:,1:nfft]
+                               @view l[:,:,1:nfft]
 
     z_spect_pred_minus_num_fft = fft(l_pad_minus,3)
     z_spect_pred_plus_num_fft = complex(zeros(nu,nu,nfft))
     for i = 1 : nfft
-        z_spect_pred_plus_num_fft[:,:,i] = z_spect_pred_minus_num_fft[:,:,i]'
+        z_spect_pred_plus_num_fft[:,:,i] = @view z_spect_pred_minus_num_fft[:,:,i]'
     end
 
     # Compute z-cross-spectrum of sigpred
