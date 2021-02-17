@@ -7,7 +7,6 @@ mr = include("../../Tools/WFMR.jl")
 at = include("../../Tools/AnalysisToolbox.jl")
 
 # Load Old Data
-Data_file = "Examples/KSE/Data/ks_sol_lin.jld"
 
 gen = "lin1e5"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
@@ -23,6 +22,7 @@ println("Sol load location: " * sol_file)
 
 ## Get Reduced model #########################################################
 # Model reductrion parameters
+
 d = 5
 h = 0.1
 # collect observations
