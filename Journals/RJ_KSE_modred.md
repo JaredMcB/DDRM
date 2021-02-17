@@ -2128,3 +2128,77 @@ gen = "lin1e5"     # this is just a reference designation it shows up in the
 T        = 10^5 # Length (in seconds) of time of run
 T_disc   = T ÷ 2 # Length (in seconds) of time discarded
 ```
+
+
+
+
+# February 16, 2021
+
+Today I will get a reduced model for the KSE solver.
+
+#### Experiment Feb 16, 2021 (first wiener filter on correct KSE data)
+
+In this experiment I use the latest tried and true code for the Weiner filter to obtain a reduced model for the KSE solver. The reduced model is built from the lowest five (5) modes, namely, 𝑣₁, 𝑣₂, 𝑣₃, 𝑣₄, 𝑣₅.  
+
+I will run it on thelio u8sing the script "Examples/KSE/KSE_modred_run_script.jl" for quick reference these are the parameters:
+```julia
+d = 5
+h = 0.1
+# collect observations
+obs_gap = 1
+V_obs = vv[2:d+1,1:obs_gap:end]
+```
+Here is what thelio said:
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_modred_run_script.jl
+at> <EOT>
+job 191 at Tue Feb 16 09:50:00 2021
+jaredm@thelio:~/DDMR/Examples/KSE$
+```
+
+This produced the following at 10:05 AM
+```
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2254597): Gdk-CRITICAL **: 09:51:38.447: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2254597): Gdk-CRITICAL **: 09:51:38.450: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+ERROR: LoadError: OutOfMemoryError()
+Stacktrace:
+ [1] Array at ./boot.jl:410 [inlined]
+ [2] Array at ./boot.jl:417 [inlined]
+ [3] zeros at ./array.jl:525 [inlined]
+ [4] zeros at ./array.jl:522 [inlined]
+ [5] zeros at ./array.jl:520 [inlined]
+ [6] vector_wiener_filter_fft(::Array{Complex{Float64},2}, ::Array{Complex{Float64},2}; M_out::Int64, par::Int64, nfft::Int64, win::String, n::Int64, p::Int64, ty::String, xspec_est::String, PI::Bool, rtol::Float64, info::Bool) at /u5/jaredm/DDMR/Tools/WFMR.jl:255
+ [7] get_wf(::Array{Complex{Float64},2}, ::typeof(Psi); M_out::Int64, n::Int64, p::Int64, par::Int64, ty::String, xspec_est::String, nfft::Int64, rl::Bool, Preds::Bool, PI::Bool, rtol::Float64, info::Bool) at /u5/jaredm/DDMR/Tools/WFMR.jl:55
+ [8] top-level scope at ./timing.jl:174 [inlined]
+ [9] top-level scope at /u5/jaredm/DDMR/Examples/KSE/KSE_modred_run_script.jl:0
+ [10] include(::Function, ::Module, ::String) at ./Base.jl:380
+ [11] include(::Module, ::String) at ./Base.jl:368
+ [12] exec_options(::Base.JLOptions) at ./client.jl:296
+ [13] _start() at ./client.jl:506
+in expression starting at /u5/jaredm/DDMR/Examples/KSE/KSE_modred_run_script.jl:90
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  2.404269 seconds (2.04 M allocations: 2.977 GiB, 4.94% gc time)
+Number of CKMS iterations: 1261
+errK errR : 9.988933319602566e-11 1.2340578173549105e-14
+367.175299 seconds (458.17 M allocations: 324.953 GiB, 70.66% gc time)
+```
+ So, I ran this same code on a smaller scale on my laptop to better isolate the issue. I am hopeing I can reproduce the error, with a much smaller data set and fix it.
+
+ I found a few things. One thing I found was that I stillhad not fixed the problem of the many zeros at the end. of the data.  
+
+Ok, that looks good. I changed
+```  
+x = zeros(Complex128,n,(steps - 1) ÷ gap + 1)
+```
+to
+```
+x = zeros(Complex128,n,(steps - 1 - discard) ÷ gap + 1)
+```
+in line 25. 
