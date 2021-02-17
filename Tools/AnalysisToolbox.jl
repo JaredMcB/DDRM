@@ -297,7 +297,7 @@ function z_crossspect_fft_old(
     C_smoothed = complex(zeros(d,nu,length(lags)))
     for i = 1 : d
         for j = 1 : nu
-            C_smoothed[i,j,:] = Lam .* my_crosscov(sig[i,1:steps],pred[j,1:steps],lags)
+            C_smoothed[i,j,:] = Lam .* my_crosscov(@view sig[i,1:steps], @view pred[j,1:steps],lags)
         end
     end
 
