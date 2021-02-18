@@ -27,9 +27,9 @@ function _crosscov_con(x::AbstractVector{<:Number},
         lags = filter(x -> abs(x) < lx, lags)
     end
 
-    x .-= mean(x)
-    y .-= mean(y)
-    C = conv(x,conj(reverse(y)))/lx
+    zx = x .-= mean(x)
+    zy = y .- mean(y)
+    C = conv(zx,(@view conj!(zy)[lx:-1:1]))/lx
     C = [C[k + lx] for k in lags]
 end
 
@@ -273,11 +273,12 @@ function z_crossspect_fft_old(
     ## sig = d x steps, pred = nu x steps
     d, stepsx = size(sig)
     nu, stepsy = size(pred)
-    Nexh = Int(floor(Nex/2))
+    Nexh = Nex ÷ 2
+    L = min(L,Nexh-1)
     lags = -L:L;
 
     stepsx == stepsy || print("sig and pred are not the same length. Taking min.")
-    steps = minimum([stepsx stepsy])
+    steps = min(stepsx, stepsy)
 
     # Smoothed viewing window
     if win == "Bar"
@@ -297,7 +298,7 @@ function z_crossspect_fft_old(
     C_smoothed = complex(zeros(d,nu,length(lags)))
     for i = 1 : d
         for j = 1 : nu
-            C_smoothed[i,j,:] = Lam .* my_crosscov(@view sig[i,1:steps], @view pred[j,1:steps],lags)
+            @views C_smoothed[i,j,:] = Lam .* my_crosscov(sig[i,1:steps], pred[j,1:steps],lags)
         end
     end
 
