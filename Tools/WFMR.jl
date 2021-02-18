@@ -247,7 +247,7 @@ function vector_wiener_filter_fft(
     steps = minimum([stepsx stepsy])
     nfft = nfft == 0 ? nextfastfft(steps) : nfft
     nffth = nfft ÷ 2
-    L = min(par,nfft-1)
+    L = min(par,steps-1)
 
     R_pred_smoothed = matrix_autocov_seq(pred; L, steps, nu, win)
 
