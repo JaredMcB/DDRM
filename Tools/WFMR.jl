@@ -35,9 +35,11 @@ function get_wf(
     # We would like a presample since we want the
     # times series to be offset by one.
 
-    sig = @view signal[:,2:end] # sig is now one a head of signal
-    d, steps = size(sig)
+    d, steps = size(signal)
     nu = size(Psi(zeros(d,1)),1)
+
+    sig = @view signal[:,2:steps]   # sig is now one a head of signal
+    steps -= 1                      # this makes steps the length of sig
 
     pred = zeros(ComplexF64, nu, steps)
     for n = 1:steps
@@ -63,7 +65,7 @@ function get_pred(signal, Psi)
     d, steps = size(signal)
     nu = size(Psi(zeros(d,1)),1)
 
-    pred = zeros(ComplexF64, nu, steps))
+    pred = zeros(ComplexF64, nu, steps)
     for n = 1:steps
         pred[:,n] = Psi(@view signal[:,n])
     end
@@ -208,8 +210,9 @@ function matrix_autocov_seq(pred;
     R_pred_smoothed = zeros(Complex,nu,nu,length(0:L))
     for i = 1 : nu
         for j = 1 : nu
-            temp = at.my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
-            temp = .5*(temp[L+1:end] + conj(reverse(temp[1:L+1])))
+            @views temp = at.my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
+            @views temp = .5*(temp[L+1:2L+1] + conj!(temp[L+1:-1:1]))
+            temp[1] = real(temp[1])
             R_pred_smoothed[i,j,:] = lam .* temp
         end
     end
@@ -244,7 +247,7 @@ function vector_wiener_filter_fft(
     steps = minimum([stepsx stepsy])
     nfft = nfft == 0 ? nextfastfft(steps) : nfft
     nffth = nfft ÷ 2
-    L = par
+    L = min(par,nfft-1)
 
     R_pred_smoothed = matrix_autocov_seq(pred; L, steps, nu, win)
 
@@ -253,12 +256,12 @@ function vector_wiener_filter_fft(
              spectfact_matrix_CKMS(R_pred_smoothed)
 
     l_pad_minus = nfft >= L+1 ? cat(dims = 3,l,zeros(nu,nu,nfft - L - 1)) :
-                               @view l[:,:,1:nfft]
+                               l[:,:,1:nfft]
 
     z_spect_pred_minus_num_fft = fft(l_pad_minus,3)
     z_spect_pred_plus_num_fft = complex(zeros(nu,nu,nfft))
     for i = 1 : nfft
-        z_spect_pred_plus_num_fft[:,:,i] = @view z_spect_pred_minus_num_fft[:,:,i]'
+        z_spect_pred_plus_num_fft[:,:,i] = z_spect_pred_minus_num_fft[:,:,i]'
     end
 
     # Compute z-cross-spectrum of sigpred
