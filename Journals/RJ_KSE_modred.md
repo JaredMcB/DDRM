@@ -2298,3 +2298,4 @@ Len = 1000
 Len = 2000
 849.876092 seconds (466.36 M allocations: 991.062 GiB, 7.37% gc time)
 846.727404 seconds (466.32 M allocations: 991.059 GiB, 7.73% gc time)
+919.924345 seconds (466.34 M allocations: 991.061 GiB, 7.60% gc time)
