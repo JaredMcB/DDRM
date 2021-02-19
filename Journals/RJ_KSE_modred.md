@@ -2264,3 +2264,37 @@ errK errR : 9.282501972805685e-11 8.774406873984876e-15
 ```
 
 I have been going through the code and have not seen anything that should give a `OutOfMemoryError()`. So, It occured to me to try a smaller dataset. So I am now running another. I don't need to do this! I will run it by cutting off some from the current set. This shorter run did not have an OutOfMemoryError. I will now preform a runtime and memory usage analysis on the Wierer filtering code. I will do it I think, in Typora or just markdown.
+
+
+# Thursday, February 18, 2021
+
+9:29 AM - The plan to day is to get the Wiener filter working on a long data set. To do this I will work on it's efficiency on a small set of data.
+
+First I, made a few changes to the code Tuesday. I will test that it makes no material difference.
+
+It seems to be working the same.
+
+```
+julia> @time @views G = at. my_crosscov(sig[1,1:steps], pred[1,1:steps],lags);
+  0.000343 seconds (3.58 k allocations: 279.875 KiB)
+```
+
+I compared "fast_test.jl"
+with run script.
+
+Len = 500
+115.021948 seconds (155.18 M allocations: 99.682 GiB, 6.65% gc time)
+122.948282 seconds (154.36 M allocations: 99.624 GiB, 6.31% gc time)
+122.973159 seconds (157.46 M allocations: 99.771 GiB, 6.48% gc time)
+
+Len = 500 (fast)
+146.153198 seconds (154.38 M allocations: 99.998 GiB, 6.87% gc time)
+
+Len = 1000
+337.966202 seconds (310.04 M allocations: 374.614 GiB, 8.14% gc time)
+333.806442 seconds (309.70 M allocations: 374.605 GiB, 8.08% gc time)
+364.897733 seconds (309.51 M allocations: 374.588 GiB, 6.79% gc time)
+
+Len = 2000
+849.876092 seconds (466.36 M allocations: 991.062 GiB, 7.37% gc time)
+846.727404 seconds (466.32 M allocations: 991.059 GiB, 7.73% gc time)
