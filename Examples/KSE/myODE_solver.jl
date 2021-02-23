@@ -22,7 +22,7 @@ function my_ODE_solver(scheme,
                        flags...)
 
         n = size(init,1) # Dimension of system
-        x = zeros(Complex128,n,(steps - 1) ÷ gap + 1)
+        x = zeros(Complex128,n,(steps - 1 - discard) ÷ gap + 1)
 
         # if we use a more gerenal one step method
         step! = scheme(F, h)

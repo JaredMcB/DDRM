@@ -1,12 +1,11 @@
-
 using JLD
 using DSP # For conv function in Psi
 using Dates
 
-mr = include("../../Tools/WFMR.jl")
-at = include("../../Tools/AnalysisToolbox.jl")
 
-# Load Old Data
+mrf = include("../Tools/WFMR_fast.jl")
+at = include("../Tools/AnalysisToolbox.jl")
+
 
 gen = "lin1e3"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
@@ -20,8 +19,6 @@ println("Sol load location: " * sol_file)
 
 @time vv = load(sol_file,"dat_vv")
 
-## Get Reduced model #########################################################
-# Model reductrion parameters
 
 d = 5
 h = 0.1
@@ -89,19 +86,10 @@ paramaters = Dict(
 
 Len = 2000
 
-@time h_wf = mr.get_wf(signal[:,1:Len], Psi; M_out)
+@time h_wf = mrf.get_wf(signal[:,1:Len], Psi; M_out)
 
-# Save Wienerfilter
-dat = Dict("dat_h_wf" => h_wf)
-Data = merge(paramaters,dat)
-# save("../data/KSE_Data/KSE_sol_wienerfilter.jld",Data)
 
-wf_file = server ? "../../../data/KSE_Data/ks_wf_$gen.jld" :
-   "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_$gen-Len$Len.jld"
-save(wf_file,Data)
-println("Wiener filter saved")
+wf_file = "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_$gen-Len$Len.jld"
+h_wf_slow = load(wf_file,"dat_h_wf")
 
-# # Load old Wiener Filter
-# LD = load("Data\\KSE_sol_wienerfilter.jld")
-# h_wf = LD["dat_h_wf"]
-# println("Wiener filter load
+maximum(abs.(h_wf - h_wf_slow))

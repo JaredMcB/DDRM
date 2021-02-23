@@ -1,4 +1,4 @@
-module WFMR
+module WFMR_fast
 
 using FFTW
 using LinearAlgebra
@@ -252,70 +252,41 @@ function vector_wiener_filter_fft(
     R_pred_smoothed = matrix_autocov_seq(pred; L, steps, nu, win)
 
     # Compute coefficients of spectral factorization of z-spect-pred
-    l = @time PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed,rtol = rtol) :
+    S_pred⁻ = @time PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed,rtol = rtol) :
              spectfact_matrix_CKMS(R_pred_smoothed)
 
-    l_pad_minus = nfft >= L+1 ? cat(dims = 3,l,zeros(nu,nu,nfft - L - 1)) :
-                               l[:,:,1:nfft]
+    S_pred⁻ = nfft >= L+1 ? cat(dims = 3,S_pred⁻,zeros(nu,nu,nfft - L - 1)) : (@view S_pred⁻[:,:,1:nfft])
 
-    z_spect_pred_minus_num_fft = fft(l_pad_minus,3)
-    z_spect_pred_plus_num_fft = complex(zeros(nu,nu,nfft))
+    fft!(S_pred⁻,3)                                 # the final S_pred⁻
+
+    S_pred⁺ = complex(zeros(nu,nu,nfft))
     for i = 1 : nfft
-        z_spect_pred_plus_num_fft[:,:,i] = z_spect_pred_minus_num_fft[:,:,i]'
-    end
+        S_pred⁺[:,:,i] = (@view S_pred⁻[:,:,i])'
+    end                                             # the final S_pred⁺
 
     # Compute z-cross-spectrum of sigpred
-    z_crossspect_sigpred_num_fft = xspec_est == "SP" ? at.z_crossspect_fft(sig, pred;
+    S = xspec_est == "SP" ? at.z_crossspect_fft(sig, pred;
                         nfft, n, p, ty) : at.z_crossspect_fft_old(sig, pred; L, Nex = nfft);
 
-    # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
-    S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
 
-    matlog1 = zeros(nu,nfft) ###
-    for i = 1 : nfft
-        # matlog1[:,i] = svd(z_spect_pred_plus_num_fft[:,:,i]).S ###
-        S_sigpred_overS_plus_fft_num[:,:,i] = z_crossspect_sigpred_num_fft[:,:,i]/
-                                              z_spect_pred_plus_num_fft[:,:,i]
+    for i = 1 : nfft                # point-wise divide in time domain S_{YX}
+        S[:,:,i] /= @view S_pred⁺[:,:,i]        # by S_x^+
     end
-
-    S_sigpred_overS_plus_fft_num_fft = ifft(S_sigpred_overS_plus_fft_num,3)
-
-    # Extracts causal part coefficinets of S_{yx}{S_x^+}^{-1}, {S_{yx}{S_x^+}^{-1}}_+
-    S_sigpred_overS_plus_fft_plus_num_fft = cat(dims = 3,
-                    S_sigpred_overS_plus_fft_num_fft[:,:,1: nffth],
-                    zeros(d,nu,nfft - nffth))
-
-    # Computes causal part of S_{yx}/S_x^+, {S_{yx}/S_x^+}_+
-    S_sigpred_overS_plus_plus_num_fft = fft(S_sigpred_overS_plus_fft_plus_num_fft,3);
-
-    # Obtain transfer function H by dividing {S_{yx}/S_x^+}_+ by S_x^-
-    matlog2 = zeros(nu,nfft) ###
-    H_num = complex(zeros(d,nu,nfft))
-    for i = 1: nfft
-        # matlog2[:,i] = svd(z_spect_pred_minus_num_fft[:,:,i]).S ###
-        H_num[:,:,i] = S_sigpred_overS_plus_plus_num_fft[:,:,i]/
-                       z_spect_pred_minus_num_fft[:,:,i]
+    ifft!(S,3)                      # Fourier space
+    S[:,:, nffth + 1 : nfft] = zeros(d,nu,nfft - nffth) # Causal part
+    fft!(S,3)                       # Back to time domain,{S_{yx}/S_x^+}_+
+    for i = 1: nfft                 # Obtain transfer function H by dividing
+        S[:,:,i] /= S_pred⁻[:,:,i]  # {S_{yx}/S_x^+}_+ by S_x^-
     end
-
-    # Extrct tranferfunction coeffifcients (impulse responce of Weiner filter)
-    h_num_raw = ifft(H_num, 3)
+    ifft!(S, 3)                     # impulse responce of Weiner filter,
+                                    # fourier space
+                                    # Extrct tranfer function coeffifcients
 
     # Truncate
     M_out > nfft && println("M_out > nfft, taking min")
     M = min(M_out, nfft)
 
-    if info
-        h_num_fft = [h_num_raw[:,:,1:M],
-                 z_crossspect_sigpred_num_fft,
-                 z_spect_pred_minus_num_fft,
-                 z_spect_pred_plus_num_fft,
-                 S_sigpred_overS_plus_fft_num,
-                 S_sigpred_overS_plus_plus_num_fft,
-                 H_num] ###
-    else
-        h_num_fft = h_num_raw[:,:,1:M]
-    end
-    h_num_fft
+    h_num_fft = @view S[:,:,1:M]
 end
 
 function redmodrun(
