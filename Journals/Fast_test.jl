@@ -84,6 +84,12 @@ paramaters = Dict(
     "tm" => tm
 )
 
-Len = 500
+Len = 2000
 
 @time h_wf = mrf.get_wf(signal[:,1:Len], Psi; M_out)
+
+
+wf_file = "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_$gen-Len$Len.jld"
+h_wf_slow = load(wf_file,"dat_h_wf")
+
+maximum(abs.(h_wf - h_wf_slow))
