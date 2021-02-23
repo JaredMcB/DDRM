@@ -87,7 +87,7 @@ paramaters = Dict(
     "tm" => tm
 )
 
-Len = 1000
+Len = 2000
 
 @time h_wf = mr.get_wf(signal[:,1:Len], Psi; M_out)
 
@@ -97,7 +97,7 @@ Data = merge(paramaters,dat)
 # save("../data/KSE_Data/KSE_sol_wienerfilter.jld",Data)
 
 wf_file = server ? "../../../data/KSE_Data/ks_wf_$gen.jld" :
-   "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_$gen.jld"
+   "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_$gen-Len$Len.jld"
 save(wf_file,Data)
 println("Wiener filter saved")
 
