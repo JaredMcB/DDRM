@@ -84,7 +84,7 @@ paramaters = Dict(
     "tm" => tm
 )
 
-Len = 2000
+Len = 500
 
 @time h_wf = mrf.get_wf(signal[:,1:Len], Psi; M_out)
 
@@ -93,3 +93,50 @@ wf_file = "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_$gen-Len$L
 h_wf_slow = load(wf_file,"dat_h_wf")
 
 maximum(abs.(h_wf - h_wf_slow))
+
+sig = @view signal[:,2:end]
+pred = mrf.get_pred(signal, Psi)
+
+d, stepsy = size(sig)
+nu, stepsx = size(pred)
+
+win = "par"
+stepsx == stepsy || print("X and Y are not the same length. Taking min.")
+steps = minimum([stepsx stepsy])
+nfft = nfft == 0 ? nextfastfft(steps) : nfft
+nffth = nfft ÷ 2
+L = min(par,steps-1)
+
+R_pred_smoothed = mrf.matrix_autocov_seq(pred; L, steps, nu, win)
+
+P = R_pred_smoothed
+N_ckms = 10^5
+
+using SparseArrays
+using LinearAlgebra: I
+
+d = size(P)[1];
+m = size(P)[3] - 1
+
+NN = reverse((@view P[:,:,2:m+1]),dims = 3)
+Re = Rr = p0 = @view P[:,:,1]
+
+F = sparse([[spzeros(d,d*(m-1)); sparse(I,d*(m-1),d*(m-1))] spzeros(d*m,d)])
+h = sparse([spzeros(d,d*(m-1)) sparse(I,d,d)])
+
+K = complex(zeros(d*m,d))
+for i = 0 : m-1
+    K[d*i + 1: d*(i+1),:] = NN[:,:,i+1]
+end
+L = copy(K)
+i = 0
+errK = errR = 1
+
+@time hL = h*L
+@time FL = F*L
+
+FL
+
+@time FL_RrhLt = FL/Rr*hL'
+
+@which FL/Rr
