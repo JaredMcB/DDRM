@@ -110,6 +110,7 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
 
         # Stopping criteria stuff
         i += 1
+
         FL_RrhLt = FL/Rr*hL'
         hL_RrhLt = hL/Rr*hL'
         errK = norm(FL_RrhLt)
