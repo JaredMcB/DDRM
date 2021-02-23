@@ -268,26 +268,19 @@ function vector_wiener_filter_fft(
     S = xspec_est == "SP" ? at.z_crossspect_fft(sig, pred;
                         nfft, n, p, ty) : at.z_crossspect_fft_old(sig, pred; L, Nex = nfft);
 
-    # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
-    for i = 1 : nfft
-        S[:,:,i] /= @view S_pred⁺[:,:,i]
+
+    for i = 1 : nfft                # point-wise divide in time domain S_{YX}
+        S[:,:,i] /= @view S_pred⁺[:,:,i]        # by S_x^+
     end
-
-    ifft!(S,3)
-
-    # Extracts causal part coefficinets of S_{yx}{S_x^+}^{-1}, {S_{yx}{S_x^+}^{-1}}_+
-    S[:,:, nffth + 1 : nfft] = zeros(d,nu,nfft - nffth)
-
-    # Computes causal part of S_{yx}/S_x^+, {S_{yx}/S_x^+}_+
-    fft!(S,3)
-
-    # Obtain transfer function H by dividing {S_{yx}/S_x^+}_+ by S_x^-
-    for i = 1: nfft
-        S[:,:,i] /= S_pred⁻[:,:,i]
+    ifft!(S,3)                      # Fourier space
+    S[:,:, nffth + 1 : nfft] = zeros(d,nu,nfft - nffth) # Causal part
+    fft!(S,3)                       # Back to time domain,{S_{yx}/S_x^+}_+
+    for i = 1: nfft                 # Obtain transfer function H by dividing
+        S[:,:,i] /= S_pred⁻[:,:,i]  # {S_{yx}/S_x^+}_+ by S_x^-
     end
-
-    # Extrct tranferfunction coeffifcients (impulse responce of Weiner filter)
-    ifft!(S, 3)
+    ifft!(S, 3)                     # impulse responce of Weiner filter,
+                                    # fourier space
+                                    # Extrct tranfer function coeffifcients
 
     # Truncate
     M_out > nfft && println("M_out > nfft, taking min")
