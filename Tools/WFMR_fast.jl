@@ -86,7 +86,8 @@ which satisfies
 
 function spectfact_matrix_CKMS(P; ϵ = 1e-10,
     update = 10,
-    N_ckms = 10^5)
+    N_ckms = 10^5,
+    rtol = 1e-6)
 
     d = size(P)[1];
     m = size(P)[3] - 1
@@ -101,29 +102,32 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
     for i = 0 : m-1
         K[d*i + 1: d*(i+1),:] = NN[:,:,i+1]
     end
-    L = K
+    FL = K
     i = 0
     errK = errR = 1
     # Err = zeros(0,2)
     while (errK > ϵ || errR > ϵ) && i <= N_ckms
-        hL = h*L; FL = F*L
+        hL = h*FL
+        FL = F*FL
+
+        Rr_pinv = pinv(Rr, rtol = rtol)
+        Re_pinv = pinv(Re, rtol = rtol)
 
         # Stopping criteria stuff
         i += 1
 
-        FL_RrhLt = FL/Rr*hL'
-        hL_RrhLt = hL/Rr*hL'
+        FL_RrhLt = FL * Rr_pinv * hL'
+        hL_RrhLt = hL * Rr_pinv * hL'
         errK = norm(FL_RrhLt)
         errR = norm(hL_RrhLt)
 
-        L   = FL - K/Re*hL
+        FL -= K * Re_pinv * hL
         K  -= FL_RrhLt
-        Rr -= hL'/Re*hL
+        Rr -= hL' * Re_pinv * hL
         Re -= hL_RrhLt
     end
 
     println("Number of CKMS iterations: $i")
-    # println("errK errR : $errK $errR")
 
     K /= Re
 
@@ -135,55 +139,9 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
         l[:,:,m-i+1] = K[d*i + 1: d*(i+1),:]*sqrt_re
     end
 
-    # save("Data\\CKMS_dat.jld",
-    #     "spectfactLog",
-    #     spectfactLog)
-
     l
 end
 
-function spectfact_matrix_CKMS_pinv(P; N_ckms = 1500, rtol = 1e-6)
-    d = size(P)[1];
-    m = size(P)[3] - 1
-
-    NN = reverse(P[:,:,2:end],dims = 3)
-    Re = Rr = p0 = P[:,:,1]
-
-    F = sparse([[spzeros(d,d*(m-1)); sparse(I,d*(m-1),d*(m-1))] spzeros(d*m,d)])
-    h = sparse([spzeros(d,d*(m-1)) sparse(I,d,d)])
-
-    K = complex(zeros(d*m,d))
-    for i = 0 : m-1
-        K[d*i + 1: d*(i+1),:] = NN[:,:,i+1]
-    end
-    L = K
-
-    for i = 1:N_ckms
-        hL = h*L; FL = F*L
-
-        K_new = K - FL*pinv(Rr,rtol = rtol)*hL'
-        L_new = FL - K*pinv(Re,rtol = rtol)*hL
-        Re_new = Re - hL*pinv(Rr,rtol = rtol)*hL'
-        Rr_new = Rr - hL'*pinv(Re,rtol = rtol)*hL
-
-        K = K_new
-        L = L_new
-        Re = Re_new
-        Rr = Rr_new
-    end
-
-    k = K*pinv(Re,rtol = rtol)
-    re = Re
-
-    sqrt_re = sqrt(re)
-
-    l = complex(zeros(d,d,m+1))
-    l[:,:,1] = sqrt_re;
-    for i = m-1:-1:0
-        l[:,:,m-i+1] = k[d*i + 1: d*(i+1),:]*sqrt_re
-    end
-    l
-end
 
 function matrix_autocov_seq(pred;
     L = 1500,
