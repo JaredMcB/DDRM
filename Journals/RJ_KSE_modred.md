@@ -2289,13 +2289,26 @@ Len = 500
 
 Len = 500 (fast)
 146.153198 seconds (154.38 M allocations: 99.998 GiB, 6.87% gc time)
+110.344493 seconds (154.36 M allocations: 99.997 GiB, 7.06% gc time)
+106.555478 seconds (154.36 M allocations: 99.997 GiB, 7.54% gc time)
 
 Len = 1000
 337.966202 seconds (310.04 M allocations: 374.614 GiB, 8.14% gc time)
 333.806442 seconds (309.70 M allocations: 374.605 GiB, 8.08% gc time)
 364.897733 seconds (309.51 M allocations: 374.588 GiB, 6.79% gc time)
 
+Len = 1000 (fast)
+462.614956 seconds (309.52 M allocations: 374.513 GiB, 7.43% gc time)
+461.672297 seconds (309.51 M allocations: 374.513 GiB, 7.22% gc time)
+352.537323 seconds (309.51 M allocations: 374.513 GiB, 7.27% gc time)
+
 Len = 2000
 849.876092 seconds (466.36 M allocations: 991.062 GiB, 7.37% gc time)
 846.727404 seconds (466.32 M allocations: 991.059 GiB, 7.73% gc time)
 919.924345 seconds (466.34 M allocations: 991.061 GiB, 7.60% gc time)
+
+| `Len` | allocations | GiB | gc time |
+|:---:|:---:|:---:|:---:|
+|L   |157.46 M| 99.771 GiB |  6.48% |
+|2̇*L |309.51 M| 374.588 GiB | 8.08% |
+|4*L |466.34 M| 991.061 GiB | 7.60% |
