@@ -31,7 +31,7 @@ function get_wf(
     Preds = false,
     PI = false,
     rtol = 1e-6,
-    info = false)
+    verb = false)
     # We would like a presample since we want the
     # times series to be offset by one.
 
@@ -49,13 +49,12 @@ function get_wf(
         # which is what we want so as to ensure the reduced
         # model can run explicitly.
 
-    if info
-        return vector_wiener_filter_fft(sig, pred; M_out,
-                n, p, par, nfft, ty, xspec_est, PI, rtol,info)
+    if verb
+        println("==================== New Run $steps =====================")
     end
 
     h_wf = vector_wiener_filter_fft(sig, pred; M_out,
-            n, p, par, nfft, ty, xspec_est, PI, rtol)
+            n, p, par, nfft, ty, xspec_est, PI, rtol,verb)
 
     h_wf = rl ? real(h_wf) : h_wf
     Preds ? [h_wf, pred] : h_wf
@@ -110,20 +109,20 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
         hL = h*FL
         FL = F*FL
 
-        Rr_pinv = pinv(Rr, rtol = rtol)
-        Re_pinv = pinv(Re, rtol = rtol)
+        # Rr_pinv = pinv(Rr, rtol = rtol)
+        # Re_pinv = pinv(Re, rtol = rtol)
 
         # Stopping criteria stuff
         i += 1
 
-        FL_RrhLt = FL * Rr_pinv * hL'
-        hL_RrhLt = hL * Rr_pinv * hL'
+        FL_RrhLt = FL / Rr * hL'
+        hL_RrhLt = hL / Rr * hL'
         errK = norm(FL_RrhLt)
         errR = norm(hL_RrhLt)
 
-        FL -= K * Re_pinv * hL
+        FL -= K / Re * hL
         K  -= FL_RrhLt
-        Rr -= hL' * Re_pinv * hL
+        Rr -= hL' / Re * hL
         Re -= hL_RrhLt
     end
 
@@ -185,7 +184,7 @@ function vector_wiener_filter_fft(
     xspec_est = "old",
     PI = true,
     rtol = 1e-6,
-    info = false
+    verb = false
     )
 
     d, stepsy = size(sig)
@@ -197,13 +196,22 @@ function vector_wiener_filter_fft(
     nffth = nfft ÷ 2
     L = min(par,steps-1)
 
-    R_pred_smoothed = matrix_autocov_seq(pred; L, steps, nu, win)
+    R_pred_smoothed = @timed matrix_autocov_seq(pred; L, steps, nu, win)
+    if verb
+        println("Time taken for autocov: ", R_pred_smoothed.time)
+        println("Bytes Allocated: ", R_pred_smoothed.bytes)
+    end
 
     # Compute coefficients of spectral factorization of z-spect-pred
-    S_pred⁻ = @time PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed,rtol = rtol) :
-             spectfact_matrix_CKMS(R_pred_smoothed)
+    S_pred⁻ = @timed PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed.value,rtol = rtol) :
+             spectfact_matrix_CKMS(R_pred_smoothed.value)
+    if verb
+        println("Time taken for spectfact: ",S_pred⁻.time)
+        println("Bytes Allocated: ",S_pred⁻.bytes)
+    end
 
-    S_pred⁻ = nfft >= L+1 ? cat(dims = 3,S_pred⁻,zeros(nu,nu,nfft - L - 1)) : (@view S_pred⁻[:,:,1:nfft])
+    S_pred⁻ = nfft >= L+1 ? cat(dims = 3,S_pred⁻.value,zeros(nu,nu,nfft - L - 1)) :
+                            (@view S_pred⁻.value[:,:,1:nfft])
 
     fft!(S_pred⁻,3)                                 # the final S_pred⁻
 
