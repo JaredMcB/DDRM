@@ -1,4 +1,4 @@
-# Monday, November 23, 2020
+Nonlinear# Monday, November 23, 2020
 
 11:31 AM - Here I start again, (though much wiser now) my study of model reduction by the Weiner projection of the KSE model. So, to get started I will need some data. I will us the data I produced last summer from parameters used by Lu, Lin and Chorin in
 
@@ -1346,6 +1346,8 @@ Despite the outrageous looking coefficients the relative one-step prediction err
 
 1:35 PM - Today, I am investigating the Wiener filter after I have modified the KSE data generating code. This is all described above. Today, I am back on thelio. I will repeat the experiment above (*Experiment Dec 5, 2020 1*)
 
+#### Experiment Dec 7, 2020 1 (Rerun on thelio)
+
 This experiment was run in the notebook "Examples/KSE/KSE Model reduction.ipynb"
 
 Here is the code
@@ -1431,15 +1433,882 @@ julia> h_wf
  -4160.22+249.454im   3269.37-798.956im       0.17423-8.82939im
   1434.13-635.662im  -464.613-525.253im     -0.353796-2.80418im
   -43.064+28.3919im  -14.6587-12.9168im     -0.217532+0.0821389im
- ```
- Here are more output results:
- ```
- Get_wf computation time: 441.084422 seconds (411.78 M allocations: 924.783 GiB, 1.92% gc time)
+```
+Here are more output results:
+```
+Get_wf computation time: 441.084422 seconds (411.78 M allocations: 924.783 GiB, 1.92% gc time)
 
- CKMS Computation time: 218.085101 seconds (169.31 M allocations: 837.491 GiB, 2.18% gc time)
- Number of CKMS iterations: 6608
- errK errR : 9.577601950902882e-11 7.172692752063925e-14
- ```
- The above was done on my laptop. I am going to look at the new data again.
+CKMS Computation time: 218.085101 seconds (169.31 M allocations: 837.491 GiB, 2.18% gc time)
+Number of CKMS iterations: 6608
+errK errR : 9.577601950902882e-11 7.172692752063925e-14
+```
 
- 2:58 PM - It looks like the data may not yet be right. Because the autocorrections don't match what they were before in shaped. This is enough to suggest that I over looked something when I changed the definition
+
+# Tuesday, December 8, 2020
+
+10:16 AM - Today I am at my office hoping to get a lot done!
+The first thing I want t do is think about the data that I have just generated after the redefinition of the discrete Fourier transform. I will quickly compare some aspects of it with what Dr. Lin has published. This should not take more than 20 mins.
+
+11:45 AM - This ended up taking about 90 mins. In the time I finally added `.ipynb` to my `.gitignore`. So, I will be using jupytext a lot more now. Anyway, I compared the KSE statistics and found some the same and some different. The energy looks off by a factor of ten. That is to say the 2017 series is 1/10 in energy, from mine. this suggests the omission of a multiple of a time-step perhaps.  While I think of something better to do I think I will have thelio make another times series.
+
+3:40 PM - I did not make the time series, as I said I would. I have instead been looking at the code. I verified that the code (when not correcting for aliasing) behaves the same as Trefethen's MatLab code. I looked at the first and last line of both outputs and they were identical. When I corrected for aliasing there was only a small change in the output visually. Now, I switched the definition of the discrete Fourier transform (putting the mean in the forward transform rather than the backward as both FFTW and MatLab do). This gave me a very different solution. So, there is more I need to do when change I switch the definition of the transform. This is what I will focus on in the last hour before I have to go home. The only thing else I need to change is the sign of 𝑖 that comes down when I take the derivative with respect to 𝑥. This is because in julia (FFTW) the negative exponent is with `fft` (as it is with the our work here) so since I switched `ifft` to `fft` I needed to replace the coefficient to the transform of the derivative of 𝑢². Once I did that the code again agreed with Trefethen's. I have now run this code now in thelio to get the data that should more closely agree with Dr. Lin's.
+
+
+# Wednesday, December 9, 2020
+
+1:16 PM - Just got through talking a while with Eric. Before that I finished some class stuff. What I want to do now is get the data analyzer working and then run the reduced model.
+
+# Thursday, December 10, 2020
+
+8:26 PM - Yesterday, I ran some simulations and analyzed the data. I got the same autocorrelations as before the change. Which are different from the earlier data which more closely resembled Dr. Lin's results. I also cached the notebooks and added `*.ipynb` to the `.gitignore`. Hopefully this works well for me.
+
+Today, I plan on investigating the solver to see why it does not give the other results. I think I will run a few experiments.
+1. If I just supply the scalers myself what happens.
+   ```julia
+   dft(X)       = fft(X)/size(X,1)
+   idft(X)      = ifft(X)*size(X,1)
+   plan_dft(X)  = plan_fft(X)/size(X,1)
+   plan_idft(X) = plan_ifft(X)*size(X,1)
+   ```
+2. Then try this again:
+   ```julia
+  dft(X)       = ifft(X)
+  idft(X)      = fft(X)
+  plan_dft(X)  = plan_ifft(X)
+  plan_idft(X) = plan_fft(X)
+  ```
+  This one requires a change on the coefficient of 𝑖.
+
+I don't think I like this, I need to think of something else, a fresh session sort of thing. So, When I use
+```julia
+dft  = ifft
+idft = fft
+```
+and make the appropriate change in the coefficient 𝑖. Then the code behaves just the same as the original solver on the Trefethen data. (not correcting for aliasing). I will verify this again.
+
+I already have the module `Model_KSE` in "Examples/KSE/Model_KSE.jl" which I had altered and then reverted back to as it was before. I have verified that this script (when not correcting for aliasing) preforms the same as Trefethen's MatLab code, I compare the final term in the series and they were the same. Then I duplicated this modele and made `Model_KSE_Dev` in "Examples/KSE/Model_KSE_Dev.jl". I then changed the definition of `dft` used using
+```julia
+dft(X)       = ifft(X)
+idft(X)      = fft(X)
+plan_dft(X)  = plan_ifft(X)
+plan_idft(X) = plan_fft(X)
+```
+together with a change in the sign of the coefficient of 𝑖.
+
+I ran both solvers on the Trefethen problem, in a new session, both not accounting for aliasing. And they are identical here is the script with result:
+```julia
+using PyPlot
+using Statistics: mean, var
+
+kse = include("../Model_KSE.jl")
+ksed = include("../Model_KSE_Dev.jl")
+
+T        = 150 # Length (in seconds) of time of run
+T_disc   = 0    # Length (in seconds) of time discarded
+P        = 32π  # Period
+N        = 128  # Number of fourier modes used
+h        = 1/4  # Timestep
+g        = x -> cos(x/16)*(1 + sin.(x/16))
+obs_gap  = floor(Int, T/h/100)
+
+Δt = h*obs_gap
+uu, vv, tt    =  @time kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
+uud, vvd, ttd =  @time ksed.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap)
+```
+The result:
+```
+julia> sum(abs.(uu - uud).^2)
+0.0
+```
+
+Now, When I do correct for aliasing in both algorithms and run the entirely same script, I get
+```
+julia> sum(abs.(uu - uud).^2)
+259442.24694821244
+```
+
+I conclude that the dealiasing part needs to be adjusted a long with the change in the dft, though I don't understand why it should.
+
+12:42 PM - I am taking a break from this (since it is becoming unproductive) to grade.
+
+### Meeting with Dr. Lin
+The issue I wanted to discuss surrounded the following facts.
+1. When I do not my solver (from "Examples/KSE/Model_KSE") with out correcting aliasing my solution matches very well Trefethen's code, it reproduces his solution.
+2. When I switch for `dft = ifft` (in every instance) and change the coefficient of the first derivative this code with aliasing also matches.
+3. When I correct for aliasing in both implementations. The solutions are very different.
+
+We discussed this at length and concluded that the de-aliasing lines of code where not correct.   
+
+
+# Friday, December 11, 2020
+
+2:23 PM - I have been working on this dealiasing code. But it has proven very enigmatic to my methods which are perhaps too sloppy. When I tried rerunning, what I thought was exactly the same code as yesterday, the solution was populated entirely of `NaN`s. I went back to the Trefethen problem and was able to reproduce those results. For the past few hours I have been investigating this issue and feel no closer to it's resolution. My methods of investigation are way too causal. This is why I am grateful for this journal. I need it to help me systematically investigate the problem. Without it, I seem to just run a bunch of things and try to remember it all. I am taking a break now to grade and will return with fresh eyes. I think it will be really good and worth while to write a tutorial about aliasing with regards to KSE (geared to an undergraduate audience I guess)
+
+4:54 PM - Very interesting! I have been struggling with a coding problem I had coded, with in my solver:
+```julia
+if aliasing
+    Nh    = ceil(Int,N/2)
+    v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+    F     = plan_ifft(v_pad)        # julia's ifft is my fft for this problem.
+    iF    = plan_fft(v_pad)         # julia's fft is my ifft for this problem.
+
+    function NonLin(v)
+        v_pad = v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+        nv    = F*(real(iF*v_pad)).^2
+        nv[1:N]
+    end
+else
+    ## Not correcting for aliasing
+    F = plan_ifft(v)          # julia's ifft is my fft for this problem.
+    iF = plan_fft(v)          # julia's fft is my ifft for this problem.
+    NonLin(v) = F*(real(iF*v)).^2
+end
+```
+the problem was that things were behaving very funny if I ran `aliasing = true` I get:
+```
+julia> uu_a, vv_a, tt    =  @time ksed.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap,aliasing = true)
+ArgumentError: FFTW plan applied to wrong-size array
+```
+Even in a fresh session. So for some reason the function definition in the else statement is beign referenced on `NonLin` calls. Similarly if I run: `aliasing = false` I get:
+```
+julia> uu_a, vv_a, tt    =  @time ksed.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap,aliasing = true)
+UndefVarError: NonLin not defined
+```
+I think that julia doesn't know where to get the function definition which is so odd. Anyway, I looked on the discourse and found a solution that seems to work (though I think multiple dispatch might be an issue with this fix, but that's fine with me). The key is using anonymous functions as in this:
+```julia
+if aliasing
+    Nh    = ceil(Int,N/2)
+    v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+    F     = plan_ifft(v_pad)        # julia's ifft is my fft for this problem.
+    iF    = plan_fft(v_pad)         # julia's fft is my ifft for this problem.
+
+    NonLin = function (v)
+        v_pad = v_pad = [v[1:Nh]; zeros(2N); v[Nh+1:end]]
+        nv    = F*(real(iF*v_pad)).^2
+        nv[1:N]
+    end
+else
+    ## Not correcting for aliasing
+    F = plan_ifft(v)          # julia's ifft is my fft for this problem.
+    iF = plan_fft(v)          # julia's fft is my ifft for this problem.
+    NonLin = v -> F*(real(iF*v)).^2
+end
+```
+The source is https://discourse.julialang.org/t/defining-a-function-inside-if-else-end-not-as-expected/13815
+
+I will have to verify this more completely later right now I have to go. But it worked in my simple tests.
+
+
+
+# Wednesday, December 16, 2020
+
+3:12 PM - I am very close to being done with teaching this semester. So, I can start ramping up my research.
+
+Now, the first thing I want to do today is to test the new solvers that have optional aliasing. I need to make sure that code is working. The I will test the different de-aliasing algorithm. So, here is a goal:
+##### Goal:
+Get a run of data that agrees with the 2017 paper.
+
+
+
+# Thursday, December 17, 2020
+
+The thing to look for is that the energy decays exponentially.
+
+3:58 PM - I have been trying to fix the KSE solver.
+
+
+
+# Friday, December 18, 2020
+
+Today I have been relearning all about aliasing and de-aliasing. So, now I will attempt to summarize what I have learned so far. I wish this had a latex editor.
+
+
+
+# Monday, December 21, 2020
+
+12:21 PM - Today I will rewrite the KSE solver a little bit. I start with an old version that predates recent iterations the idea will be to document all changes made and they worked.
+
+One thing I noticed is that I was actually only using half as many modes as I thought I was. This is because I double count the modes by there conjugates with opposite wave number. These provide no new information since the original  signal is real.
+
+
+
+# Monday, December 28, 2020
+
+12:00 PM - The goal for today is to get my KSE solver working. I'll start by running the the oldest version that worked then move towards where I want it to go making sure there are no NaN's. I will mostly just focus on the 2017 paper parameters. I will being testing them using the KSE script "Aliasing_KSE.jl".
+
+12:10 PM ran current `my_KSE_solver` from "Model_KSE.jl".
+```julia
+kse  = include("Model_KSE.jl")
+
+T        = 1000 # Length (in seconds) of time of run
+T_disc   = 0    # Length (in seconds) of time discarded
+P        = 2π/sqrt(0.085)  # Period
+N        = 96  # Number of fourier modes used
+h        = .001  # Timestep
+g        = x -> cos(x/16)*(1 + sin.(x/16))
+obs_gap  = 100 #floor(Int, T/h/100)
+
+Δt = h*obs_gap
+
+uu_a, vv_a, tt   =  @time kse.my_KSE_solver(T; T_disc, P, N, h, g, n_gap = obs_gap);
+```
+And I get
+```
+julia> findfirst(isnan,sum(uu_a[:,:],dims = 1))
+CartesianIndex(1, 3635)
+```
+I would like to checkout and old working version. So I went back to just before I made the file a `module` this was commit: `1be8fb7c36cfb96562020ae8cf6a8b09f7db2b7c`. I run exactly the same above and get
+```
+julia> findfirst(isnan,sum(uu_a[:,:],dims = 1))
+
+julia>
+```
+Which I believe means it returned `Nothing`. That is, there were no `NaN`'s. I also checked it by looking at `sum(uu_a[:,end])` which returned `≈103.0900`.
+
+So, here there is my starting point.
+
+1:35 PM - I have been comparing the performance of my code with that of Trefethens (in MatLab). Here is a summary:
+When I run the original parameters:
+```julia
+T = 150
+P = 32π # Period
+N = 128 # Number of fourier modes used
+h = 1/4 # Timestep
+g = x -> cos(x/16)*(1 + sin.(x/16)) # Initial condition function
+T_disc = 0
+n_gap = 6 # 1 +  No. of EDTRK4 steps between reported data
+```
+The solutions are very close. But when I run the following:
+```julia
+T = 1500
+P = 32π # Period
+N = 128 # Number of fourier modes used
+h = 1/4 # Timestep
+g = x -> cos(x/16)*(1 + sin.(x/16)) # Initial condition function
+T_disc = 0
+n_gap = 60 # 1 +  No. of EDTRK4 steps between reported data
+```
+My solution is all `NaN`'s after 23 steps and the Trefethen MatLab code does not get any `NaN`'s. So, there is something different about the implementations. First thing I want to do is run this experiment of Thelio. Then I think I will see if Julia (FFTW) and MatLab do `fft` the same way. I ran the code in Thelio and got the same results.
+
+```
+julia> kse = include("Model_KSE.jl")
+Main.Model_KSE
+
+julia> uu, vv, tt = kse.my_KSE_solver(;T_disc = 0);
+
+julia> uu
+128×101 Array{Float64,2}:
+ 1.0478    0.96252   0.882964  …   1.2048      1.18154     1.304
+ 1.09273   1.00902   0.92831       1.96644     1.79324     1.55974
+ 1.13432   1.05366   0.972725      2.017       1.55383     0.809059
+ 1.17213   1.09608   1.01596       0.759738    0.155579   -0.761331
+ 1.20573   1.13591   1.05776      -1.16615    -1.52324    -2.03811
+ 1.23473   1.17277   1.09786   …  -2.28915    -2.26304    -2.25764
+ 1.25874   1.20627   1.13595      -2.10622    -1.89944    -1.67577
+ 1.27743   1.23602   1.17174      -1.23856    -1.04149    -0.854294
+ 1.29049   1.26161   1.20491      -0.321678   -0.155334   -0.0508895
+ 1.29766   1.28263   1.23508       0.41455     0.645473    0.756064
+ ⋮                             ⋱                           ⋮
+ 0.570326  0.514955  0.469216     -2.04773    -1.78197    -1.4788
+ 0.624347  0.56359   0.513247  …  -1.34651    -1.10752    -0.908016
+ 0.679155  0.613166  0.558214     -0.514224   -0.305007   -0.221851
+ 0.734333  0.663414  0.603929      0.0714131   0.245902    0.252322
+ 0.789444  0.714051  0.650203      0.3116      0.413137    0.381143
+ 0.844034  0.764787  0.696842      0.264425    0.260785    0.233713
+ 0.89764   0.815318  0.743646  …   0.114244    0.0308104   0.0628739
+ 0.949787  0.865334  0.790409      0.116605    0.0314568   0.161842
+ 1.0       0.914511  0.836921      0.47624     0.444077    0.646349
+
+julia> uu, vv, tt = kse.my_KSE_solver(1500;n_gap = 60,T_disc = 0);
+
+julia> uu
+128×101 Array{Float64,2}:
+ 1.0478    0.512003  0.323489  …  NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.09273   0.539104  0.33607      NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.13432   0.56586   0.351116     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.17213   0.592363  0.371264     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.20573   0.619406  0.398449     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.23473   0.647726  0.432208  …  NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.25874   0.677948  0.468828     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.27743   0.709314  0.501755     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.29049   0.740014  0.524222     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.29766   0.767291  0.532768     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ ⋮                             ⋱         ⋮                        ⋮
+ 0.570326  0.275668  0.190243     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.624347  0.300571  0.206365  …  NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.679155  0.325793  0.222428     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.734333  0.35138   0.238324     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.789444  0.377251  0.253939     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.844034  0.403531  0.269229     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.89764   0.430172  0.284036  …  NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 0.949787  0.457264  0.298114     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+ 1.0       0.484588  0.311193     NaN  NaN  NaN  NaN  NaN  NaN  NaN
+
+julia> findfirst(isnan,sum(uu,dims = 1))
+CartesianIndex(1, 23)
+```
+And so, I get the same results on thelio. I investigated the MatLab `fft` function and found that there algorithm is based off of none other than the `FFTW` library, just like Julia and that the definition for the DFT is the same. So, it is neither of the two problems I suggested earlier. Let me look at the energy spectrum. I found a few interesting things which I hope to communicate here.
+
+#### Experiment Dec 28, 2020 1
+
+For this experiment I use the Trefethen parameters except that I run it for `T = 1500`. This is just as described above. The interesting piece is when I plot the energy at various times. I did this using the following code.
+```julia
+findfirst(isnan, sum(uu_a,dims = 1))
+
+EE = abs2.(vv)
+
+for i in 100:10:216
+    semilogy(EE[:,i],label = i,lw  = 1)
+    legend()
+end
+```
+The blow-up occurred at index 214 with equates to time (214 × `n_gap` × `h` = 214×6/4 = 321). So, we plot the energy profile (|v_k|²; k in [0:N÷2-1; 0; N÷2-N+1:-1]), at each time and what I find is that the energy begins to accumulate at around `k = 13` This seems to be what contributes to the blow up.
+
+Is there supposed to be a conservation of energy? Where is this energy coming from?
+
+
+# Tuesday, December 29, 2020
+
+Today I reached way back to get a solver that produces no NaN's. I ran it on the full 2017 parameters and it came out with no NaN's. This is with the naïve de-aliasing. I feel like I have a good understand of the state of the code. One question I still have is how does Trefethen's code do so well with out de-aliasing? His code run in MATLAB is stable and does not seem to have the aliasing artifacts I have noticed in my aliased data.   
+
+2:41 PM - Now I attempt to change the scaling, this is basically a change in definition of the DFT I am using. I changed the scaling and it all works just find testing it on the Trefethen code I get the same solution.
+
+3:57 PM - Now I will change the de-aliasing routine. Before I did that I wanted to address the issue of saying I am using so many Fourier modes but because the process is real there half on the modes are just the conjugates of the other so, there really is only half the information in it.
+
+So, what I did was set a new parameter `n` and set `N=2n`.
+
+
+# Wednesday, December 30, 2020
+
+12:03 PM - Today I will start with verifying that the code is de-aliasing in an appropriate way. So, here is the setting:  
+
+
+# Monday, January 4, 2021
+
+10:00 AM -  I have been writing a note on aliasing and de-aliasing. I feel like I understand it pretty well. However, I can't explain why Trefethen's MatLab code is more stable than mine is. I think I will give myself 2 hours (till about noon) and then I will look at Dr. Lin's code to see how I might tweak mine.
+
+3:00 PM - I worked on the tutorial and did some interesting calculations. But I did not achieve what I set out to do. Though I do feel more comfortable with the complexities in the indexing between the mathematical DFT and the numerical `fft`.
+
+
+
+# Tuseday, January 5, 2021
+
+12:36 PM - Though I have been going through the code very carefully, which processes has been facilitated by writing the de-aliasing tutorial and the FFTW tutorial I have not been able to identify why the solver is unstable, when it seems to mimic exactly Trefethen's solver in MATLAB.
+
+4:25 PM -  I have been working on a large communication to Dr. Lin in a google doc. Here is how I got the first graphic
+```julia
+uu, vv, tt = ksed2.my_KSE_solver(150;
+                               N = 128,
+                               T_disc = 0,
+                               n_gap = 6)
+uu
+
+plot(32π*(0:127)/128,uu[:,end], label = "me (Julia)")
+title("KSE solution at T = 150 (both with aliasing)")
+```
+
+
+# Thursday, January 14, 2021
+
+Today the goal is to write out algorithm by hand. Just, go through the whole routine, almost from scratch.
+
+
+
+# Friday, January 15, 2021
+
+7:22 AM - The plan today is to completely rewrite a new KSE solver. I hope to have a complete first draft by noon. Basically, this is nothing mare than a system of ODE's though nonlinear. So, first (1) I will write my ODE solver using ETDRK4 using the Kassam-Trefethen approach of writing the division as a contour integral. The solver will be of the usual general form of `d/dt(x) = f(x)`. The principal inputs will be the function `f` (in-place function, like Dr. Lin does, I think), `h` time step. Then I will write a function for the RHS, the "stepper" as it were, complete with de-aliasing. So, that is really all, I think. two main parts.
+
+12:16 PM I have a first complete draft of the ODE solver capable of using ETDR4. I am testing this. Hopefully tomorrow I can have it working.
+
+
+
+# Saturday, January 16, 2021
+
+4:58 PM - I am going to test the code and hopefully get the ODE' solver working.
+
+# Monday, January 18, 2021
+
+1:19 PM - Tested the "myODE_solver.jl" using a diagonal linear example, a stiff example, and Lorenz63. It looks like it is working in all cases. The task now is to us it KSE.
+
+3:39 PM -  I tested "myKSE_solver.jl" and got the same results as the oldder code, "Model_KSE.jl". I think that there is something then wrong with my dealiased nonlinear part. I will look at that tomorrow.
+
+Tomorrow I will look at Dr. Lin's dealiased nonlinear part. This will involve looking up functions like `make_r2r` in FFTW. If I use that does it work? Also, I wonder if my ETDRK4 solve is no good because it dosen't seem to have much of an advantage over RK4. Maybe I will throw something on stack overflow about ETDRK4.
+
+
+
+# Saturday, January 17, 2021
+
+2:20 PM - I have been comparing Dr. Lin's implementation and my own of the KSE solver. Here is what I conclude so far:
+
+Dr. Lin's nonlinear implementation is different from mine. Here is the evidence:
+```julia
+using FFTW
+ks   = include("C:/Users/JaredMcBride/Desktop/DDMR/klin/ks.jl")
+
+
+## Set up
+T       = 150
+P       = 32π
+n       = 64
+h       = 1/4
+g       = x -> cos(x/16)*(1 + sin(x/16))
+T_disc  = 0
+n_gap   = 6
+aliasing= true
+
+N = 2n+1
+
+# Spatial grid and initial conditions:
+x = P*(0:N-1)/N
+u = g.(x)
+v = fft(u)/N        # The division by N is to effect the DFT I want.
+
+# Now we set up the equations
+q = 2π/P*[0:n; -n:-1]
+ℓ = -0.5im*q
+
+
+## Dr. Lins function
+fillout(v::Array{Complex{Float64},1}) = [0; v; reverse(conj(v))]
+
+NonLin! = ks.make_ks_field(n; alpha = 0, beta = 0, L = P)
+
+NonLin = function (v)
+    u = zeros(Complex{Float64},n)
+    NonLin!(v[2:n+1],u)
+    fillout(u)
+end
+
+## My function
+pad = (3N+1)÷2
+K = N + pad
+NonLinNA = function (v)
+    v_pad = [v[1:n+1]; zeros(pad);v[n+2:N]]
+    nv = fft(bfft(v_pad).^2)/K
+    Nv_dealiased = ℓ .* [nv[1:n+1]; nv[end-n+1:end]]
+    # ifftshift(conv(fftshift(v),fftshift(v))[N-(n-1):N+n])/N
+    # v_pad = [v[1:n]; zeros(pad);v[n+1:N]]
+    # nv = F*(real(iF*v_pad)).^2*K/N
+    # [nv[1:n]; nv[end-n+1:end]]
+end
+
+# simple little diff function
+Diff(x,y) = maximum(abs.(x - y))
+
+Diff(NonLinNA(v),NonLin(v))
+
+#However
+
+v = fft(randn(N))/N
+v = fft(u)/N
+
+Diff(NonLinNA(v),NonLin(v))
+findall(x -> x>1e-15, abs.(NonLinNA(v) - NonLin(v)))
+```
+
+Then I use Dr. Lins function in my ODE solver and get the same thing as with my own function.
+
+
+
+# Tuesday, January 26, 2021
+
+8:12 AM - Today I want to put my nonlinear implementation into Dr. Lin's ODE solver.
+
+12:32 AM - I got my function to run in Dr. Lin's ODE solver. I also discovered that the above is can be corrected by the following: (observe the difference in the `v_pad = ...` line)
+
+```julia
+## My function
+pad = (3N+1)÷2
+K = N + pad
+NonLinNA = function (v)
+    v_pad = [0; v[2:n+1]; zeros(pad);v[n+2:N]]
+    nv = fft(bfft(v_pad).^2)/K
+    Nv_dealiased = ℓ .* [nv[1:n+1]; nv[end-n+1:end]]
+    # ifftshift(conv(fftshift(v),fftshift(v))[N-(n-1):N+n])/N
+    # v_pad = [v[1:n]; zeros(pad);v[n+1:N]]
+    # nv = F*(real(iF*v_pad)).^2*K/N
+    # [nv[1:n]; nv[end-n+1:end]]
+end
+```
+
+
+
+# Monday, February 2, 2021
+
+9:16 AM - On Friday of last week Dr. Lin and I mad a big breakthrough in the stability of my solver. The issue with stability seemed to be that the symmetry (conjugate symmetry) in the Fourier modes was not being persevered. This had the effect of creating a pile-up (of energy) in the linear modes. I fixed this by enforcing the symmetry in the solver the ETDRK4 stepper. as shown here:
+
+```julia
+function step!(u,v)
+       Nu = NonLin(u)
+       @.  a  =  E2*u + Q*Nu
+       Na = NonLin(a)
+       @. b  =  E2*u + Q*Na
+       Nb = NonLin(b)
+       @. c  =  E2*a + Q*(2Nb-Nu)
+       Nc = NonLin(c)
+       @. V =  E*u + alpha*Nu + 2beta*(Na+Nb) + gamma*Nc
+       v[:] = [0; V[2:(N-1)÷2+1]; reverse(conj.(V[2:(N-1)÷2+1]))]
+end
+```
+
+However, after I did this some other things appear to have gone wrong, which I am currently investigating. For one things the autocorrelations seem to have steeper decay than that of Dr. Lin's. Another is that the energy spectrum flattens out at 1e-7 rather then 1e-37 for Dr. Lin's. The last observation is with regard to a time series of 1000 observations. The steps size is 1e-3 and we observe every 100 steps.
+
+11:15 AM - It looks like I found the bug. it read
+```julia
+function NonLin(v)
+    v_pad[2:n+1]        = v[2:n+1]
+    v_pad[end-n+1:end]  = v[n+2:end]
+    nv = Fp*(real(iFp*(v_pad)).^2)/K
+    return ℓ .* [nv[1:n+1];v_pad[end-n+1:end]]
+end
+```
+but it should have read (and now does)
+```julia
+    return ℓ .* [nv[1:n+1];nv[end-n+1:end]]
+```
+I made this change and now things seem to be working much better. It resembles the Kassam-Trefethen code in the transient part and is stable. An interesting note: when I only enforced symmetry in the NonLinear function the code was still unstable. So, I returned the symmetry enforcement to the stepper and that fixed the problem.
+
+#### Experiment Feb 2, 2021 1 (run on thelio)
+
+This experiment was run on thelio. I just ran the following:
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> nice julia KSE_data_gen.jl
+at> <EOT>
+job 178 at Tue Feb  2 12:26:00 2021
+```
+
+This is to get a data set to work with.  After the data is made I will analyze it and test it against Dr. Lin's solver for reference. I will test
+1. the trajectories
+2. the autocorrelation functions
+3. the energy spectrum
+
+these tests will be conducted in a notebook kept on thelio. There I will run Dr. lin's code and save it in the same folder with my data.
+
+The was not computed because of a typo.
+
+
+# Wednesday, February 3, 2021
+
+12:51 PM - I am going to retry the experiment from yesterday.
+
+#### Experiment Feb 3, 2021 1 (run on thelio)
+
+This experiment just produces data using Dr. Lins code.
+I executed the experiment with the following:
+```
+jaredm@thelio:~/DDMR/klin$ batch
+warning: commands will be executed using /bin/sh
+at> julia RuningLinSolver.jl
+at> <EOT>
+job 180 at Wed Feb  3 12:24:00 2021
+```
+
+This had the following parameters:
+```julia
+T        = 10^3 # Length (in seconds) of time of run
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
+P        = 2π/sqrt(0.085)  # Period
+n        = 96  # Number of fourier modes used
+h        = 1e-3 # Timestep
+g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
+obs_gap  = 100
+```
+
+#### Experiment Feb 3, 2021 2 (run on thelio)
+Now I want to run my code for the same length (`T = 10^3`)
+
+I used
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_data_gen.jl
+at> <EOT>
+job 182 at Wed Feb  3 13:02:00 2021
+```
+
+#### Experiment Feb 3, 2021 3 (run on thelio)
+
+Ploughing in hope that these data generators agree I went a head and ran my solver for `T = 10^5` which is what was used in the 2017 paper. I wrote
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_data_gen.jl
+at> <EOT>
+job 181 at Wed Feb  3 12:48:00 2021
+```
+
+and had
+```julia
+T        = 10^5 # Length (in seconds) of time of run
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
+```
+
+Now, I wait for them to finish.
+
+Again a little error.
+
+I will try again
+
+#### Experiment Feb 3, 2021 4 (run on thelio)
+
+This is just a simulation using my own code. I am running it for the purpose of comparing the results with Dr. Lin's KSE solver. And (pending favorable comparison) using it to compute the Wiener filter.
+
+I wrote the following:
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_data_gen.jl
+at> <EOT>
+job 185 at Thu Feb  4 00:15:00 2021
+```
+
+and had
+```julia
+T        = 10^4 # Length (in seconds) of time of run
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
+```
+This should take about 60,000 sec so about 16 hrs 40 mins. Hopefully it will be done sooner.
+
+#### Experiment Feb 3, 2021 4 (run on thelio)
+
+This is just a simulation using Dr. Lin's code. I am running it for the purpose of comparing the results with my own KSE solver. And (pending favorable comparison) using it to compute the Wiener filter.
+
+I wrote the following:
+```
+jaredm@thelio:~/DDMR/klin$ batch
+warning: commands will be executed using /bin/sh
+at> julia RuningLinSolver.jl
+at> <EOT>
+job 187 at Thu Feb  4 00:26:00 2021
+```
+
+and had
+```julia
+T        = 10^4 # Length (in seconds) of time of run
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
+```
+This should take about 60,000 sec so about 16 hrs 40 mins. Hopefully it will be done sooner.
+
+On this one I got an out of memery error so, after my code had finished I ran it again.
+
+```
+jaredm@thelio:~/DDMR/klin$ batch
+warning: commands will be executed using /bin/sh
+at> julia RuningLinSolver.jl
+at> <EOT>
+job 189 at Thu Feb  4 00:46:00 2021
+```
+
+
+# Thursday, February 4, 2021
+
+2:00 PM -  Today I wrote a Pluto notebook to demonstrate the correctness of the code I used to simulate the KSE solution. I used that and found that the data agreed quite closely (by eye) with the results in the 2017 paper. The notebook is on thelio at `/u5/jaredm/DDMR/Examples/KSE/KSE_data_analyzer.jl`.
+
+So, since the results were favorable I will proceed to runa long run of the data and compute the wiener filter on it. That begin said I ran:
+
+#### Experiment Feb 1, 2021 1 (run on thelio)
+
+This is a long simulation using my KSE solver. I am running it for the purpose using it to compute the Wiener filter.
+
+I wrote the following:
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_data_gen.jl
+at> <EOT>
+job 190 at Thu Feb  4 14:02:00 2021
+```
+and this had
+```julia
+gen = "lin1e5"     # this is just a reference designation it shows up in the
+                # output file. I think of generatrion.
+
+T        = 10^5 # Length (in seconds) of time of run
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded
+```
+
+
+
+
+# February 16, 2021
+
+Today I will get a reduced model for the KSE solver.
+
+#### Experiment Feb 16, 2021 (first wiener filter on correct KSE data)
+
+In this experiment I use the latest tried and true code for the Weiner filter to obtain a reduced model for the KSE solver. The reduced model is built from the lowest five (5) modes, namely, 𝑣₁, 𝑣₂, 𝑣₃, 𝑣₄, 𝑣₅.  
+
+I will run it on thelio u8sing the script "Examples/KSE/KSE_modred_run_script.jl" for quick reference these are the parameters:
+```julia
+d = 5
+h = 0.1
+# collect observations
+obs_gap = 1
+V_obs = vv[2:d+1,1:obs_gap:end]
+```
+Here is what thelio said:
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_modred_run_script.jl
+at> <EOT>
+job 191 at Tue Feb 16 09:50:00 2021
+jaredm@thelio:~/DDMR/Examples/KSE$
+```
+
+This produced the following at 10:05 AM
+```
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2254597): Gdk-CRITICAL **: 09:51:38.447: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2254597): Gdk-CRITICAL **: 09:51:38.450: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+ERROR: LoadError: OutOfMemoryError()
+Stacktrace:
+ [1] Array at ./boot.jl:410 [inlined]
+ [2] Array at ./boot.jl:417 [inlined]
+ [3] zeros at ./array.jl:525 [inlined]
+ [4] zeros at ./array.jl:522 [inlined]
+ [5] zeros at ./array.jl:520 [inlined]
+ [6] vector_wiener_filter_fft(::Array{Complex{Float64},2}, ::Array{Complex{Float64},2}; M_out::Int64, par::Int64, nfft::Int64, win::String, n::Int64, p::Int64, ty::String, xspec_est::String, PI::Bool, rtol::Float64, info::Bool) at /u5/jaredm/DDMR/Tools/WFMR.jl:255
+ [7] get_wf(::Array{Complex{Float64},2}, ::typeof(Psi); M_out::Int64, n::Int64, p::Int64, par::Int64, ty::String, xspec_est::String, nfft::Int64, rl::Bool, Preds::Bool, PI::Bool, rtol::Float64, info::Bool) at /u5/jaredm/DDMR/Tools/WFMR.jl:55
+ [8] top-level scope at ./timing.jl:174 [inlined]
+ [9] top-level scope at /u5/jaredm/DDMR/Examples/KSE/KSE_modred_run_script.jl:0
+ [10] include(::Function, ::Module, ::String) at ./Base.jl:380
+ [11] include(::Module, ::String) at ./Base.jl:368
+ [12] exec_options(::Base.JLOptions) at ./client.jl:296
+ [13] _start() at ./client.jl:506
+in expression starting at /u5/jaredm/DDMR/Examples/KSE/KSE_modred_run_script.jl:90
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  2.404269 seconds (2.04 M allocations: 2.977 GiB, 4.94% gc time)
+Number of CKMS iterations: 1261
+errK errR : 9.988933319602566e-11 1.2340578173549105e-14
+367.175299 seconds (458.17 M allocations: 324.953 GiB, 70.66% gc time)
+```
+ So, I ran this same code on a smaller scale on my laptop to better isolate the issue. I am hopeing I can reproduce the error, with a much smaller data set and fix it.
+
+ I found a few things. One thing I found was that I stillhad not fixed the problem of the many zeros at the end. of the data.  
+
+Ok, that looks good. I changed
+```  
+x = zeros(Complex128,n,(steps - 1) ÷ gap + 1)
+```
+to
+```
+x = zeros(Complex128,n,(steps - 1 - discard) ÷ gap + 1)
+```
+in line 25.
+
+I am modifying the data on thelio.
+
+Another problem I found was that the data was so lean in my laptop test that 'L' was too large for the data. When I ran "Examples\KSE\KSE_modred_run_script.jl" on my laptop using the 1e3 steps data (5000 samples) it ran without error. So, I retry the experiment now.
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julai KSE_modred_run_script.jl
+at> <EOT>
+job 192 at Tue Feb 16 11:47:00 2021
+```
+Here I got
+```
+sh: 30: julai: not found
+```
+
+Trying again:
+```
+
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> julia KSE_modred_run_script.jl
+at> <EOT>
+job 193 at Tue Feb 16 11:53:00 2021
+```
+Here is the output
+```
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2254804): Gdk-CRITICAL **: 11:54:13.733: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2254804): Gdk-CRITICAL **: 11:54:13.737: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+ERROR: LoadError: OutOfMemoryError()
+Stacktrace:
+ [1] Array at ./boot.jl:410 [inlined]
+ [2] Array{Complex{Float64},3}(::UndefInitializer, ::Tuple{Int64,Int64,Int64}) at ./boot.jl:417
+ [3] similar(::Array{Complex{Float64},3}, ::Type{T} where T, ::Tuple{Int64,Int64,Int64}) at ./array.jl:380
+ [4] cat_similar(::Array{Complex{Float64},3}, ::Type{T} where T, ::Tuple{Int64,Int64,Int64}) at ./abstractarray.jl:1473
+ [5] _cat_t(::Int64, ::Type{T} where T, ::Array{Complex{Float64},3}, ::Vararg{Any,N} where N) at ./abstractarray.jl:1522
+ [6] cat_t(::Type{Complex{Float64}}, ::Array{Complex{Float64},3}, ::Vararg{Any,N} where N; dims::Int64) at ./abstractarray.jl:1518
+ [7] _cat at ./abstractarray.jl:1516 [inlined]
+ [8] #cat#111 at ./abstractarray.jl:1654 [inlined]
+ [9] vector_wiener_filter_fft(::Array{Complex{Float64},2}, ::Array{Complex{Float64},2}; M_out::Int64, par::Int64, nfft::Int64, win::String, n::Int64, p::Int64, ty::String, xspec_est::String, PI::Bool, rtol::Float64, info::Bool) at /u5/jaredm/DDMR/Tools/WFMR.jl:255
+ [10] get_wf(::Array{Complex{Float64},2}, ::typeof(Psi); M_out::Int64, n::Int64, p::Int64, par::Int64, ty::String, xspec_est::String, nfft::Int64, rl::Bool, Preds::Bool, PI::Bool, rtol::Float64, info::Bool) at /u5/jaredm/DDMR/Tools/WFMR.jl:55
+ [11] top-level scope at ./timing.jl:174 [inlined]
+ [12] top-level scope at /u5/jaredm/DDMR/Examples/KSE/KSE_modred_run_script.jl:0
+ [13] include(::Function, ::Module, ::String) at ./Base.jl:380
+ [14] include(::Module, ::String) at ./Base.jl:368
+ [15] exec_options(::Base.JLOptions) at ./client.jl:296
+ [16] _start() at ./client.jl:506
+in expression starting at /u5/jaredm/DDMR/Examples/KSE/KSE_modred_run_script.jl:90
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.934533 seconds (2.04 M allocations: 1.539 GiB, 6.48% gc time)
+Number of CKMS iterations: 1406
+errK errR : 9.282501972805685e-11 8.774406873984876e-15
+122.516710 seconds (458.18 M allocations: 360.726 GiB, 1.94% gc time)
+```
+
+I have been going through the code and have not seen anything that should give a `OutOfMemoryError()`. So, It occured to me to try a smaller dataset. So I am now running another. I don't need to do this! I will run it by cutting off some from the current set. This shorter run did not have an OutOfMemoryError. I will now preform a runtime and memory usage analysis on the Wierer filtering code. I will do it I think, in Typora or just markdown.
+
+
+# Thursday, February 18, 2021
+
+9:29 AM - The plan to day is to get the Wiener filter working on a long data set. To do this I will work on it's efficiency on a small set of data.
+
+First I, made a few changes to the code Tuesday. I will test that it makes no material difference.
+
+It seems to be working the same.
+
+```
+julia> @time @views G = at. my_crosscov(sig[1,1:steps], pred[1,1:steps],lags);
+  0.000343 seconds (3.58 k allocations: 279.875 KiB)
+```
+
+I compared "fast_test.jl"
+with run script.
+
+Len = 500
+115.021948 seconds (155.18 M allocations: 99.682 GiB, 6.65% gc time)
+122.948282 seconds (154.36 M allocations: 99.624 GiB, 6.31% gc time)
+122.973159 seconds (157.46 M allocations: 99.771 GiB, 6.48% gc time)
+
+Len = 500 (fast)
+146.153198 seconds (154.38 M allocations: 99.998 GiB, 6.87% gc time)
+110.344493 seconds (154.36 M allocations: 99.997 GiB, 7.06% gc time)
+106.555478 seconds (154.36 M allocations: 99.997 GiB, 7.54% gc time)
+
+Len = 1000
+337.966202 seconds (310.04 M allocations: 374.614 GiB, 8.14% gc time)
+333.806442 seconds (309.70 M allocations: 374.605 GiB, 8.08% gc time)
+364.897733 seconds (309.51 M allocations: 374.588 GiB, 6.79% gc time)
+
+Len = 1000 (fast)
+462.614956 seconds (309.52 M allocations: 374.513 GiB, 7.43% gc time)
+461.672297 seconds (309.51 M allocations: 374.513 GiB, 7.22% gc time)
+352.537323 seconds (309.51 M allocations: 374.513 GiB, 7.27% gc time)
+
+Len = 2000
+849.876092 seconds (466.36 M allocations: 991.062 GiB, 7.37% gc time)
+846.727404 seconds (466.32 M allocations: 991.059 GiB, 7.73% gc time)
+919.924345 seconds (466.34 M allocations: 991.061 GiB, 7.60% gc time)
+
+| `Len` | allocations | GiB | gc time |
+|:---:|:---:|:---:|:---:|
+|L   |157.46 M| 99.771 GiB |  6.48% |
+|2̇*L |309.51 M| 374.588 GiB | 8.08% |
+|4*L |466.34 M| 991.061 GiB | 7.60% |

@@ -1,30 +1,36 @@
 ################################################################################
 #
-# File: KSE_data_gen.jl
-# Author: Jared McBride (11-23-2020)
+# File: RunningLinSolver.jl
+# Author: Jared McBride (Feb-2-2021)
 #
-# This just generates and saves KSE model runs
+# This just generates and saves KSE model runs using
+# Dr. Lin's solver.
 #
 ################################################################################
 
 using JLD
-using DSP: conv # For conv function in Psi
 using Dates
 
-kse = include("myKSE_solver.jl")
+ks = include("ks.jl")
 
-gen = "lin1e5"     # this is just a reference designation it shows up in the
+gen = "lin"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
-T        = 10^5 # Length (in seconds) of time of run
-T_disc   = T ÷ 2 # Length (in seconds) of time discarded
+T        = 10^4 # Length (in seconds) of time of run
+T_disc   = T ÷ 2 # Length (in seconds) of time discarded (taken from T)
 P        = 2π/sqrt(0.085)  # Period
 n        = 96  # Number of fourier modes used
 h        = 1e-3 # Timestep
 g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
 obs_gap  = 100
 
-vv =  kse.my_KSE_solver(T; T_disc, P, n, h, g, n_gap = obs_gap)
+
+steps   = ceil(Int,T/h/obs_gap)
+discard = ceil(Int,T_disc/h/obs_gap)
+
+@time vv = ks.run_ks(ks.fei_init(),steps, h*obs_gap;
+             nsubsteps = obs_gap,
+             verbose = false, L = P)
 
 paramaters = Dict(
    "gen" => gen,
@@ -40,7 +46,7 @@ paramaters = Dict(
 
 server = startswith(pwd(), "/u5/jaredm") ? true : false
 println("on server = $server")
-sol_file = server ? "../../../data/KSE_Data/ks_sol_$gen.jld" :
+sol_file = server ? "../../data/KSE_Data/ks_sol_$gen.jld" :
    "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_sol_$gen.jld"
 println("Sol save location: " * sol_file)
 
