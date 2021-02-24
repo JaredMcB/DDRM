@@ -203,8 +203,7 @@ function vector_wiener_filter_fft(
     end
 
     # Compute coefficients of spectral factorization of z-spect-pred
-    S_pred⁻ = @timed PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed.value,rtol = rtol) :
-             spectfact_matrix_CKMS(R_pred_smoothed.value)
+    S_pred⁻ = @timed spectfact_matrix_CKMS(R_pred_smoothed.value)
     if verb
         println("Time taken for spectfact: ",S_pred⁻.time)
         println("Bytes Allocated: ",S_pred⁻.bytes)
@@ -221,10 +220,14 @@ function vector_wiener_filter_fft(
     end                                             # the final S_pred⁺
 
     # Compute z-cross-spectrum of sigpred
-    S = xspec_est == "SP" ? at.z_crossspect_fft(sig, pred;
+    S = @timed xspec_est == "SP" ? at.z_crossspect_fft(sig, pred;
                         nfft, n, p, ty) : at.z_crossspect_fft_old(sig, pred; L, Nex = nfft);
+    if verb
+        println("Time taken for crossspect: ",S.time)
+        println("Bytes Allocated: ",S.bytes)
+    end
 
-
+    S = S.value
     for i = 1 : nfft                # point-wise divide in time domain S_{YX}
         S[:,:,i] /= @view S_pred⁺[:,:,i]        # by S_x^+
     end
