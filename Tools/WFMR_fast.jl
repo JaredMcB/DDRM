@@ -235,7 +235,7 @@ function vector_wiener_filter_fft(
     S[:,:, nffth + 1 : nfft] = zeros(d,nu,nfft - nffth) # Causal part
     fft!(S,3)                       # Back to time domain,{S_{yx}/S_x^+}_+
     for i = 1: nfft                 # Obtain transfer function H by dividing
-        S[:,:,i] /= S_pred⁻[:,:,i]  # {S_{yx}/S_x^+}_+ by S_x^-
+        S[:,:,i] /= @view S_pred⁻[:,:,i]  # {S_{yx}/S_x^+}_+ by S_x^-
     end
     ifft!(S, 3)                     # impulse responce of Weiner filter,
                                     # fourier space
