@@ -31,7 +31,7 @@ function get_wf(
     Preds = false,
     PI = false,
     rtol = 1e-6,
-    info = false)
+    verb = false)
     # We would like a presample since we want the
     # times series to be offset by one.
 
@@ -49,13 +49,12 @@ function get_wf(
         # which is what we want so as to ensure the reduced
         # model can run explicitly.
 
-    if info
-        return vector_wiener_filter_fft(sig, pred; M_out,
-                n, p, par, nfft, ty, xspec_est, PI, rtol,info)
+    if verb
+        println("==================== New Run $steps =====================")
     end
 
     h_wf = vector_wiener_filter_fft(sig, pred; M_out,
-            n, p, par, nfft, ty, xspec_est, PI, rtol)
+            n, p, par, nfft, ty, xspec_est, PI, rtol,verb)
 
     h_wf = rl ? real(h_wf) : h_wf
     Preds ? [h_wf, pred] : h_wf
@@ -118,7 +117,6 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
         errR = norm(hL_RrhLt)
         Err = [Err; errK errR]
         #i % update == 0 && println("err : $errK and $errR and i : $i" )
-
 
         K_new = K - FL_RrhLt
         L_new = FL - K/Re*hL
@@ -237,7 +235,7 @@ function vector_wiener_filter_fft(
     xspec_est = "old",
     PI = true,
     rtol = 1e-6,
-    info = false
+    verb = false
     )
 
     d, stepsy = size(sig)
@@ -249,12 +247,19 @@ function vector_wiener_filter_fft(
     nffth = nfft ÷ 2
     L = min(par,steps-1)
 
-    R_pred_smoothed = matrix_autocov_seq(pred; L, steps, nu, win)
-
+    R_pred_smoothed = @timed matrix_autocov_seq(pred; L, steps, nu, win)
+    if verb
+        println("Time taken for autocov: ", R_pred_smoothed.time)
+        println("Bytes Allocated: ", R_pred_smoothed.bytes)
+    end
     # Compute coefficients of spectral factorization of z-spect-pred
-    l = @time PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed,rtol = rtol) :
-             spectfact_matrix_CKMS(R_pred_smoothed)
-
+    l = @timed PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed.value,rtol = rtol) :
+             spectfact_matrix_CKMS(R_pred_smoothed.value)
+    if verb
+        println("Time taken for spectfact: ",l.time)
+        println("Bytes Allocated: ",l.bytes)
+    end
+    l = l.value
     l_pad_minus = nfft >= L+1 ? cat(dims = 3,l,zeros(nu,nu,nfft - L - 1)) :
                                l[:,:,1:nfft]
 
@@ -265,8 +270,14 @@ function vector_wiener_filter_fft(
     end
 
     # Compute z-cross-spectrum of sigpred
-    z_crossspect_sigpred_num_fft = xspec_est == "SP" ? at.z_crossspect_fft(sig, pred;
+    z_crossspect_sigpred_num_fft = @timed xspec_est == "SP" ? at.z_crossspect_fft(sig, pred;
                         nfft, n, p, ty) : at.z_crossspect_fft_old(sig, pred; L, Nex = nfft);
+
+    if verb
+        println("Time taken for crossspect: ",z_crossspect_sigpred_num_fft.time)
+        println("Bytes Allocated: ",z_crossspect_sigpred_num_fft.bytes)
+    end
+    z_crossspect_sigpred_num_fft = z_crossspect_sigpred_num_fft.value
 
     # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
     S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
@@ -304,18 +315,8 @@ function vector_wiener_filter_fft(
     M_out > nfft && println("M_out > nfft, taking min")
     M = min(M_out, nfft)
 
-    if info
-        h_num_fft = [h_num_raw[:,:,1:M],
-                 z_crossspect_sigpred_num_fft,
-                 z_spect_pred_minus_num_fft,
-                 z_spect_pred_plus_num_fft,
-                 S_sigpred_overS_plus_fft_num,
-                 S_sigpred_overS_plus_plus_num_fft,
-                 H_num] ###
-    else
-        h_num_fft = h_num_raw[:,:,1:M]
-    end
-    h_num_fft
+
+    h_num_fft = h_num_raw[:,:,1:M]
 end
 
 function redmodrun(

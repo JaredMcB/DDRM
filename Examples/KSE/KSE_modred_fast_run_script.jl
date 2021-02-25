@@ -3,7 +3,7 @@ using JLD
 using DSP # For conv function in Psi
 using Dates
 
-mr = include("../../Tools/WFMR.jl")
+mrf = include("../../Tools/WFMR_fast.jl")
 
 at = include("../../Tools/AnalysisToolbox.jl")
 
@@ -90,15 +90,15 @@ paramaters = Dict(
 
 Len = 5000
 
-h_wf = @time mr.get_wf(signal[:,1:Len], Psi; M_out, verb = true)
+h_wf = @time mrf.get_wf(signal[:,1:Len], Psi; M_out,verb = true)
 
 # Save Wienerfilter
 dat = Dict("dat_h_wf" => h_wf)
 Data = merge(paramaters,dat)
 # save("../data/KSE_Data/KSE_sol_wienerfilter.jld",Data)
 
-wf_file = server ? "../../../data/KSE_Data/ks_wf_$gen-Len$Len.jld" :
-   "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_$gen-Len$Len.jld"
+wf_file = server ? "../../../data/KSE_Data/ks_wf_fast_$gen-Len$Len.jld" :
+   "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_fast_$gen-Len$Len.jld"
 save(wf_file,Data)
 println("Wiener filter saved")
 
