@@ -2331,7 +2331,7 @@ Today I investigated the memory usage of my code. And I failed to find a line wh
 
 The code runs find for short time series (length 500, 100, 2000, even 5000 though it takes a long time about 20 min.) However, on thelio it gets an out of memory error
 
-I tried using pinv and inv which are much faster than / however in the end it takes much longer because the algorithm converges more slowly. 
+I tried using pinv and inv which are much faster than / however in the end it takes much longer because the algorithm converges more slowly.
 
 I ran the old WFMR.jl
 for len = 1000 and got Peak Private Bytes = 1.482 GB
@@ -2339,3 +2339,33 @@ for Len = 1000 (fast) got peak 1.39 GB
 running fast a second time I got 1.469592
 then it spiked at 1.480292
 This was for Len = 5000, 1.703048
+
+
+# Wednesday Feb 24, 2021
+
+Today I graded a little and did some research. I added some verbose functionality to both "WFMR.jl" and "WFMR_fast.jl" and
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_run_script.jl
+at> <EOT>
+job 195 at Wed Feb 24 17:17:00 2021
+```
+at 5:16 PM I got the reply. I ran two other experiments today the first has `Len = 5000` and the second `Len = 1000`
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_run_script.jl
+at> /usr/bin/time -v julia KSE_modred_fast_run_script.jl
+at> <EOT>
+job 196 at Wed Feb 24 17:26:00 2021
+```
+and
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_run_script.jl
+at> /usr/bin/time -v julia KSE_modred_fast_run_script.jl
+at> <EOT>
+job 197 at Wed Feb 24 17:28:00 2021
+```
