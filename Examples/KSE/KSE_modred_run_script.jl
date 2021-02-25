@@ -8,14 +8,14 @@ at = include("../../Tools/AnalysisToolbox.jl")
 
 # Load Old Data
 
-gen = "lin1e5"     # this is just a reference designation it shows up in the
+gen = "lin1e3"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
 server = startswith(pwd(), "/u5/jaredm") ? true : false
 println("on server = $server")
 
 sol_file = server ? "../../../data/KSE_Data/ks_sol_$gen.jld" :
-   "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_sol_$gen.jld"
+   "C:/Users/jared/Desktop/DDMR/Examples/KSE/Data/ks_sol_$gen.jld"
 println("Sol load location: " * sol_file)
 
 @time vv = load(sol_file,"dat_vv")
@@ -28,7 +28,7 @@ h = 0.1
 # collect observations
 obs_gap = 1
 V_obs = vv[2:d+1,1:obs_gap:end]
-
+vv = []
 # Build PSI
 function InvBurgRK4_1step(x)
    lx = length(x)
@@ -87,7 +87,7 @@ paramaters = Dict(
     "tm" => tm
 )
 
-Len = 5000
+Len = 1000
 
 h_wf = @time mr.get_wf(signal[:,1:Len], Psi; M_out, verb = true)
 
@@ -97,7 +97,7 @@ Data = merge(paramaters,dat)
 # save("../data/KSE_Data/KSE_sol_wienerfilter.jld",Data)
 
 wf_file = server ? "../../../data/KSE_Data/ks_wf_$gen-Len$Len.jld" :
-   "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_$gen-Len$Len.jld"
+   "C:/Users/jared/Desktop/DDMR/Examples/KSE/Data/ks_wf_$gen-Len$Len.jld"
 save(wf_file,Data)
 println("Wiener filter saved")
 
