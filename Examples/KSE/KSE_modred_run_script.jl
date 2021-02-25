@@ -88,7 +88,7 @@ paramaters = Dict(
     "tm" => tm
 )
 
-Len = 5000
+Len = 1000
 
 h_wf = @time mr.get_wf(signal[:,1:Len], Psi; M_out, verb = true)
 
