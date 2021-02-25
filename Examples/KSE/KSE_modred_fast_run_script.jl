@@ -90,7 +90,7 @@ paramaters = Dict(
 
 Len = 5000
 
-h_wf = mrf.get_wf(signal[:,1:Len], Psi; M_out)
+h_wf = @time mrf.get_wf(signal[:,1:Len], Psi; M_out,verb = true)
 
 # Save Wienerfilter
 dat = Dict("dat_h_wf" => h_wf)
