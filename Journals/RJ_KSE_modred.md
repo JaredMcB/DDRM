@@ -2369,3 +2369,95 @@ at> /usr/bin/time -v julia KSE_modred_fast_run_script.jl
 at> <EOT>
 job 197 at Wed Feb 24 17:28:00 2021
 ```
+
+
+
+# Thursday, February 25, 2021
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_run_script.jl
+at> <EOT>
+job 198 at Thu Feb 25 13:59:00 2021
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_fast_run_script.jl
+at> <EOT>
+job 199 at Thu Feb 25 14:00:00 2021
+```
+
+Both of these render out of memory errors here the run was set for 1000
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_run_script.jl
+at> <EOT>
+job 200 at Thu Feb 25 14:14:00 2021
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_fast_run_script.jl
+at> <EOT>
+job 201 at Thu Feb 25 14:15:00 2021
+jaredm@thelio:~/DDMR/Examples/KSE$
+```
+In the above the parameters were set for `gen = "lin1e3"` and `Len = 1000`
+
+```
+julia> cd("Desktop/DDMR/Examples/KSE")
+
+julia> pwd()
+"C:\\Users\\jared\\Desktop\\DDMR\\Examples\\KSE"
+
+julia> @timev include("KSE_data_gen.jl")
+ 82.127475 seconds (91.73 M allocations: 149.541 GiB, 8.50% gc time)
+on server = false
+Sol save location: C:/Users/jared/Desktop/DDMR/Examples/KSE/Data/ks_sol_lin1e3.jld
+data saved
+ 93.317463 seconds (128.93 M allocations: 151.315 GiB, 8.25% gc time)
+elapsed time (ns): 93317463399
+gc time (ns):      7702971762
+bytes allocated:   162473013432
+pool allocs:       95906779
+non-pool GC allocs:33019777
+malloc() calls:    131
+realloc() calls:   4
+GC pauses:         3536
+full collections:  8
+
+julia> @timev include("KSE_modred_run_script.jl")
+on server = false
+Sol load location: C:/Users/jared/Desktop/DDMR/Examples/KSE/Data/ks_sol_lin1e3.jld
+  0.759925 seconds (812.34 k allocations: 57.122 MiB, 1.83% gc time)
+==================== New Run 999 =====================
+Time taken for autocov: 2.192656601
+Bytes Allocated: 669025475
+Number of CKMS iterations: 2220
+errK errR : 9.868577096168108e-11 3.6223145429261556e-13
+Time taken for spectfact: 292.232682701
+Bytes Allocated: 401458334026
+Time taken for crossspect: 0.654189701
+Bytes Allocated: 163228635
+309.456883 seconds (347.60 M allocations: 376.267 GiB, 8.73% gc time)
+HDF5-DIAG: Error detected in HDF5 (1.10.5) thread 0:
+...
+```
+
+Then I ran the run script but this time I cleared `vv` first
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_run_script.jl
+at> <EOT>
+job 202 at Thu Feb 25 14:23:00 2021
+```
+The above was a flop because I cleared `vv` in the wrong place I fixed this and reran it below.
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ vi KSE_modred_run_script.jl
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_run_script.jl
+at> <EOT>
+job 203 at Thu Feb 25 14:33:00 2021
+```
