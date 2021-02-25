@@ -2191,7 +2191,7 @@ errK errR : 9.988933319602566e-11 1.2340578173549105e-14
 ```
  So, I ran this same code on a smaller scale on my laptop to better isolate the issue. I am hopeing I can reproduce the error, with a much smaller data set and fix it.
 
- I found a few things. One thing I found was that I stillhad not fixed the problem of the many zeros at the end. of the data.  
+ I found a few things. One thing I found was that I still had not fixed the problem of the many zeros at the end. of the data.  
 
 Ok, that looks good. I changed
 ```  
@@ -2307,8 +2307,65 @@ Len = 2000
 846.727404 seconds (466.32 M allocations: 991.059 GiB, 7.73% gc time)
 919.924345 seconds (466.34 M allocations: 991.061 GiB, 7.60% gc time)
 
+Len = 2000 (fast)
+1205.234345 seconds (466.33 M allocations: 990.910 GiB, 7.42% gc time)
+834.837605 seconds (466.36 M allocations: 990.912 GiB, 7.84% gc time)
+839.788648 seconds (466.32 M allocations: 990.909 GiB, 7.49% gc time)
+
+Len = 2000 on thelio
+337.487449 seconds (466.33 M allocations: 984.643 GiB, 2.78% gc time)
+
+Len = 2000 (fast) on thelio
+333.753343 seconds (466.31 M allocations: 984.492 GiB, 2.99% gc time)
+
 | `Len` | allocations | GiB | gc time |
 |:---:|:---:|:---:|:---:|
 |L   |157.46 M| 99.771 GiB |  6.48% |
 |2̇*L |309.51 M| 374.588 GiB | 8.08% |
 |4*L |466.34 M| 991.061 GiB | 7.60% |
+
+
+# Tuesday, Feb 23, 2021
+
+Today I investigated the memory usage of my code. And I failed to find a line where the memory usage was very large.
+
+The code runs find for short time series (length 500, 100, 2000, even 5000 though it takes a long time about 20 min.) However, on thelio it gets an out of memory error
+
+I tried using pinv and inv which are much faster than / however in the end it takes much longer because the algorithm converges more slowly.
+
+I ran the old WFMR.jl
+for len = 1000 and got Peak Private Bytes = 1.482 GB
+for Len = 1000 (fast) got peak 1.39 GB
+running fast a second time I got 1.469592
+then it spiked at 1.480292
+This was for Len = 5000, 1.703048
+
+
+# Wednesday Feb 24, 2021
+
+Today I graded a little and did some research. I added some verbose functionality to both "WFMR.jl" and "WFMR_fast.jl" and
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_run_script.jl
+at> <EOT>
+job 195 at Wed Feb 24 17:17:00 2021
+```
+at 5:16 PM I got the reply. I ran two other experiments today the first has `Len = 5000` and the second `Len = 1000`
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_run_script.jl
+at> /usr/bin/time -v julia KSE_modred_fast_run_script.jl
+at> <EOT>
+job 196 at Wed Feb 24 17:26:00 2021
+```
+and
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_run_script.jl
+at> /usr/bin/time -v julia KSE_modred_fast_run_script.jl
+at> <EOT>
+job 197 at Wed Feb 24 17:28:00 2021
+```
