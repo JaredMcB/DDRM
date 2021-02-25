@@ -86,7 +86,7 @@ paramaters = Dict(
 
 Len = 500
 
-@time h_wf = mrf.get_wf(signal[:,1:Len], Psi; M_out)
+@time h_wf = mrf.get_wf(signal[:,1:Len], Psi; M_out,verb = true)
 
 
 wf_file = "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_$gen-Len$Len.jld"
@@ -113,7 +113,7 @@ P = R_pred_smoothed
 N_ckms = 10^5
 
 using SparseArrays
-using LinearAlgebra: I
+using LinearAlgebra
 
 d = size(P)[1];
 m = size(P)[3] - 1
@@ -128,15 +128,40 @@ K = complex(zeros(d*m,d))
 for i = 0 : m-1
     K[d*i + 1: d*(i+1),:] = NN[:,:,i+1]
 end
-L = copy(K)
+FL = K
 i = 0
 errK = errR = 1
+rtol = 1e-6
+@time hL = h*FL
+@time FL = F*FL
 
-@time hL = h*L
-@time FL = F*L
+@time Rr_pinv = pinv(Rr,rtol = rtol)
+@time Rr_inv  = inv(Rr)
+@time Re_pinv = pinv(Re, rtol = rtol)
+rtol = 1e-32
+@time FL_RrhLt = FL * Rr_inv
 
-FL
+@time FL_RrhLt_o = FL/Rr
 
-@time FL_RrhLt = FL/Rr*hL'
+maximum(abs.(FL_RrhLt - FL_RrhLt_o))
 
-@which FL/Rr
+maximum(abs.(Rr_pinv - Rr_inv))
+
+@time S = svd(Rr)
+sort(S.S)
+
+# Stopping criteria stuff
+i += 1
+
+@time FL_RrhLt = FL * Rr_pinv * hL'
+hL_RrhLt = hL * Rr_pinv * hL'
+errK = norm(FL_RrhLt)
+errR = norm(hL_RrhLt)
+
+FL -= K * Re_pinv * hL
+K  -= FL_RrhLt
+Rr -= hL' * Re_pinv * hL
+Re -= hL_RrhLt
+    end
+
+maximum(abs.(FL_RrhLt - FL_RrhLt_o))
