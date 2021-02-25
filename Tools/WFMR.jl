@@ -247,16 +247,11 @@ function vector_wiener_filter_fft(
     nffth = nfft ÷ 2
     L = min(par,steps-1)
 
-<<<<<<< HEAD:Tools/WFMR.jl
-    R_pred_smoothed = matrix_autocov_seq(pred; L, steps, nu, win)
-
-=======
     R_pred_smoothed = @timed matrix_autocov_seq(pred; L, steps, nu, win)
     if verb
         println("Time taken for autocov: ", R_pred_smoothed.time)
         println("Bytes Allocated: ", R_pred_smoothed.bytes)
     end
->>>>>>> 97f28ace0c20d7e7497a0f1e3b42a93397a3d2a9:Tools/Model_Reduction_Dev.jl
     # Compute coefficients of spectral factorization of z-spect-pred
     l = @timed PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed.value,rtol = rtol) :
              spectfact_matrix_CKMS(R_pred_smoothed.value)
