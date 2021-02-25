@@ -96,11 +96,7 @@ dat = Dict("dat_h_wf" => h_wf)
 Data = merge(paramaters,dat)
 # save("../data/KSE_Data/KSE_sol_wienerfilter.jld",Data)
 
-<<<<<<< HEAD
-wf_file = server ? "../../../data/KSE_Data/ks_wf_$gen.jld" :
-=======
 wf_file = server ? "../../../data/KSE_Data/ks_wf_$gen-Len$Len.jld" :
->>>>>>> 97f28ace0c20d7e7497a0f1e3b42a93397a3d2a9
    "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_$gen-Len$Len.jld"
 save(wf_file,Data)
 println("Wiener filter saved")
