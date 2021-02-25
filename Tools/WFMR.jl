@@ -315,18 +315,8 @@ function vector_wiener_filter_fft(
     M_out > nfft && println("M_out > nfft, taking min")
     M = min(M_out, nfft)
 
-    if info
-        h_num_fft = [h_num_raw[:,:,1:M],
-                 z_crossspect_sigpred_num_fft,
-                 z_spect_pred_minus_num_fft,
-                 z_spect_pred_plus_num_fft,
-                 S_sigpred_overS_plus_fft_num,
-                 S_sigpred_overS_plus_plus_num_fft,
-                 H_num] ###
-    else
-        h_num_fft = h_num_raw[:,:,1:M]
-    end
-    h_num_fft
+
+    h_num_fft = h_num_raw[:,:,1:M]
 end
 
 function redmodrun(
