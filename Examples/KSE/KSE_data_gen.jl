@@ -41,7 +41,7 @@ paramaters = Dict(
 server = startswith(pwd(), "/u5/jaredm") ? true : false
 println("on server = $server")
 sol_file = server ? "../../../data/KSE_Data/ks_sol_$gen.jld" :
-   "C:/Users/jared/Desktop/DDMR/Examples/KSE/Data/ks_sol_$gen.jld"
+   "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_sol_$gen.jld"
 
 println("Sol save location: " * sol_file)
 
