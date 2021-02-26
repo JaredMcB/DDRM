@@ -30,6 +30,8 @@ h = 0.1
 obs_gap = 1
 V_obs = vv[2:d+1,1:obs_gap:end]
 
+vv = []
+
 # Build PSI
 function InvBurgRK4_1step(x)
    lx = length(x)
@@ -88,7 +90,7 @@ paramaters = Dict(
     "tm" => tm
 )
 
-Len = 1000
+Len = 2000
 
 h_wf = @time mrf.get_wf(signal[:,1:Len], Psi; M_out,verb = true)
 
