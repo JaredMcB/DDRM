@@ -16,7 +16,7 @@ server = startswith(pwd(), "/u5/jaredm") ? true : false
 println("on server = $server")
 
 sol_file = server ? "../../../data/KSE_Data/ks_sol_$gen.jld" :
-   "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_sol_$gen.jld"
+   "C:/Users/jared/Desktop/DDMR/Examples/KSE/Data/ks_sol_$gen.jld"
 println("Sol load location: " * sol_file)
 
 @time vv = load(sol_file,"dat_vv")
@@ -63,6 +63,7 @@ Psi(x) = [x; InvBurgRK4_1step(x); Inertialman_part(x)]
 # Get Wiener filter
 #@time h_wf = get_wf(V_obs,Psi, M_out = M_out,PI = true)
 signal = V_obs
+V_obs = []
 M_out = 20
 n = 3; p = 1500; par = 1500
 ty = "bin"
@@ -70,7 +71,7 @@ xspec_est = "old"
 nfft = 0
 rl = true
 Preds = false
-N_ckms = 5000
+N_ckms = 3000
 PI = false
 rtol = 1e-6
 info = false
@@ -91,9 +92,9 @@ paramaters = Dict(
     "tm" => tm
 )
 
-Len = 100000
+Len = 50000
 
-h_wf = @time mrf.get_wf(signal[:,1:Len], Psi; M_out,N_ckms,verb = true)
+h_wf = @time mrf.get_wf(signal[:,1:Len], Psi; M_out, N_ckms, verb = true)
 
 # Save Wienerfilter
 dat = Dict("dat_h_wf" => h_wf)
@@ -101,7 +102,7 @@ Data = merge(paramaters,dat)
 # save("../data/KSE_Data/KSE_sol_wienerfilter.jld",Data)
 
 wf_file = server ? "../../../data/KSE_Data/ks_wf_fast_$gen-Len$Len.jld" :
-   "C:/Users/JaredMcBride/Desktop/DDMR/Examples/KSE/Data/ks_wf_fast_$gen-Len$Len.jld"
+   "C:/Users/jared/Desktop/DDMR/Examples/KSE/Data/ks_wf_fast_$gen-Len$Len.jld"
 save(wf_file,Data)
 println("Wiener filter saved")
 

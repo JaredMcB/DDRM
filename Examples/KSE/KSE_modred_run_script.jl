@@ -8,7 +8,7 @@ at = include("../../Tools/AnalysisToolbox.jl")
 
 # Load Old Data
 
-gen = "lin1e3"     # this is just a reference designation it shows up in the
+gen = "lin1e5"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
 server = startswith(pwd(), "/u5/jaredm") ? true : false
@@ -62,6 +62,7 @@ Psi(x) = [x; InvBurgRK4_1step(x); Inertialman_part(x)]
 # Get Wiener filter
 #@time h_wf = get_wf(V_obs,Psi, M_out = M_out,PI = true)
 signal = V_obs
+V_obs = []
 M_out = 20
 n = 3; p = 1500; par = 1500
 ty = "bin"
@@ -69,7 +70,7 @@ xspec_est = "old"
 nfft = 0
 rl = true
 Preds = false
-N_ckms = 5000
+N_ckms = 3000
 PI = false
 rtol = 1e-6
 Verb = false
@@ -90,7 +91,7 @@ paramaters = Dict(
     "tm" => tm
 )
 
-Len = 100000
+Len = 50000
 
 h_wf = @time mr.get_wf(signal[:,1:Len], Psi; M_out, N_ckms, verb = true)
 

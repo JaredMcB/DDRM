@@ -29,6 +29,7 @@ function get_wf(
     nfft = 0,
     rl = true,
     Preds = false,
+    N_ckms = 10^5,
     PI = false,
     rtol = 1e-6,
     verb = false)
@@ -54,7 +55,7 @@ function get_wf(
     end
 
     h_wf = vector_wiener_filter_fft(sig, pred; M_out,
-            n, p, par, nfft, ty, xspec_est, PI, rtol,verb)
+            n, p, par, nfft, ty, xspec_est, PI, N_ckms, rtol,verb)
 
     h_wf = rl ? real(h_wf) : h_wf
     Preds ? [h_wf, pred] : h_wf
@@ -83,7 +84,7 @@ which satisfies
     For this function the input is P and the output is l.
 """
 
-function spectfact_matrix_CKMS(P; ϵ = 1e-10,
+function spectfact_matrix_CKMS(P; ϵ = 0e-10,
     update = 10,
     N_ckms = 10^5)
 
@@ -186,6 +187,7 @@ function vector_wiener_filter_fft(
     p = 1500,
     ty = "bin",
     xspec_est = "old",
+    N_ckms = 10^5,
     PI = true,
     rtol = 1e-6,
     verb = false
@@ -207,8 +209,7 @@ function vector_wiener_filter_fft(
     end
 
     # Compute coefficients of spectral factorization of z-spect-pred
-    l = @timed PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed.value,rtol = rtol) :
-             spectfact_matrix_CKMS(R_pred_smoothed.value)
+    l = @timed spectfact_matrix_CKMS(R_pred_smoothed.value; N_ckms)
     if verb
         println("Time taken for spectfact: ",l.time)
         println("Bytes Allocated: ",l.bytes)
