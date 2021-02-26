@@ -29,6 +29,7 @@ h = 0.1
 # collect observations
 obs_gap = 1
 V_obs = vv[2:d+1,1:obs_gap:end]
+vv = []
 
 # Build PSI
 function InvBurgRK4_1step(x)
@@ -69,6 +70,7 @@ xspec_est = "old"
 nfft = 0
 rl = true
 Preds = false
+N_ckms = 5000
 PI = false
 rtol = 1e-6
 info = false
@@ -84,13 +86,14 @@ paramaters = Dict(
     "nfft" => nfft,
     "rl" => rl,
     "Preds" => Preds,
+    "N_ckms" => N_ckms,
     "rtol" => rtol,
     "tm" => tm
 )
 
-Len = 5000
+Len = 100000
 
-h_wf = @time mrf.get_wf(signal[:,1:Len], Psi; M_out,verb = true)
+h_wf = @time mrf.get_wf(signal[:,1:Len], Psi; M_out,N_ckms,verb = true)
 
 # Save Wienerfilter
 dat = Dict("dat_h_wf" => h_wf)
