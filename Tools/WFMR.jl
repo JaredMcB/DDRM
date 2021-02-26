@@ -29,6 +29,7 @@ function get_wf(
     nfft = 0,
     rl = true,
     Preds = false,
+    N_ckms = 10^5,
     PI = false,
     rtol = 1e-6,
     verb = false)
@@ -54,7 +55,7 @@ function get_wf(
     end
 
     h_wf = vector_wiener_filter_fft(sig, pred; M_out,
-            n, p, par, nfft, ty, xspec_est, PI, rtol,verb)
+            n, p, par, nfft, ty, xspec_est, PI, N_ckms, rtol,verb)
 
     h_wf = rl ? real(h_wf) : h_wf
     Preds ? [h_wf, pred] : h_wf
@@ -83,7 +84,7 @@ which satisfies
     For this function the input is P and the output is l.
 """
 
-function spectfact_matrix_CKMS(P; ϵ = 1e-10,
+function spectfact_matrix_CKMS(P; ϵ = 0e-10,
     update = 10,
     N_ckms = 10^5)
 
@@ -143,53 +144,6 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
         l[:,:,m-i+1] = k[d*i + 1: d*(i+1),:]*sqrt_re
     end
 
-    # save("Data\\CKMS_dat.jld",
-    #     "spectfactLog",
-    #     spectfactLog)
-
-    l
-end
-
-function spectfact_matrix_CKMS_pinv(P; N_ckms = 1500, rtol = 1e-6)
-    d = size(P)[1];
-    m = size(P)[3] - 1
-
-    NN = reverse(P[:,:,2:end],dims = 3)
-    Re = Rr = p0 = P[:,:,1]
-
-    F = sparse([[spzeros(d,d*(m-1)); sparse(I,d*(m-1),d*(m-1))] spzeros(d*m,d)])
-    h = sparse([spzeros(d,d*(m-1)) sparse(I,d,d)])
-
-    K = complex(zeros(d*m,d))
-    for i = 0 : m-1
-        K[d*i + 1: d*(i+1),:] = NN[:,:,i+1]
-    end
-    L = K
-
-    for i = 1:N_ckms
-        hL = h*L; FL = F*L
-
-        K_new = K - FL*pinv(Rr,rtol = rtol)*hL'
-        L_new = FL - K*pinv(Re,rtol = rtol)*hL
-        Re_new = Re - hL*pinv(Rr,rtol = rtol)*hL'
-        Rr_new = Rr - hL'*pinv(Re,rtol = rtol)*hL
-
-        K = K_new
-        L = L_new
-        Re = Re_new
-        Rr = Rr_new
-    end
-
-    k = K*pinv(Re,rtol = rtol)
-    re = Re
-
-    sqrt_re = sqrt(re)
-
-    l = complex(zeros(d,d,m+1))
-    l[:,:,1] = sqrt_re;
-    for i = m-1:-1:0
-        l[:,:,m-i+1] = k[d*i + 1: d*(i+1),:]*sqrt_re
-    end
     l
 end
 
@@ -233,6 +187,7 @@ function vector_wiener_filter_fft(
     p = 1500,
     ty = "bin",
     xspec_est = "old",
+    N_ckms = 10^5,
     PI = true,
     rtol = 1e-6,
     verb = false
@@ -252,9 +207,9 @@ function vector_wiener_filter_fft(
         println("Time taken for autocov: ", R_pred_smoothed.time)
         println("Bytes Allocated: ", R_pred_smoothed.bytes)
     end
+
     # Compute coefficients of spectral factorization of z-spect-pred
-    l = @timed PI ? spectfact_matrix_CKMS_pinv(R_pred_smoothed.value,rtol = rtol) :
-             spectfact_matrix_CKMS(R_pred_smoothed.value)
+    l = @timed spectfact_matrix_CKMS(R_pred_smoothed.value; N_ckms)
     if verb
         println("Time taken for spectfact: ",l.time)
         println("Bytes Allocated: ",l.bytes)

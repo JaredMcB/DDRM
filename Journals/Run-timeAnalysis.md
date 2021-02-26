@@ -22,7 +22,7 @@ Now, we look at the Wiener filtering algorithm itself:
 This algorithm is organized as follows
 1. Get parameters: `d`, `nu`, `steps`, `nfft`, `nffth`, and `L`.
 2. Compute smoothed autocovariance sequence (`R_pred_smoothed`) of `pred` of length `L+1`
-   1. This calls the function `matrix_autocov_seq`
+   1. This calls the function `matrix_autocov_seq` (linear in steps)
 3. Compute coefficients `l` of spectral factorization of `R_pred_smoothed`.
    1. This calls the function `spectfact_matrix_CKMS`. This is perhaps the most costly part of the      whole process.
 4. Pad `L` and compute the point-wise approximations of 𝑆ₚᵣ⁺(𝑧) (`z_spect_pred_plus_num_fft`) and 𝑆ₚᵣ⁻(𝑧) (`z_spect_pred_minus_num_fft`),
