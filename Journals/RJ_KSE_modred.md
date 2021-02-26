@@ -2453,6 +2453,7 @@ at> <EOT>
 job 202 at Thu Feb 25 14:23:00 2021
 ```
 The above was a flop because I cleared `vv` in the wrong place I fixed this and reran it below.
+
 ```
 jaredm@thelio:~/DDMR/Examples/KSE$ vi KSE_modred_run_script.jl
 jaredm@thelio:~/DDMR/Examples/KSE$ batch
@@ -2461,3 +2462,521 @@ at> /usr/bin/time -v julia KSE_modred_run_script.jl
 at> <EOT>
 job 203 at Thu Feb 25 14:33:00 2021
 ```
+
+```
+
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_modred_fun_script.jl
+at> <EOT>
+job 206 at Thu Feb 25 15:05:00 2021
+```
+
+This was run at around 3:30 PM
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ /usr/bin/time -v julia KSE_modred_run_script.jl
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2277051): Gdk-CRITICAL **: 15:41:39.462: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2277051): Gdk-CRITICAL **: 15:41:39.466: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.837686 seconds (2.04 M allocations: 1.538 GiB, 1.62% gc time)
+==================== New Run 9999 =====================
+Time taken for autocov: 3.809175408
+Bytes Allocated: 2438344620
+Number of CKMS iterations: 4832
+errK errR : 9.896275029262465e-11 1.1333409011841887e-13
+Time taken for spectfact: 396.568303184
+Bytes Allocated: 1295078984834
+Time taken for crossspect: 0.93646988
+Bytes Allocated: 507525156
+420.727989 seconds (517.75 M allocations: 1.185 TiB, 5.44% gc time)
+Wiener filter saved
+        Command being timed: "julia KSE_modred_run_script.jl"
+        User time (seconds): 1579.10
+        System time (seconds): 1603.45
+        Percent of CPU this job got: 732%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 7:14.73
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 2682844
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 42511457
+        Voluntary context switches: 4078749
+        Involuntary context switches: 290682
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 80
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+jaredm@thelio:~/DDMR/Examples/KSE$ vi KSE_modred_run_script.jl
+jaredm@thelio:~/DDMR/Examples/KSE$ vi KSE_modred_run_script.jl
+jaredm@thelio:~/DDMR/Examples/KSE$ /usr/bin/time -v julia KSE_modred_run_script.jl
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2277091): Gdk-CRITICAL **: 15:52:17.784: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2277091): Gdk-CRITICAL **: 15:52:17.788: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.839450 seconds (2.04 M allocations: 1.538 GiB, 1.63% gc time)
+==================== New Run 19999 =====================
+Time taken for autocov: 5.020786511
+Bytes Allocated: 4199414097
+Number of CKMS iterations: 2944
+errK errR : 9.482433355748112e-11 9.135884177292531e-14
+Time taken for spectfact: 258.868074729
+Bytes Allocated: 794788649090
+Time taken for crossspect: 1.137185374
+Bytes Allocated: 857527332
+297.321625 seconds (522.20 M allocations: 751.488 GiB, 6.42% gc time)
+Wiener filter saved
+        Command being timed: "julia KSE_modred_run_script.jl"
+        User time (seconds): 1035.06
+        System time (seconds): 1121.14
+        Percent of CPU this job got: 692%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 5:11.39
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 2682636
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 41864540
+        Voluntary context switches: 5124059
+        Involuntary context switches: 244329
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 80
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+```
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ /usr/bin/time -v julia KSE_modred_fast_run_sc
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2277139): Gdk-CRITICAL **: 16:05:08.380: gdk_cursor_new_for_display: assertioplay)' failed
+
+(.:2277139): Gdk-CRITICAL **: 16:05:08.384: gdk_cursor_new_for_display: assertioplay)' failed
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.843307 seconds (2.04 M allocations: 1.538 GiB, 1.64% gc time)
+==================== New Run 9999 =====================
+Time taken for autocov: 3.819647428
+Bytes Allocated: 2436373442
+Number of CKMS iterations: 4832
+Time taken for spectfact: 412.047223221
+Bytes Allocated: 1294465688782
+Time taken for crossspect: 1.002465079
+Bytes Allocated: 579957306
+436.162206 seconds (508.08 M allocations: 1.183 TiB, 6.54% gc time)
+Wiener filter saved
+        Command being timed: "julia KSE_modred_fast_run_script.jl"
+        User time (seconds): 1607.88
+        System time (seconds): 1705.67
+        Percent of CPU this job got: 735%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 7:30.45
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 2683688
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 55720260
+        Voluntary context switches: 4190425
+        Involuntary context switches: 129955
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 80
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+jaredm@thelio:~/DDMR/Examples/KSE$ vi KSE_modred_fast_run_script.jl
+jaredm@thelio:~/DDMR/Examples/KSE$ vi KSE_modred_fast_run_script.jl
+```
+
+Here is a run of the "fast" code with `Len = 20 000`
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ /usr/bin/time -v julia KSE_modred_fast_run_sc
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2277341): Gdk-CRITICAL **: 16:39:27.795: gdk_cursor_new_for_display: assertioplay)' failed
+
+(.:2277341): Gdk-CRITICAL **: 16:39:27.799: gdk_cursor_new_for_display: assertioplay)' failed
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.851786 seconds (2.04 M allocations: 1.538 GiB, 1.67% gc time)
+==================== New Run 19999 =====================
+Time taken for autocov: 4.823059855
+Bytes Allocated: 4199175092
+Number of CKMS iterations: 2944
+Time taken for spectfact: 246.601261205
+Bytes Allocated: 794412183758
+Time taken for crossspect: 1.416906682
+Bytes Allocated: 929957306
+284.225895 seconds (512.61 M allocations: 749.647 GiB, 5.93% gc time)
+Wiener filter saved
+        Command being timed: "julia KSE_modred_fast_run_script.jl"
+        User time (seconds): 1019.71
+        System time (seconds): 1038.98
+        Percent of CPU this job got: 690%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 4:58.32
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 2684152
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 24965643
+        Voluntary context switches: 5036929
+        Involuntary context switches: 36422
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 80
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+```
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ /usr/bin/time -v julia KSE_modred_fast_run_script.jl
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2277445): Gdk-CRITICAL **: 18:06:12.365: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2277445): Gdk-CRITICAL **: 18:06:12.369: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.846859 seconds (2.04 M allocations: 1.538 GiB, 1.67% gc time)
+==================== New Run 49999 =====================
+Time taken for autocov: 9.9585739
+Bytes Allocated: 9491175092
+Number of CKMS iterations: 2161
+Time taken for spectfact: 193.110640886
+Bytes Allocated: 587027705774
+Time taken for crossspect: 2.335635738
+Bytes Allocated: 1979957306
+275.898310 seconds (526.45 M allocations: 567.333 GiB, 5.76% gc time)
+Wiener filter saved
+        Command being timed: "julia KSE_modred_fast_run_script.jl"
+        User time (seconds): 886.74
+        System time (seconds): 966.59
+        Percent of CPU this job got: 638%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 4:50.07
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 4541016
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 27993027
+        Voluntary context switches: 11148470
+        Involuntary context switches: 203433
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 80
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+```
+
+I also checked that these were identical
+```
+
+julia> using JLD
+
+julia> h_wf_slow = load("ks_wf_lin1e5-Len20000.jld","dat_h_wf");
+
+julia> h_wf_fast = load("ks_wf_fast_lin1e5-Len20000.jld","dat_h_wf");
+
+julia> maximum(abs.(h_wf_fast - h_wf_slow))
+0.0
+
+julia> h_wf_fast = load("ks_wf_fast_lin1e5-Len10000.jld","dat_h_wf");
+
+julia> h_wf_slow = load("ks_wf_lin1e5-Len10000.jld","dat_h_wf");
+
+julia> maximum(abs.(h_wf_fast - h_wf_slow))
+0.0
+```
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ /usr/bin/time -v julia KSE_modred_fast_run_script.jl
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2277571): Gdk-CRITICAL **: 18:44:02.676: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2277571): Gdk-CRITICAL **: 18:44:02.680: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.846640 seconds (2.04 M allocations: 1.538 GiB, 1.67% gc time)
+==================== New Run 499999 =====================
+Time taken for autocov: 132.869214906
+Bytes Allocated: 88871175716
+Number of CKMS iterations: 1406
+Time taken for spectfact: 125.517712128
+Bytes Allocated: 387059275534
+Time taken for crossspect: 24.510630904
+Bytes Allocated: 17729957306
+970.983560 seconds (734.76 M allocations: 543.507 GiB, 1.87% gc time)
+Wiener filter saved
+        Command being timed: "julia KSE_modred_fast_run_script.jl"
+        User time (seconds): 2135.41
+        System time (seconds): 2499.61
+        Percent of CPU this job got: 470%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 16:25.85
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 25168068
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 30282108
+        Voluntary context switches: 103479307
+        Involuntary context switches: 38538
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 80
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+```
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ /usr/bin/time -v julia KSE_modred_fast_run_script.jl
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2277521): Gdk-CRITICAL **: 18:20:20.388: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2277521): Gdk-CRITICAL **: 18:20:20.391: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.859314 seconds (2.04 M allocations: 1.538 GiB, 1.71% gc time)
+==================== New Run 99999 =====================
+Time taken for autocov: 19.218250183
+Bytes Allocated: 18311175092
+Number of CKMS iterations: 1847
+Time taken for spectfact: 163.19377604
+Bytes Allocated: 503862027502
+Time taken for crossspect: 4.279230464
+Bytes Allocated: 3729957306
+319.024233 seconds (549.59 M allocations: 507.924 GiB, 4.36% gc time)
+Wiener filter saved
+        Command being timed: "julia KSE_modred_fast_run_script.jl"
+        User time (seconds): 939.21
+        System time (seconds): 1036.27
+        Percent of CPU this job got: 592%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 5:33.57
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 6203304
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 20510165
+        Voluntary context switches: 20375454
+        Involuntary context switches: 170280
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 80
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+```
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ /usr/bin/time -v julia KSE_modred_run_script.jl
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2277653): Gdk-CRITICAL **: 19:09:35.588: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2277653): Gdk-CRITICAL **: 19:09:35.591: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.867264 seconds (2.04 M allocations: 1.538 GiB, 1.73% gc time)
+==================== New Run 99999 =====================
+Time taken for autocov: 19.823333573
+Bytes Allocated: 18311414097
+Number of CKMS iterations: 1847
+errK errR : 9.83943955943342e-11 3.015703267541677e-14
+Time taken for spectfact: 183.141709345
+Bytes Allocated: 504153277906
+Time taken for crossspect: 3.727454901
+Bytes Allocated: 3657527332
+345.765715 seconds (558.98 M allocations: 515.669 GiB, 5.46% gc time)
+Wiener filter saved
+        Command being timed: "julia KSE_modred_run_script.jl"
+        User time (seconds): 978.84
+        System time (seconds): 1163.09
+        Percent of CPU this job got: 594%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 6:00.33
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 6180028
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 39406214
+        Voluntary context switches: 21025215
+        Involuntary context switches: 95969
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 80
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+jaredm@thelio:~/DDMR/Examples/KSE$ vi KSE_modred_run_script.jl
+jaredm@thelio:~/DDMR/Examples/KSE$ /usr/bin/time -v julia KSE_modred_run_script.jl
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2277687): Gdk-CRITICAL **: 19:17:03.187: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2277687): Gdk-CRITICAL **: 19:17:03.191: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.866002 seconds (2.04 M allocations: 1.538 GiB, 1.76% gc time)
+==================== New Run 499999 =====================
+Time taken for autocov: 135.303911443
+Bytes Allocated: 88871414097
+Number of CKMS iterations: 1406
+errK errR : 9.281054060535383e-11 8.774909426817923e-15
+Time taken for spectfact: 126.819647586
+Bytes Allocated: 387327121186
+Time taken for crossspect: 24.871280414
+Bytes Allocated: 17657527332
+977.867684 seconds (743.34 M allocations: 581.149 GiB, 2.06% gc time)
+Wiener filter saved
+        Command being timed: "julia KSE_modred_run_script.jl"
+        User time (seconds): 2157.29
+        System time (seconds): 2521.26
+        Percent of CPU this job got: 471%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 16:33.01
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 26946856
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 30803769
+        Voluntary context switches: 105035405
+        Involuntary context switches: 56320
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 80
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+```
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ /usr/bin/time -v julia KSE_modred_run_script.jl
+Unable to init server: Could not connect: Connection refused
+Unable to init server: Could not connect: Connection refused
+
+(.:2277783): Gdk-CRITICAL **: 20:50:14.608: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+
+(.:2277783): Gdk-CRITICAL **: 20:50:14.611: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
+on server = true
+Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
+  1.850397 seconds (2.04 M allocations: 1.538 GiB, 1.65% gc time)
+==================== New Run 49999 =====================
+Time taken for autocov: 9.972350415
+Bytes Allocated: 9491414097
+Number of CKMS iterations: 2161
+errK errR : 9.929034716519023e-11 2.9357159073352175e-14
+Time taken for spectfact: 212.074370341
+Bytes Allocated: 587339413874
+Time taken for crossspect: 1.888402204
+Bytes Allocated: 1907527332
+295.346605 seconds (535.96 M allocations: 571.357 GiB, 6.70% gc time)
+Wiener filter saved
+        Command being timed: "julia KSE_modred_run_script.jl"
+        User time (seconds): 910.35
+        System time (seconds): 1086.22
+        Percent of CPU this job got: 645%
+        Elapsed (wall clock) time (h:mm:ss or m:ss): 5:09.52
+        Average shared text size (kbytes): 0
+        Average unshared data size (kbytes): 0
+        Average stack size (kbytes): 0
+        Average total size (kbytes): 0
+        Maximum resident set size (kbytes): 5427248
+        Average resident set size (kbytes): 0
+        Major (requiring I/O) page faults: 0
+        Minor (reclaiming a frame) page faults: 43967242
+        Voluntary context switches: 9129951
+        Involuntary context switches: 127900
+        Swaps: 0
+        File system inputs: 0
+        File system outputs: 80
+        Socket messages sent: 0
+        Socket messages received: 0
+        Signals delivered: 0
+        Page size (bytes): 4096
+        Exit status: 0
+jaredm@thelio:~/DDMR/Examples/KSE$
+```
+
+
+
+
+
+
+### Summary Table
+
+|Series Length | Maximum resident set size | CKMS iterations | System time |
+|:---:|:---:|:---:|:---:|
+|2000           | 2.682 GB | 3930 | 1556.21 sec |
+|10 000         | 2.682 GB | 4832 | 1603.45 sec |
+|10 000  (fast) | 2.683 GB | 4832 | 1705.67 sec |
+|20 000         | 2.682 GB | 2944 | 1121.14 sec |
+|20 000  (fast) | 2.684 GB | 2944 | 1038.98 sec |
+|50 000         | 5.427 GB | 2161 | 1086.22 sec |
+|50 000  (fast) | 4.541 GB | 2161 | 966.59 sec  |
+|100 000        | 6.203 GB | 1847 | 1163.09 sec |
+|100 000 (fast) | 6.180 GB | 1847 | 1036.27 sec |
+|500 000        | 26.946 GB| 1406 | 2521.26 sec |
+|500 000 (fast) | 25.168 GB| 1406 | 2135.41 sec |
