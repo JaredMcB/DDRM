@@ -2980,3 +2980,34 @@ jaredm@thelio:~/DDMR/Examples/KSE$
 |100 000 (fast) | 6.180 GB | 1847 | 1036.27 sec |
 |500 000        | 26.946 GB| 1406 | 2521.26 sec |
 |500 000 (fast) | 25.168 GB| 1406 | 2135.41 sec |
+
+
+
+
+# Tuesday, Marh 2, 2021
+
+## Mat project
+
+9:01 AM - today I started a small project to recast the wiener filter as a vector output. This is just like what we see in Lin+Lu 2017. It is from what I have seen an unusual application of the Wiener-Hopf technique. But it looks like it should work just the same. Today I created the following new versions existing files  "Tools/WFMR_mat.jl" and "KSE/Mat_Dev/KSE_madred_mat_run_script.jl". In the later I just finished updating the psi matrix and hope to test it next time.
+
+Now, I put that project away and will turn my attention to the traditional Wiener filter. It looks like the WF is not converging. I would like to run another set of data. and apply the wiener filter to it. In the mean time I would like to spend a moment thinking about what Dr. Lin mentioned long ago about the discrete time weiner filter approximating the true WF and if we can get to that some how. I could also impose zeros where they should be, given distinct fourier modes are independent. There should be a lot of zeros about. I think I'll do that next.
+
+
+To Do
+* Get another big run of data on thelio find the wiener filter to that and compare the WFs.
+* Impose zeros.
+
+#### Experiment Mar 2, 2021 1
+
+I just commisioned another data set 500 000 points on thelio. I used the following:
+```
+jaredm@thelio:~/DDMR/Examples/KSE$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia KSE_data_gen.jl
+at> <EOT>
+job 210 at Tue Mar  2 09:24:00 2021
+```
+
+While this was running I went on thelio to look at the WF's and noticed that the `steps = 20000` one was off. I was looking at the histogram. So, I commisioned another run for that one.
+
+I don't think these are converging.
