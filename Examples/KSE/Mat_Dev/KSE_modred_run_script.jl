@@ -3,8 +3,8 @@ using JLD
 using DSP # For conv function in Psi
 using Dates
 
-mr = include("../../Tools/WFMR.jl")
-at = include("../../Tools/AnalysisToolbox.jl")
+mr = include("../../../Tools/WFMR_mat.jl")
+at = include("../../../Tools/AnalysisToolbox.jl")
 
 # Load Old Data
 
@@ -54,10 +54,10 @@ function Inertialman_part(x)
          L[ (j-1)*lx+k] = 𝑥(j+lx)*𝑥(j+lx-k)
       end
    end
-   L
+   reshape(L,lx,:)
 end
 
-Psi(x) = [x; InvBurgRK4_1step(x); Inertialman_part(x)]
+Psi(x) = [x InvBurgRK4_1step(x) Inertialman_part(x)]
 
 # Get Wiener filter
 #@time h_wf = get_wf(V_obs,Psi, M_out = M_out,PI = true)
