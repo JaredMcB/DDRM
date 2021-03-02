@@ -1,4 +1,13 @@
-module WFMR_fast
+"""
+This I am doing a little bit each morning.
+
+This is the wienfer filter that works for preds of size (d,nu,steps) and
+    returns vector valued wiener filter coefficinets
+"""
+
+
+
+module WFMR_mat
 
 using FFTW
 using LinearAlgebra
@@ -21,7 +30,7 @@ Wiener filter as the output.
 
 function get_wf(
     signal, # Vector valued process
-    Psi; # column vector valued function
+    Psi; # matrix valued function
     M_out = 20,
     n = 3, p = 1500, par = 1500,
     ty = "bin",
@@ -36,15 +45,18 @@ function get_wf(
     # We would like a presample since we want the
     # times series to be offset by one.
 
-    d, steps = size(signal)
-    nu = size(Psi(zeros(d,1)),1)
+    d_s, steps = size(signal)
+    d_p, nu = size(Psi(zeros(d_s,1)),1)
+
+    d_p == d_s || throw(DimensionMismatch("output of Psi must have..."))
+    d = d_p
 
     sig = @view signal[:,2:steps]   # sig is now one a head of signal
     steps -= 1                      # this makes steps the length of sig
 
-    pred = zeros(ComplexF64, nu, steps)
+    pred = zeros(ComplexF64, d, nu, steps)
     for n = 1:steps
-        pred[:,n] = Psi(@view signal[:,n])
+        pred[:,:,n] = Psi(@view signal[:,n])
     end # pred is now even with signal and therefore one step
         # behind sig. I.e. pred[:,n] = Psi(sig[:,n-1])
         # which is what we want so as to ensure the reduced
@@ -62,12 +74,15 @@ function get_wf(
 end
 
 function get_pred(signal, Psi)
-    d, steps = size(signal)
-    nu = size(Psi(zeros(d,1)),1)
+    d_s, steps = size(signal)
+    d_p, nu = size(Psi(zeros(d_s,1)),1)
 
-    pred = zeros(ComplexF64, nu, steps)
+    d_p == d_s || throw(DimensionMismatch("output of Psi must have..."))
+    d = d_p
+
+    pred = zeros(ComplexF64, d, nu, steps)
     for n = 1:steps
-        pred[:,n] = Psi(@view signal[:,n])
+        pred[:,:,n] = Psi(@view signal[:,n])
     end
     pred
 end
@@ -145,8 +160,7 @@ end
 
 function matrix_autocov_seq(pred;
     L = 1500,
-    steps = size(pred,2),
-    nu = size(pred,1),
+    d, nu, steps = size(pred),
     win = "Par"
     )
 

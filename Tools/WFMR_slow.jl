@@ -1,4 +1,4 @@
-module WFMR_fast
+module WFMR
 
 using FFTW
 using LinearAlgebra
@@ -84,16 +84,15 @@ which satisfies
     For this function the input is P and the output is l.
 """
 
-function spectfact_matrix_CKMS(P; ϵ = 1e-10,
+function spectfact_matrix_CKMS(P; ϵ = 0e-10,
     update = 10,
-    N_ckms = 10^5,
-    rtol = 1e-6)
+    N_ckms = 10^5)
 
     d = size(P)[1];
     m = size(P)[3] - 1
 
-    NN = reverse((@view P[:,:,2:m+1]),dims = 3)
-    Re = Rr = p0 = @view P[:,:,1]
+    NN = reverse(P[:,:,2:end],dims = 3)
+    Re = Rr = p0 = P[:,:,1]
 
     F = sparse([[spzeros(d,d*(m-1)); sparse(I,d*(m-1),d*(m-1))] spzeros(d*m,d)])
     h = sparse([spzeros(d,d*(m-1)) sparse(I,d,d)])
@@ -102,46 +101,51 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
     for i = 0 : m-1
         K[d*i + 1: d*(i+1),:] = NN[:,:,i+1]
     end
-    FL = K
+    L = K
+
+    # spectfactLog = zeros(4,N_ckms)
     i = 0
     errK = errR = 1
-    # Err = zeros(0,2)
+    Err = zeros(0,2)
     while (errK > ϵ || errR > ϵ) && i <= N_ckms
-        hL = h*FL
-        FL = F*FL
-
-        # Rr_pinv = pinv(Rr, rtol = rtol)
-        # Re_pinv = pinv(Re, rtol = rtol)
+        hL = h*L; FL = F*L
 
         # Stopping criteria stuff
         i += 1
-
-        FL_RrhLt = FL / Rr * hL'
-        hL_RrhLt = hL / Rr * hL'
+        FL_RrhLt = FL/Rr*hL'
+        hL_RrhLt = hL/Rr*hL'
         errK = norm(FL_RrhLt)
         errR = norm(hL_RrhLt)
+        Err = [Err; errK errR]
+        #i % update == 0 && println("err : $errK and $errR and i : $i" )
 
-        FL -= K / Re * hL
-        K  -= FL_RrhLt
-        Rr -= hL' / Re * hL
-        Re -= hL_RrhLt
+        K_new = K - FL_RrhLt
+        L_new = FL - K/Re*hL
+        Re_new = Re - hL_RrhLt
+        Rr_new = Rr - hL'/Re*hL
+
+        K = K_new
+        L = L_new
+        Re = Re_new
+        Rr = Rr_new
     end
 
     println("Number of CKMS iterations: $i")
+    println("errK errR : $errK $errR")
 
-    K /= Re
+    k = K/Re
+    re = Re
 
-    sqrt_re = sqrt(Re)
+    sqrt_re = sqrt(re)
 
     l = complex(zeros(d,d,m+1))
     l[:,:,1] = sqrt_re;
     for i = m-1:-1:0
-        l[:,:,m-i+1] = K[d*i + 1: d*(i+1),:]*sqrt_re
+        l[:,:,m-i+1] = k[d*i + 1: d*(i+1),:]*sqrt_re
     end
 
     l
 end
-
 
 function matrix_autocov_seq(pred;
     L = 1500,
@@ -205,49 +209,69 @@ function vector_wiener_filter_fft(
     end
 
     # Compute coefficients of spectral factorization of z-spect-pred
-    S_pred⁻ = @timed spectfact_matrix_CKMS(R_pred_smoothed.value; N_ckms)
+    l = @timed spectfact_matrix_CKMS(R_pred_smoothed.value; N_ckms)
     if verb
-        println("Time taken for spectfact: ",S_pred⁻.time)
-        println("Bytes Allocated: ",S_pred⁻.bytes)
+        println("Time taken for spectfact: ",l.time)
+        println("Bytes Allocated: ",l.bytes)
     end
+    l = l.value
+    l_pad_minus = nfft >= L+1 ? cat(dims = 3,l,zeros(nu,nu,nfft - L - 1)) :
+                               l[:,:,1:nfft]
 
-    S_pred⁻ = nfft >= L+1 ? cat(dims = 3,S_pred⁻.value,zeros(nu,nu,nfft - L - 1)) :
-                            (@view S_pred⁻.value[:,:,1:nfft])
-
-    fft!(S_pred⁻,3)                                 # the final S_pred⁻
-
-    S_pred⁺ = complex(zeros(nu,nu,nfft))
+    z_spect_pred_minus_num_fft = fft(l_pad_minus,3)
+    z_spect_pred_plus_num_fft = complex(zeros(nu,nu,nfft))
     for i = 1 : nfft
-        S_pred⁺[:,:,i] = (@view S_pred⁻[:,:,i])'
-    end                                             # the final S_pred⁺
+        z_spect_pred_plus_num_fft[:,:,i] = z_spect_pred_minus_num_fft[:,:,i]'
+    end
 
     # Compute z-cross-spectrum of sigpred
-    S = @timed xspec_est == "SP" ? at.z_crossspect_fft(sig, pred;
+    z_crossspect_sigpred_num_fft = @timed xspec_est == "SP" ? at.z_crossspect_fft(sig, pred;
                         nfft, n, p, ty) : at.z_crossspect_fft_old(sig, pred; L, Nex = nfft);
+
     if verb
-        println("Time taken for crossspect: ",S.time)
-        println("Bytes Allocated: ",S.bytes)
+        println("Time taken for crossspect: ",z_crossspect_sigpred_num_fft.time)
+        println("Bytes Allocated: ",z_crossspect_sigpred_num_fft.bytes)
+    end
+    z_crossspect_sigpred_num_fft = z_crossspect_sigpred_num_fft.value
+
+    # This computes the impule response (coefficeints of z) for S_{yx}{S_x^+}^{-1}
+    S_sigpred_overS_plus_fft_num = complex(zeros(d,nu,nfft))
+
+    matlog1 = zeros(nu,nfft) ###
+    for i = 1 : nfft
+        # matlog1[:,i] = svd(z_spect_pred_plus_num_fft[:,:,i]).S ###
+        S_sigpred_overS_plus_fft_num[:,:,i] = z_crossspect_sigpred_num_fft[:,:,i]/
+                                              z_spect_pred_plus_num_fft[:,:,i]
     end
 
-    S = S.value
-    for i = 1 : nfft                # point-wise divide in time domain S_{YX}
-        S[:,:,i] /= @view S_pred⁺[:,:,i]        # by S_x^+
+    S_sigpred_overS_plus_fft_num_fft = ifft(S_sigpred_overS_plus_fft_num,3)
+
+    # Extracts causal part coefficinets of S_{yx}{S_x^+}^{-1}, {S_{yx}{S_x^+}^{-1}}_+
+    S_sigpred_overS_plus_fft_plus_num_fft = cat(dims = 3,
+                    S_sigpred_overS_plus_fft_num_fft[:,:,1: nffth],
+                    zeros(d,nu,nfft - nffth))
+
+    # Computes causal part of S_{yx}/S_x^+, {S_{yx}/S_x^+}_+
+    S_sigpred_overS_plus_plus_num_fft = fft(S_sigpred_overS_plus_fft_plus_num_fft,3);
+
+    # Obtain transfer function H by dividing {S_{yx}/S_x^+}_+ by S_x^-
+    matlog2 = zeros(nu,nfft) ###
+    H_num = complex(zeros(d,nu,nfft))
+    for i = 1: nfft
+        # matlog2[:,i] = svd(z_spect_pred_minus_num_fft[:,:,i]).S ###
+        H_num[:,:,i] = S_sigpred_overS_plus_plus_num_fft[:,:,i]/
+                       z_spect_pred_minus_num_fft[:,:,i]
     end
-    ifft!(S,3)                      # Fourier space
-    S[:,:, nffth + 1 : nfft] = zeros(d,nu,nfft - nffth) # Causal part
-    fft!(S,3)                       # Back to time domain,{S_{yx}/S_x^+}_+
-    for i = 1: nfft                 # Obtain transfer function H by dividing
-        S[:,:,i] /= @view S_pred⁻[:,:,i]  # {S_{yx}/S_x^+}_+ by S_x^-
-    end
-    ifft!(S, 3)                     # impulse responce of Weiner filter,
-                                    # fourier space
-                                    # Extrct tranfer function coeffifcients
+
+    # Extrct tranferfunction coeffifcients (impulse responce of Weiner filter)
+    h_num_raw = ifft(H_num, 3)
 
     # Truncate
     M_out > nfft && println("M_out > nfft, taking min")
     M = min(M_out, nfft)
 
-    h_num_fft = @view S[:,:,1:M]
+
+    h_num_fft = h_num_raw[:,:,1:M]
 end
 
 function redmodrun(
