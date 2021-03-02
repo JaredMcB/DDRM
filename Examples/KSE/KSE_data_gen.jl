@@ -13,10 +13,10 @@ using Dates
 
 kse = include("myKSE_solver.jl")
 
-gen = "lin1e3"     # this is just a reference designation it shows up in the
+gen = "lin1e5_2"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
-T        = 10^3 # Length (in seconds) of time of run
+T        = 10^5 # Length (in seconds) of time of run
 T_disc   = T ÷ 2 # Length (in seconds) of time discarded
 P        = 2π/sqrt(0.085)  # Period
 n        = 96  # Number of fourier modes used

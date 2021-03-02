@@ -84,7 +84,7 @@ which satisfies
     For this function the input is P and the output is l.
 """
 
-function spectfact_matrix_CKMS(P; ϵ = 0e-10,
+function spectfact_matrix_CKMS(P; ϵ = 1e-10,
     update = 10,
     N_ckms = 10^5)
 
