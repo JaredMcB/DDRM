@@ -36,8 +36,8 @@ function DataGen_DWOL(;
     d == 1 && (sigma = reshape(sigma,1,1))
 
     # Here we genereate the signal process.
-    signal = zeros(d,floor(Int,steps-1/gap)+1) # This lenth was figured solely from
-                                               # the recursion below.
+    signal = zeros(d,floor(Int,(steps-1)/gap)+1) # This lenth was figured solely from
+
     tmp = sig_init
     if scheme == "FE"
         for n = 1 : steps_tot

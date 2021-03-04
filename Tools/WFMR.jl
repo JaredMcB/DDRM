@@ -1,4 +1,4 @@
-module WFMR_fast
+module WFMR
 
 using FFTW
 using LinearAlgebra
