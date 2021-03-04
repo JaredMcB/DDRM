@@ -3011,3 +3011,15 @@ job 210 at Tue Mar  2 09:24:00 2021
 While this was running I went on thelio to look at the WF's and noticed that the `steps = 20000` one was off. I was looking at the histogram. So, I commisioned another run for that one.
 
 I don't think these are converging.
+
+The new dataset finished and I am now collecting new WF's.
+
+12:08 PM Recap: today I started by briefly working on the vecter Wiener filter  (VWF) project. Then analyzed the various WF out puts to see if they converged, i looked at there histograms and that looked pretty good I guess. I plotted a few coefficints and it seems like they maybe converging. I looked at the actual values and they don't seem to be converging at all.
+
+Then I started working on the orthogonality test and that is not really going well. It failed.
+
+So, as it turns out the second run I ran of KSE (500 000) was exactly the same! Remarkable! Given it's chaotic behavior, but, as I think about it I shouldn't be that surprised in fact it is nice to have that kind of reproducability.
+
+
+
+# Thursday, March 4, 2021
