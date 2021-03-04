@@ -8,7 +8,7 @@ at = include("../../Tools/AnalysisToolbox.jl")
 
 # Load Old Data
 
-gen = "lin1e5"     # this is just a reference designation it shows up in the
+gen = "lin1e5_2"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
 server = startswith(pwd(), "/u5/jaredm") ? true : false
@@ -91,7 +91,7 @@ paramaters = Dict(
     "tm" => tm
 )
 
-Len = 300000
+Len = 500000
 
 h_wf = @time mr.get_wf(signal[:,1:Len], Psi; M_out, N_ckms, verb = true)
 

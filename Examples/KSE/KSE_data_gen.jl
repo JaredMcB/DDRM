@@ -21,7 +21,7 @@ T_disc   = T ÷ 2 # Length (in seconds) of time discarded
 P        = 2π/sqrt(0.085)  # Period
 n        = 96  # Number of fourier modes used
 h        = 1e-3 # Timestep
-g        = x -> cos(π*x/16)*(1 + sin.(π*x/16))
+g        = x -> cos(π*x/6)*(1 + sin.(π*x/6))
 obs_gap  = 100
 
 vv = @time kse.my_KSE_solver(T; T_disc, P, n, h, g, n_gap = obs_gap)
@@ -33,7 +33,7 @@ paramaters = Dict(
    "P" => P,
    "n" => n,
    "h" => h,
-   "g" => "x -> cos(π*x/16)*(1 + sin.(π*x/16))",
+   "g" => "x -> cos(π*x/6)*(1 + sin.(π*x/6))",
    "obs_gap" => obs_gap,
    "tm" => now()
    )
