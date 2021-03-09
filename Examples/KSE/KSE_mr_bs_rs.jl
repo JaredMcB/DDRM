@@ -77,23 +77,13 @@ rtol = 1e-6
 Verb = false
 tm = now()
 
-for Len = Int.([1e3])
+for Len = Int.([1e4 5e4 1e5 3e5 5e5])
     paramaters = Dict(
         "M_out" => M_out,
-        "n" => n,
-        "p" => p,
-        "par" => par,
-        "ty" => ty,
-        "xspec_est" => xspec_est,
-        "nfft" => nfft,
-        "rl" => rl,
-        "Preds" => Preds,
-        "N_ckms" => N_ckms,
-        "rtol" => rtol,
         "tm" => tm
     )
 
-    Print("Len = $Len: Stats below")
+    print("Len = $Len: Stats below")
 
     h_wf = @timev mrb.get_wf_bs(signal[:,1:Len], Psi; M_out)
 
@@ -107,7 +97,3 @@ for Len = Int.([1e3])
     save(wf_file,Data)
     println("Wiener filter saved")
 end
-# # Load old Wiener Filter
-# LD = load("Data\\KSE_sol_wienerfilter.jld")
-# h_wf = LD["dat_h_wf"]
-# println("Wiener filter load
