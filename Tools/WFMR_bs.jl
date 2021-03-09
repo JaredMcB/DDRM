@@ -13,6 +13,18 @@ are two key word arguments, `M_out` specifies the number of coefficents desired
 from the Weiner filter. And `rl` which if true just take the real part of the
 Wiener filter as the output.
 """
+
+function get_pred(signal, Psi)
+    d, steps = size(signal)
+    nu = size(Psi(zeros(d,1)),1)
+
+    pred = zeros(ComplexF64, nu, steps)
+    for n = 1:steps
+        pred[:,n] = Psi(@view signal[:,n])
+    end
+    pred
+end
+
 function get_wf_bs(signal,Psi::Function; M_out)
     d, steps = size(signal)
     nu = size(Psi(zeros(d,1)),1)
