@@ -1,4 +1,4 @@
-module WFMR_bs
+module WFMR_rr
 
 
 at = include("AnalysisToolbox.jl")
