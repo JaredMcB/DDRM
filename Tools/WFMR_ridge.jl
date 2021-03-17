@@ -58,6 +58,7 @@ function get_wf_rr(sig,pred; M_out, lambda = 0.1)
     end
 
 
+
     lambda = 1
 
     A = PRED'*PRED + lambda * I

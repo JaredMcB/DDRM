@@ -2,6 +2,10 @@ module WFMR_lasso
 
 using DataFrames, Lasso
 using GLMNet
+import StatsBase: zscore!
+
+zscore!(X) = zscore!(X, mean_and_std(X)[1], mean_and_std(X)[2])
+
 at = include("AnalysisToolbox.jl")
 
 """
@@ -76,6 +80,38 @@ function get_wf_ls(sig,pred; M_out)
         h_wfls[:,:,m] = (@view h[(nu*(m-1) + 1):nu*m,:])'
     end
     h_wfls
+end
+
+function get_psi_2017()
+    # Build PSI
+    function InvBurgRK4_1step(x)
+       lx = length(x)
+       function F(x)
+           𝑥 = [conj(@view x[lx:-1:1]) ;0; x]
+           conv(𝑥,𝑥)[2*lx+2:3*lx+1]
+       end
+       k1 = F(x)
+       k2 = F(x .+ h*k1/2)
+       k3 = F(x .+ h*k2/2)
+       k4 = F(x .+ h*k3)
+       A = @. x + h/6*(k1 + 2k2 + 2k3 + k4)
+    end
+
+    function Inertialman_part(x)
+       lx = length(x)
+       𝑥(j) = ( j <= lx ? x[j] : im*sum(x[l]*x[j-l] for l = j-lx:lx) )
+
+       L = complex(zeros(lx^2))
+       for j = 1:lx
+          for k = 1:lx
+             L[ (j-1)*lx+k] = 𝑥(j+lx)*𝑥(j+lx-k)
+          end
+       end
+       L
+    end
+
+    Psi(x) = [x; InvBurgRK4_1step(x); Inertialman_part(x)]
+    return Psi
 end
 
 end #Module
