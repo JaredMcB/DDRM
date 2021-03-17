@@ -82,7 +82,7 @@ function get_wf_ls(sig,pred; M_out)
     h_wfls
 end
 
-function get_psi_2017()
+function get_Psi_2017()
     # Build PSI
     function InvBurgRK4_1step(x)
        lx = length(x)

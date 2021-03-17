@@ -59,8 +59,6 @@ function get_wf_rr(sig,pred; M_out, lambda = 0.1)
 
 
 
-    lambda = 1
-
     A = PRED'*PRED + lambda * I
     B = PRED'*sig[M_out:steps,:]
 
@@ -73,4 +71,37 @@ function get_wf_rr(sig,pred; M_out, lambda = 0.1)
     h_wfrr
 end
 
+
+###########################
+function get_Psi_2017()
+    # Build PSI
+    function InvBurgRK4_1step(x)
+       lx = length(x)
+       function F(x)
+           𝑥 = [conj(@view x[lx:-1:1]) ;0; x]
+           conv(𝑥,𝑥)[2*lx+2:3*lx+1]
+       end
+       k1 = F(x)
+       k2 = F(x .+ h*k1/2)
+       k3 = F(x .+ h*k2/2)
+       k4 = F(x .+ h*k3)
+       A = @. x + h/6*(k1 + 2k2 + 2k3 + k4)
+    end
+
+    function Inertialman_part(x)
+       lx = length(x)
+       𝑥(j) = ( j <= lx ? x[j] : im*sum(x[l]*x[j-l] for l = j-lx:lx) )
+
+       L = complex(zeros(lx^2))
+       for j = 1:lx
+          for k = 1:lx
+             L[ (j-1)*lx+k] = 𝑥(j+lx)*𝑥(j+lx-k)
+          end
+       end
+       L
+    end
+
+    Psi(x) = [x; InvBurgRK4_1step(x); Inertialman_part(x)]
+    return Psi
+end
 end #Module
