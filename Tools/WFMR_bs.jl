@@ -1,5 +1,7 @@
 module WFMR_bs
 
+using DSP: conv # Solely for Psi
+
 
 at = include("AnalysisToolbox.jl")
 

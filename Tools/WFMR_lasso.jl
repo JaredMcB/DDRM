@@ -1,4 +1,5 @@
 module WFMR_lasso
+using DSP: conv # Solely for Psi
 
 using DataFrames, Lasso
 using GLMNet
