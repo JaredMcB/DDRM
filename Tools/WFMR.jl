@@ -144,7 +144,7 @@ end
 
 
 function matrix_autocov_seq(pred;
-    L = 1500,
+    L = min(size(pred,2),1500),
     steps = size(pred,2),
     nu = size(pred,1),
     win = "Par"
