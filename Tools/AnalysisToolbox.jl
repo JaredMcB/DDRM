@@ -23,7 +23,7 @@ function _crosscov_con(x::AbstractVector{<:Number},
     lx == ly || throw(DimensionMismatch("series must be same length"))
 
     if maximum(lags) > lx
-        println("lag cannot be greater than lenght of series")
+        println("lag cannot be greater than length of series")
         lags = filter(x -> abs(x) < lx, lags)
     end
 
