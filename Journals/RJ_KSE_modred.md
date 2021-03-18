@@ -3022,4 +3022,6 @@ So, as it turns out the second run I ran of KSE (500 000) was exactly the same! 
 
 
 
-# Thursday, March 4, 2021
+# Thursday, March 18, 2021
+
+Today I am looking at the whitening filter. 

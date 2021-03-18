@@ -2,15 +2,17 @@
 using JLD
 using DSP # For conv function in Psi
 using Dates
+using GLMNet
 
-mr = include("../../Tools/WFMR_lasso.jl")
-at = include("../../Tools/AnalysisToolbox.jl")
+using PyPlot
 
-psi = mr.get_Psi_2017(0.1)
+mrl = include("../../Tools/WFMR_lasso.jl")
+mr  = include("../../Tools/WFMR.jl")
+at  = include("../../Tools/AnalysisToolbox.jl")
 
 # Load Old Data
 
-gen = "lin1e5_2"     # this is just a reference designation it shows up in the
+gen = "lin1e3"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
 server = startswith(pwd(), "/u5/jaredm") ? true : false
@@ -33,34 +35,7 @@ obs_gap = 1
 V_obs = vv[2:d+1,1:obs_gap:end]
 vv = []
 
-# Build PSI
-function InvBurgRK4_1step(x)
-   lx = length(x)
-   function F(x)
-       𝑥 = [conj(@view x[lx:-1:1]) ;0; x]
-       conv(𝑥,𝑥)[2*lx+2:3*lx+1]
-   end
-   k1 = F(x)
-   k2 = F(x .+ h*k1/2)
-   k3 = F(x .+ h*k2/2)
-   k4 = F(x .+ h*k3)
-   A = @. x + h/6*(k1 + 2k2 + 2k3 + k4)
-end
-
-function Inertialman_part(x)
-   lx = length(x)
-   𝑥(j) = ( j <= lx ? x[j] : im*sum(x[l]*x[j-l] for l = j-lx:lx) )
-
-   L = complex(zeros(lx^2))
-   for j = 1:lx
-      for k = 1:lx
-         L[ (j-1)*lx+k] = 𝑥(j+lx)*𝑥(j+lx-k)
-      end
-   end
-   L
-end
-
-Psi(x) = [x; InvBurgRK4_1step(x); Inertialman_part(x)]
+Psi = mrl.get_Psi_2017(h)
 
 # Get Wiener filter
 #@time h_wf = get_wf(V_obs,Psi, M_out = M_out,PI = true)
@@ -73,7 +48,7 @@ xspec_est = "old"
 nfft = 0
 rl = true
 Preds = false
-N_ckms = 1e5
+N_ckms = 3000
 PI = false
 rtol = 1e-6
 Verb = false
@@ -94,9 +69,90 @@ paramaters = Dict(
     "tm" => tm
 )
 
-Len = 500000
+Len = 5000
 
-h_wf = @time mr.get_wf(signal[:,1:Len], Psi; M_out, N_ckms, verb = true)
+
+d, steps = size(signal[:,1:Len])
+nu = size(Psi(zeros(d,1)),1)
+
+sig = @view signal[:,2:steps]   # sig is now one a head of signal
+steps -= 1                      # this makes steps the length of sig
+
+pred = zeros(ComplexF64, nu, steps)
+for n = 1:steps
+    pred[:,n] = Psi(@view signal[:,n])
+end # pred is now even with signal and therefore one step
+# behind sig. I.e. pred[:,n] = Psi(sig[:,n-1])
+# which is what we want so as to ensure the reduced
+# model can run explicitly.
+
+d, stepsy = size(sig)
+nu, stepsx = size(pred)
+stepsx == stepsy || print("X and Y are not the same length. Taking min.")
+steps = minimum([stepsx stepsy])
+
+sig = Array(transpose(sig))
+pred = Array(transpose(pred))
+
+Pred = zeros(ComplexF64,steps-M_out+1,M_out*nu)
+for m = 1:M_out
+    Pred[:,nu*(M_out-m)+1:nu*(M_out-m+1)] = @view pred[m:(steps + m - M_out),:]
+end
+
+PRED = [real(Pred) -imag(Pred); imag(Pred) real(Pred)]
+SIG = [real(sig[M_out:steps,:]); imag(sig[M_out:steps,:])]
+
+h = zeros(ComplexF64,M_out*nu,d)
+
+h_temp = glmnet(PRED,SIG[:,2])
+
+
+using StatsBase
+
+
+B = h_temp.betas
+
+
+X = randn(1000,10) .+ 40
+Bet_T = rand(10)*54
+y = X*Bet_T
+
+mx = mean_and_std(X)
+my = mean_and_std(y)
+
+
+Xc = zscore(X)
+yc = zscore(y)
+
+
+
+Out = glmnet(Xc,yc)
+
+Bc = Out.betas
+
+cv = glmnetcv(X,y)
+
+Betc = coef(cv)
+
+
+
+for i = 1:d
+    cv = glmnetcv(PRED,SIG[:,i])
+    locbetamin = argmin(cv.meanloss)
+    h_temp = cv.path.betas[:,locbetamin]
+    for j = 1:M_out*nu
+        h[j,i] = complex(h_temp[j],h_temp[j+M_out*nu])
+    end
+end
+
+h_wfls = zeros(ComplexF64,d,nu,M_out)
+for m = 1:M_out
+    h_wfls[:,:,m] = (@view h[(nu*(m-1) + 1):nu*m,:])'
+end
+h_wfls
+
+
+
 
 # Save Wienerfilter
 dat = Dict("dat_h_wf" => h_wf)
@@ -144,52 +200,6 @@ d, stepsy = size(sig)
 nu, stepsx = size(pred)
 stepsx == stepsy || print("X and Y are not the same length. Taking min.")
 steps = minimum([stepsx stepsy])
-
-sig = Array(transpose(sig))
-pred = Array(transpose(pred))
-
-Pred = zeros(ComplexF64,steps-M_out+1,M_out*nu)
-for m = 1:M_out
-    Pred[:,nu*(M_out-m)+1:nu*(M_out-m+1)] = @view pred[m:(steps + m - M_out),:]
-end
-
-PRED = [real(Pred) -imag(Pred); imag(Pred) real(Pred)]
-SIG = [real(sig[M_out:steps,:]); imag(sig[M_out:steps,:])]
-
-for i = 1:size(SIG,2)
-    zscore!(@view SIG[:,i])
-end
-
-for i = 1:size(PRED,2)
-    zscore!(@view PRED[:,i])
-end
-
-using GLMNet
-
-h = zeros(ComplexF64,M_out*nu,d)
-for i = 1:d
-    cv = glmnetcv(PRED,SIG[:,i])
-    locbetamin = argmin(cv.meanloss)
-    h_temp = cv.path.betas[:,locbetamin]
-    for j = 1:M_out*nu
-        h[j,i] = complex(h_temp[j],h_temp[j+M_out*nu])
-    end
-end
-
-h_wfls = zeros(ComplexF64,d,nu,M_out)
-for m = 1:M_out
-    h_wfls[:,:,m] = (@view h[(nu*(m-1) + 1):nu*m,:])'
-end
-h_wfls
-
-count(iszero,h_wfls)
-
-
-
-
-
-
-
 
 Sig = Array(transpose(sig))
 Pred = Array(transpose(pred))
