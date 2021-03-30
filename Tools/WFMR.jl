@@ -155,7 +155,7 @@ function matrix_autocov_seq(pred;
     # Smoothed viewing window
     lam = at._window(L, win = win, two_sided = false)
 
-    R_pred_smoothed = zeros(Complex,nu,nu,length(0:L))
+    R_pred_smoothed = zeros(ComplexF64,nu,nu,length(0:L))
     for i = 1 : nu
         for j = 1 : nu
             @views temp = at.my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
@@ -216,7 +216,7 @@ function vector_wiener_filter_fft(
 
     fft!(S_pred⁻,3)                                 # the final S_pred⁻
 
-    S_pred⁺ = complex(zeros(nu,nu,nfft))
+    S_pred⁺ = zeros(ComplexF64,nu,nu,nfft)
     for i = 1 : nfft
         S_pred⁺[:,:,i] = (@view S_pred⁻[:,:,i])'
     end                                             # the final S_pred⁺

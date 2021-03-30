@@ -23,7 +23,7 @@ n        = 96  # Number of fourier modes used
 h        = 1e-3 # Timestep
 obs_gap  = 100
 
-for i = 1:2
+for i = 1:5
 
    gen = "lin1e5_r$i"
    r = randn(6)

@@ -459,4 +459,27 @@ function ARMA_gen(; l = [1, -5/4, 3/8],
     end
     x[discard + 1:end]
 end
+
+
+"""
+my_filt extends the DSP function filt, which filters a scaler time series X by h, to 
+vector valued processes X (d by steps) and h with (square) matrix valued coefficents, 
+"""
+
+function my_filt(h,X::Array{<:Number,2})
+    steps = size(X,2)
+    y = zeros(eltype(X),size(X))
+    for i = 1 : steps
+        @views y[:,i] = sum(h[:,:,j]*X[:,i-j+1] for j = 1:min(i,size(h,3)))
+    end
+    y
+end
+
+function my_filt(h,X::Vector{<:Number})
+    X = reshape(X,1,:)
+    my_filt(h,X)
+end
+
+
+
 end # module
