@@ -86,8 +86,9 @@ which satisfies
 
 function spectfact_matrix_CKMS(P; ϵ = 1e-10,
     update = 10,
-    N_ckms = 10^5,
-    rtol = 1e-6)
+    N_ckms = 10^4,
+    rtol = 1e-6,
+    verb = false)
 
     d = size(P)[1];
     m = size(P)[3] - 1
@@ -105,8 +106,9 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
     FL = K
     i = 0
     errK = errR = 1
-    # Err = zeros(0,2)
-    while (errK > ϵ || errR > ϵ) && i <= N_ckms
+    Err = zeros(2,N_ckms)
+    
+    while (errK > ϵ || errR > ϵ) && i <= N_ckms - 1
         hL = h*FL
         FL = F*FL
 
@@ -118,8 +120,8 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
 
         FL_RrhLt = FL / Rr * hL'
         hL_RrhLt = hL / Rr * hL'
-        errK = norm(FL_RrhLt)
-        errR = norm(hL_RrhLt)
+        Err[1,i] = errK = norm(FL_RrhLt, Inf)
+        Err[2,i] = errR = norm(hL_RrhLt, Inf)
 
         FL -= K / Re * hL
         K  -= FL_RrhLt
@@ -128,7 +130,12 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
     end
 
     println("Number of CKMS iterations: $i")
-
+    if verb
+        r = .1
+        ErrK, ErrR = maximum(Err[:, floor(Int,i*(1 - r)):i], dims = 2)
+        println("max diff in K and R of past $(100*r)%: ", ErrK,",   ", ErrR)
+    end
+    
     K /= Re
 
     sqrt_re = sqrt(Re)
@@ -139,7 +146,8 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
         l[:,:,m-i+1] = K[d*i + 1: d*(i+1),:]*sqrt_re
     end
 
-    l
+#     l
+    l, Err ###
 end
 
 
@@ -292,7 +300,8 @@ function get_whf(X::Array{T,2};
     par = 1500,
     nfft = nextfastfft(size(X,2)),
     win = "Par",
-    N_ckms = 10^5,
+    tol_ckms = 1e-10,
+    N_ckms = 10^4,
     verb = false,
     model = false) where T <: Number
     d, steps = size(X)
@@ -308,13 +317,14 @@ function get_whf(X::Array{T,2};
     end
 
     # Compute coefficients of spectral factorization of z-spect-pred
-    S⁻ = @timed spectfact_matrix_CKMS(R_pred_smoothed.value; N_ckms)
+    S⁻ = @timed spectfact_matrix_CKMS(R_pred_smoothed.value; ϵ = tol_ckms, N_ckms, verb)
     if verb
         println("Time taken for spectfact: ",S⁻.time)
         println("Bytes Allocated: ",S⁻.bytes)
     end
 
-    h_mf = S⁻.value                            # the model filter
+    Err  = S⁻.value[2] ###
+    h_mf = S⁻.value[1]                            # the model filter ###
 
     S⁻ = nfft >= L+1 ? cat(dims = 3,S⁻.value,zeros(d,d,nfft - L - 1)) :
                             (@view S⁻.value[:,:,1:nfft])
@@ -327,7 +337,8 @@ function get_whf(X::Array{T,2};
     end                                             # the final S_pred⁺
 
     h_whf = ifft(S⁻inv, 3)
-    model ? [h_whf, h_mf] : h_whf
+#     model ? [h_whf, h_mf] : h_whf
+    h_whf, Err
 end
 
 ###########################
