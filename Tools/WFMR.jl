@@ -324,10 +324,10 @@ function get_whf(X::Array{T,2};
     end
 
     Err  = S⁻.value[2] ###
-    h_mf = S⁻.value[1]                            # the model filter ###
+    S⁻ = S⁻.value[1]                            # the model filter ###
 
-    S⁻ = nfft >= L+1 ? cat(dims = 3,S⁻.value,zeros(d,d,nfft - L - 1)) :
-                            (@view S⁻.value[:,:,1:nfft])
+    S⁻ = nfft >= L+1 ? cat(dims = 3,S⁻,zeros(d,d,nfft - L - 1)) :
+                            (@view S⁻[:,:,1:nfft])
 
     fft!(S⁻, 3)                                 # z-spectrum of model filter
 

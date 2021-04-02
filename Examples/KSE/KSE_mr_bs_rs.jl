@@ -7,93 +7,43 @@ mrb = include("../../Tools/WFMR_bs.jl")
 mr  = include("../../Tools/WFMR.jl")
 at  = include("../../Tools/AnalysisToolbox.jl")
 
-# Load Old Data
+load_pred = true
 
-gen = "lin1e5_2"     # this is just a reference designation it shows up in the
+# Load Old Data
+geni = 1
+gen = "lin1e5_r$geni"     # this is just a reference designation it shows up in the
                 # output file. I think of generatrion.
 
-server = startswith(pwd(), "/u5/jaredm") ? true : false
-println("on server = $server")
+println("Getting preds")
+save_file_pred = "../../../../data/KSE_Data/ks_pred_$gen.jld" 
+if load_pred
+    pred = load(save_file_pred,"pred")
+    println("loaded pred from: " * save_file_pred)
+else
+    sol_file = "../../../../data/KSE_Data/ks_sol_$gen.jld" 
+    println("Sol load location: " * sol_file)
 
-sol_file = server ? "../../../data/KSE_Data/ks_sol_$gen.jld" :
-   "C:/Users/jared/Desktop/DDMR/Examples/KSE/Data/ks_sol_$gen.jld"
-println("Sol load location: " * sol_file)
+    @time vv = load(sol_file,"dat_vv");
 
-@time vv = load(sol_file,"dat_vv")
+    # get observations
+    d = 5
+    h = 0.1
+    # collect observations
+    obs_gap = 1
+    signal = vv[2:d+1,1:obs_gap:end]
 
-## Get Reduced model #########################################################
-# Model reductrion parameters
+    Psi = mr.get_Psi_2017(h)
 
-d = 5
-h = 0.1
-# collect observations
-obs_gap = 1
-V_obs = vv[2:d+1,1:obs_gap:end]
-vv = []
-
-# Build PSI
-function InvBurgRK4_1step(x)
-   lx = length(x)
-   function F(x)
-       𝑥 = [conj(@view x[lx:-1:1]) ;0; x]
-       conv(𝑥,𝑥)[2*lx+2:3*lx+1]
-   end
-   k1 = F(x)
-   k2 = F(x .+ h*k1/2)
-   k3 = F(x .+ h*k2/2)
-   k4 = F(x .+ h*k3)
-   A = @. x + h/6*(k1 + 2k2 + 2k3 + k4)
+    pred = @timev complex(mr.get_pred(signal, Psi)[:,1:end-1])
+    sig = complex(signal[:,2:end]);
+    save(save_file_pred,"pred",pred,"sig",sig)
+    println("saved sig and pred in: " * save_file_pred)
 end
 
-function Inertialman_part(x)
-   lx = length(x)
-   𝑥(j) = ( j <= lx ? x[j] : im*sum(x[l]*x[j-l] for l = j-lx:lx) )
+# Get Whitening filter
+println("Computing WFBS")
+@timev h_wf_bs = mrb.get_wf_bs(sig, pred, M_out = 50)
 
-   L = complex(zeros(lx^2))
-   for j = 1:lx
-      for k = 1:lx
-         L[ (j-1)*lx+k] = 𝑥(j+lx)*𝑥(j+lx-k)
-      end
-   end
-   L
-end
-
-Psi(x) = [x; InvBurgRK4_1step(x); Inertialman_part(x)]
-
-# Get Wiener filter
-#@time h_wf = get_wf(V_obs,Psi, M_out = M_out,PI = true)
-signal = V_obs
-V_obs = []
-M_out = 20
-n = 3; p = 1500; par = 1500
-ty = "bin"
-xspec_est = "old"
-nfft = 0
-rl = true
-Preds = false
-N_ckms = 3000
-PI = false
-rtol = 1e-6
-Verb = false
-tm = now()
-
-for Len = Int.([1e4 5e4 1e5 3e5 5e5])
-    paramaters = Dict(
-        "M_out" => M_out,
-        "tm" => tm
-    )
-
-    print("Len = $Len: Stats below")
-
-    h_wf = @timev mrb.get_wf_bs(signal[:,1:Len], Psi; M_out)
-
-    # Save Wienerfilter
-    dat = Dict("dat_h_wf" => h_wf)
-    Data = merge(paramaters,dat)
-    # save("../data/KSE_Data/KSE_sol_wienerfilter.jld",Data)
-
-    wf_file = server ? "../../../data/KSE_Data/ks_wf_bs_$gen-Len$Len.jld" :
-       "C:/Users/jared/Desktop/DDMR/Examples/KSE/Data/ks_wf_bs_$gen-Len$Len.jld"
-    save(wf_file,Data)
-    println("Wiener filter saved")
-end
+savefile_wf_bs = "../../../../data/KSE_Data/ks_wf_bs_$gen.jld"
+save(savefile_wf_bs,"h_whf",h_wf_bs)
+println("Whitening filter saved at "*savefile_wf_bs) 

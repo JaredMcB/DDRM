@@ -3,8 +3,8 @@ using JLD
 mr = include("../../../Tools/WFMR.jl") # Now includes the whitening filter
 at = include("../../../Tools/AnalysisToolbox.jl")
 
-load_pred = true
-geni = 2
+load_pred = false
+geni = 5
 
 # Load Old Data
 gen = "lin1e5_r$geni"     # this is just a reference designation it shows up in the
@@ -40,6 +40,6 @@ end
 println("Computing whitening filter")
 @timev h_whf, Err = mr.get_whf(pred, verb = true, tol_ckms = 0, N_ckms = 10000)
 
-savefile_whf = "../../../../data/KSE_Data/ks_whf_$gen-1.jld"
+savefile_whf = "../../../../data/KSE_Data/ks_whf_$gen.jld"
 save(savefile_whf,"h_whf",h_whf,"Err",Err)
 println("Whitening filter saved at "*savefile_whf) 
