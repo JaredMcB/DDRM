@@ -266,7 +266,7 @@ z_crossspect_dm(sig,pred; flags...) = z_crossspect_fft_old(rowmatrix(sig), rowma
 function z_crossspect_fft_old(
     sig,
     pred;
-    L = 50,
+    L = 1500,
     Nex = 2^10,
     win = "Par")
 
