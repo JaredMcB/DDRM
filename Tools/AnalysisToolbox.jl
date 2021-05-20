@@ -22,7 +22,7 @@ function _crosscov_con(x::AbstractVector{<:Number},
     ly = size(y,1)
     lx == ly || throw(DimensionMismatch("series must be same length"))
 
-    if maximum(lags) > lx
+    if maximum(lags) >= lx
         println("lag cannot be greater than length of series")
         lags = filter(x -> abs(x) < lx, lags)
     end
@@ -293,7 +293,7 @@ function z_crossspect_fft_old(
     else
         lam = ones(L+1)
     end
-    Lam = [lam[L+1:-1:2]; lam]
+    Lam = [lam[L:-1:2]; lam[1:L]
 
     C_smoothed = complex(zeros(d,nu,length(lags)))
     for i = 1 : d
