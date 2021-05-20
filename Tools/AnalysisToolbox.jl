@@ -275,7 +275,7 @@ function z_crossspect_fft_old(
     nu, stepsy = size(pred)
     Nexh = Nex ÷ 2
     L = min(L,Nexh-1)
-    lags = -L:L;
+    lags = -L+1:L-1;
 
     stepsx == stepsy || print("sig and pred are not the same length. Taking min.")
     steps = min(stepsx, stepsy)
@@ -293,7 +293,7 @@ function z_crossspect_fft_old(
     else
         lam = ones(L+1)
     end
-    Lam = [lam[L:-1:2]; lam[1:L]
+    Lam = [lam[L:-1:2]; lam[1:L]]
 
     C_smoothed = complex(zeros(d,nu,length(lags)))
     for i = 1 : d
@@ -305,7 +305,7 @@ function z_crossspect_fft_old(
     ## C_smoothed = d x nu x 2L+1
 
     ## Pad with zeros in preparation for fft we want it to be Nex long
-    C_padded = cat(dims = 3, zeros(d,nu,Nex - Nexh - L), C_smoothed, zeros(d,nu,Nexh - L - 1))
+    C_padded = cat(dims = 3, zeros(d,nu,Nex - Nexh - L+1), C_smoothed, zeros(d,nu,Nexh - L))
     C = fftshift(C_padded,3)
 
     z_crossspect_num_fft = fft(C,3);
