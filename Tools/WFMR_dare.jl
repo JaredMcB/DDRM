@@ -6,6 +6,7 @@ using DSP: conv, nextfastfft
 using StatsBase
 using SparseArrays
 
+
 at = include("AnalysisToolbox.jl")
 
 """
@@ -213,7 +214,7 @@ function vector_wiener_filter_fft(
     end
 
     # Compute coefficients of spectral factorization of z-spect-pred
-    S_pred⁻ = @timed spectfact_matrix_CKMS(R_pred_smoothed.value; N_ckms)
+    S_pred⁻ = @timed spectfact_matrix_dare(R_pred_smoothed.value; N_ckms)
     if verb
         println("Time taken for spectfact: ",S_pred⁻.time)
         println("Bytes Allocated: ",S_pred⁻.bytes)
@@ -304,7 +305,6 @@ function get_whf(X::Array{T,2};
     N_ckms = 10^4,
     verb = false,
     model = false) where T <: Number
-    
     d, steps = size(X)
 
     nfft = nfft == 0 ? nextfastfft(steps) : nfft
