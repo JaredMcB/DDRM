@@ -23,11 +23,11 @@ n        = 96  # Number of fourier modes used
 h        = 1e-3 # Timestep
 obs_gap  = 100
 
-for i = 1:5
+for i = 1:1
 
    gen = "lin1e5_r$i"
    r = randn(6)
-   g(x) = sum(r[n+1]*cos(2π/P*n*x) for n = 0:5)
+   g(x) = sum(r[n+1]*cos(2π/P*n*x) for n = 1:5)  # On 5/19/2021 I made the constant term 0 by starting n at 1 rather than 0.
 
    vv = @timev kse.my_KSE_solver(T; T_disc, P, n, h, g, n_gap = obs_gap)
 
