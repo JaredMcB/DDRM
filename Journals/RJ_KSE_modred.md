@@ -2480,7 +2480,7 @@ Unable to init server: Could not connect: Connection refused
 Unable to init server: Could not connect: Connection refused
 
 (.:2277051): Gdk-CRITICAL **: 15:41:39.462: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
-
+q
 (.:2277051): Gdk-CRITICAL **: 15:41:39.466: gdk_cursor_new_for_display: assertion 'GDK_IS_DISPLAY (display)' failed
 on server = true
 Sol load location: ../../../data/KSE_Data/ks_sol_lin1e5.jld
@@ -3024,4 +3024,159 @@ So, as it turns out the second run I ran of KSE (500 000) was exactly the same! 
 
 # Thursday, March 18, 2021
 
-Today I am looking at the whitening filter. 
+Today I am looking at the whitening filter.
+
+
+
+# Tuesday, March 23, 2021
+
+7:38 AM - Today I want to touch each of the three goals I set with Dr. Lin in our last meeting.
+1. analyze the backslash implementation. Earlier we saw that this implementation may have a dependency on the initial conditions since there was a discrepancy between wiener filters for different rooms of the KSE data. So, the goal will be to get four more runs using random initial conditions and then find the wiener filter for each.
+2. I want to get lasso working right now there seems to be way too many zeros.
+3. How fast does CKMS converge?
+
+8:41 AM - I have thelio working on getting the KSE data. So, I will work on lasso till 10 AM at which time I will got to the library to finally get that book.   
+
+
+
+# Thursday, March 25, 2021
+
+
+9:26 AM - **Goal:** Verify that the whitening filter improves the condition of the data.
+
+
+# Tuesday, March 30, 2021
+
+3:16 PM - Today I continue the investigation of the whitening filter, with the goal of determining how much it improve the condition of the data.
+
+Whitening filter is pretty fast. It computed the whitening filter to full length of a 5 by 499999 Array{ComplexF64,2} in about 10 secs.
+
+Now timeing whitening filter on full 'pred' (35 by 499999 Array{ComplexF64,2}). The really expensive part is the whitening itself. Total elapsed time is 666.54 seconds (11 min).
+
+4:40 PM - Ran the whitening script that I just made. It can be found in KSE/Whitening Filter. Here is the job information:
+```
+jaredm@thelio:~/DDMR/Examples/KSE/Whitening Filter$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia whiten_pred_srpt.jl
+at> <EOT>
+job 230 at Tue Mar 30 16:39:00 2021
+```
+
+# Wednesday, March 31, 2021
+
+10:08 Am - I was reading a review of data-driven model reduction and transfer operator approximation and it whitening the data.
+
+I want to test my crossspect estimator.
+
+I tested it with a known (scalar) example and it looks like it works.
+
+
+
+# Thursday, April 1, 2021
+
+10:44 AM - Today I am testing the character of the whitening filter algorithm. I added some things that aid in the analysis. For one, I can now control the stopping criteria, that is I made the tolerance of the dynamic stopping condition adjustable (`tol_ckms`) as well as the iterations cap `N_ckms`.
+
+Then I added a few output items to the code. It now outputs the max sup-norm of the difference in the last 10% of the iterations, This way we can get an idea of how it is converged. I tested the script and it is now running to find the whitening filter for the full sequence of preds, for the `r1` (random 1) data set.
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE/Whitening Filter$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia whiten_comp.jl
+at> <EOT>
+job 235 at Thu Apr  1 11:10:00 2021
+```
+
+This was run with `N_ckms = 5000`. Now it took about 16 minutes to run and and converged to a difference in the last 10% on the order of 10e-17 for K and 1e-20 for R.
+
+I have run the experiment again this time on `r2` data set and with `N_ckms = 7500` I also made it spit out the errors so I can see the form of it's convergence.
+
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE/Whitening Filter$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia whiten_comp.jl
+at> <EOT>
+job 236 at Thu Apr  1 11:49:00 2021
+```
+
+This seems to have worked the Errors where:
+```
+max diff in K and R of past 10.0%: 1.8023184909454978e-22,   2.4185629719763408e-25
+```
+And the wall clock was only 17 minutes (which included time to compute the preds for this data set) I will look at the `Err` data but for now I ran the same thing again except now N
+
+I have got a lot for thelio just now.
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE/Whitening Filter$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia ../KSE_mr_bs_rs.jl
+at> <EOT>
+job 243 at Thu Apr  1 15:58:00 2021
+```
+The above job finds the WFBS for data set r1.
+
+ That didn't work because of a typo so I tried again.
+
+ ```
+jaredm@thelio:~/DDMR/Examples/KSE/Whitening Filter$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia ../KSE_mr_bs_rs.jl
+at> <EOT>
+job 244 at Thu Apr  1 16:43:00 2021
+```
+ Then I did the whiten filter for `r4`
+  and then `r5`
+
+```
+jaredm@thelio:~/DDMR/Examples/KSE/Whitening Filter$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia whiten_comp.jl
+at> <EOT>
+job 246 at Thu Apr  1 16:45:00 2021
+jaredm@thelio:~/DDMR/Examples/KSE/Whitening Filter$ batch
+warning: commands will be executed using /bin/sh
+at> /usr/bin/time -v julia whiten_comp.jl
+at> <EOT>
+job 247 at Thu Apr  1 16:46:00 2021
+```
+
+
+# Thursday, April 15, 2021
+
+4:43 PM - Today Dr. Lin and I met and we saw that increasing the amount of noise with which we were regularizing the whitening filter did not improve the performance of the filter on the non-noisy data. Though it did improve its performance on the noisy data.
+
+Dr. Lin asked about the other spectral factorization algorithms and told him I had not tried them. The language in the paper lead me to believe that the CKMS was the most efficient (though not the easiest to implement).  In the current context of KSE in which we like to have around 1500 lags in approximating the power spectrum, and there being 35 predictors this gives a covariance matrix of size (35*1500 = ) 52,500 × 52.500, which is too big to put in a riccati solver that is not designed for sparse matrices (such as the one I found in Julia in `MartixEquations.jl`).
+
+It looks as though the iterative refinement idea for our whitening filter is not going to work. I thought it would only when I failed to remove transients early in the series.
+
+
+
+# Tuesday, April 20, 2021
+
+
+
+# Thursday, May 6, 2021
+
+### Using `screen`
+
+On the remote server, you should open your jupyter in a screen session, it will make it persistent if you lose the connection to the server and resume it.
+
+1. On your computer: `ssh -L 8080:localhost:8080 jaredm@thelio.math.arizona.edu`
+2. `screen`
+3. `/usr/bin/jupyter notebook --no-browser --port=8080`
+4. In your browser: localhost:8080.
+
+To disconnect manually and reconnect:
+
+1. Exit the screen window: `control + a` and then `d`
+2. Disconnect from the server: `control + d`
+3. And reconnect `ssh -L xxxx:localhost:8080`
+4. Optionally, you can reopen the screen window, though unnecessary, using `screen -r`
+5. Go back to your notebook or reopen localhost:8080
+
+So to reconnect copy and paste this:
+```
+ssh -L 8080:localhost:8080 jaredm@thelio.math.arizona.edu
+screen -r
+```

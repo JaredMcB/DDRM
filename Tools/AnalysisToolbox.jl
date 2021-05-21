@@ -462,8 +462,8 @@ end
 
 
 """
-my_filt extends the DSP function filt, which filters a scaler time series X by h, to 
-vector valued processes X (d by steps) and h with (square) matrix valued coefficents, 
+my_filt extends the DSP function filt, which filters a scaler time series X by h, to
+vector valued processes X (d by steps) and h with (square) matrix valued coefficents,
 """
 
 function my_filt(h,X::Array{<:Number,2})

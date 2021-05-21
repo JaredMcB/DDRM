@@ -11,7 +11,7 @@ using Polynomials
 steps = 10^4
 x = randn(steps)
 
-Zeros = [.5 -.6]
+Zeros = [.5 -.6 .9]
 
 P = prod([Polynomial(1) [Polynomial([1, -z]) for z in Zeros]])
 h = coeffs(P)
@@ -25,7 +25,7 @@ end
 
 my_diff(x,y) = maximum(abs.(x - y))
 
-my_diff(y[3:end],y1[3:end])
+my_diff(y[4:end],y1[4:end])
 
 @time h_whf = mr.get_whf(y)
 
