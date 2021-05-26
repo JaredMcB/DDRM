@@ -61,6 +61,28 @@ function get_wf(
     Preds ? [h_wf, pred] : h_wf
 end
 
+function get_wf(
+    sig::Array{<:Number,2}, # Vector valued process
+    pred::Array{<:Number,2}; # column vector valued function
+    M_out = 20,
+    n = 3, p = 1500, par = 1500,
+    ty = "bin",
+    xspec_est = "old",
+    nfft = 0,
+    rl = true,
+    Preds = false,
+    N_ckms = 10^5,
+    PI = false,
+    rtol = 1e-6,
+    verb = false)
+
+    h_wf = vector_wiener_filter_fft(sig, pred; M_out,
+            n, p, par, nfft, ty, xspec_est, PI, N_ckms, rtol,verb)
+
+    h_wf = rl ? real(h_wf) : h_wf
+    Preds ? [h_wf, pred] : h_wf
+end
+
 function get_pred(signal, Psi)
     d, steps = size(signal)
     nu = size(Psi(zeros(d,1)),1)
@@ -146,8 +168,9 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
         l[:,:,m-i+1] = K[d*i + 1: d*(i+1),:]*sqrt_re
     end
 
-#     l
+
     l, Err ###
+    l
 end
 
 
@@ -221,7 +244,7 @@ function vector_wiener_filter_fft(
 
     S_pred⁻ = nfft >= L+1 ? cat(dims = 3,S_pred⁻.value,zeros(nu,nu,nfft - L - 1)) :
                             (@view S_pred⁻.value[:,:,1:nfft])
-
+    println(typeof(S_pred⁻))
     fft!(S_pred⁻,3)                                 # the final S_pred⁻
 
     S_pred⁺ = zeros(ComplexF64,nu,nu,nfft)
@@ -255,7 +278,7 @@ function vector_wiener_filter_fft(
     M_out > nfft && println("M_out > nfft, taking min")
     M = min(M_out, nfft)
 
-    h_num_fft = @view S[:,:,1:M]
+    h_num_fft = S[:,:,1:M]
 end
 
 function redmodrun(
