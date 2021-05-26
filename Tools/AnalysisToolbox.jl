@@ -480,6 +480,12 @@ function my_filt(h,X::Vector{<:Number})
     my_filt(h,X)
 end
 
+function my_filt(h::Vector{<:Number},X::Vector{<:Number})
+    h = reshape(h,1,1,:)
+    X = reshape(X,1,:)
+    my_filt(h,X)[:]
+end
+
 
 
 end # module
