@@ -7,13 +7,17 @@ at = include("AnalysisToolbox.jl")
 
 """
     `get_wf` provides the causal wiener filter that best approximates `signal`
-in terms of `Psi(signal[:,i-1])`. it has built in the one step prediction. First,
-it generates the predictor series. and then employs the `vector_wiener_filter_fft`
-function to obtain the Wiener filter. Inputs are the signal, a 2d array, d-by-N
-where d is the dimension of the state space an N is the number of point. There
-are two key word arguments, `M_out` specifies the number of coefficents desired
-from the Weiner filter. And `rl` which if true just take the real part of the
-Wiener filter as the output.
+in terms of `Psi(signal[:,i-1])`. It has built in the one step prediction. First,
+it generates the predictor series. Then it forms a design matrix which houses the
+time-lagged predictors. We then use backslash to solve for the linear least squares 
+estimate of the filter.
+
+Here is an example of it's implementations. `sig` is the signal ypu are using `pred`
+to approximate. `M_out = 60` is the number of coefficients we get out.
+
+M_out = 60
+h_wf = mrb.get_wf_bs(sig1, pred1; M_out);
+
 """
 
 function get_pred(signal, Psi)
@@ -36,7 +40,7 @@ function get_wf_bs(signal,Psi::Function; M_out)
 
     pred = zeros(ComplexF64, nu, steps)
     for n = 1:steps
-    pred[:,n] = Psi(@view signal[:,n])
+        pred[:,n] = Psi(@view signal[:,n])
     end # pred is now even with signal and therefore one step
     # behind sig. I.e. pred[:,n] = Psi(sig[:,n-1])
     # which is what we want so as to ensure the reduced
@@ -45,7 +49,14 @@ function get_wf_bs(signal,Psi::Function; M_out)
     get_wf_bs(sig,pred; M_out)
 end
 
-function get_wf_bs(sig,pred; M_out)
+
+
+
+"""
+sig and pred should 2D arrays
+"""
+
+function get_wf_bs(sig::Array{<: Number,2},pred::Array{<: Number,2}; M_out)
     d, stepsy = size(sig)
     nu, stepsx = size(pred)
     stepsx == stepsy || print("X and Y are not the same length. Taking min.")
@@ -67,6 +78,8 @@ function get_wf_bs(sig,pred; M_out)
     end
     h_wfbs
 end
+
+
 ###########################
 function get_Psi_2017(h)
     # Build PSI

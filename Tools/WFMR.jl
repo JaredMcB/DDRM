@@ -61,6 +61,28 @@ function get_wf(
     Preds ? [h_wf, pred] : h_wf
 end
 
+function get_wf(
+    sig::Array{<:Number,2}, # Vector valued process
+    pred::Array{<:Number,2}; # column vector valued function
+    M_out = 20,
+    n = 3, p = 1500, par = 1500,
+    ty = "bin",
+    xspec_est = "old",
+    nfft = 0,
+    rl = true,
+    Preds = false,
+    N_ckms = 10^5,
+    PI = false,
+    rtol = 1e-6,
+    verb = false)
+
+    h_wf = vector_wiener_filter_fft(sig, pred; M_out,
+            n, p, par, nfft, ty, xspec_est, PI, N_ckms, rtol,verb)
+
+    h_wf = rl ? real(h_wf) : h_wf
+    Preds ? [h_wf, pred] : h_wf
+end
+
 function get_pred(signal, Psi)
     d, steps = size(signal)
     nu = size(Psi(zeros(d,1)),1)
@@ -146,8 +168,9 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
         l[:,:,m-i+1] = K[d*i + 1: d*(i+1),:]*sqrt_re
     end
 
-#     l
+
     l, Err ###
+    l
 end
 
 
@@ -221,7 +244,7 @@ function vector_wiener_filter_fft(
 
     S_pred⁻ = nfft >= L+1 ? cat(dims = 3,S_pred⁻.value,zeros(nu,nu,nfft - L - 1)) :
                             (@view S_pred⁻.value[:,:,1:nfft])
-
+    println(typeof(S_pred⁻))
     fft!(S_pred⁻,3)                                 # the final S_pred⁻
 
     S_pred⁺ = zeros(ComplexF64,nu,nu,nfft)
@@ -255,7 +278,7 @@ function vector_wiener_filter_fft(
     M_out > nfft && println("M_out > nfft, taking min")
     M = min(M_out, nfft)
 
-    h_num_fft = @view S[:,:,1:M]
+    h_num_fft = S[:,:,1:M]
 end
 
 function redmodrun(
@@ -292,54 +315,6 @@ function redmodrun(
        PSI_past[:,i] = Psi(sig_rm[:,i])
    end
    sig_rm[:,discard+1:end]
-end
-
-get_whf(x::Vector{<: Number}; flags...) = get_whf(reshape(x,1,:); flags...)
-
-function get_whf(X::Array{T,2};
-    par = 1500,
-    nfft = nextfastfft(size(X,2)),
-    win = "Par",
-    tol_ckms = 1e-10,
-    N_ckms = 10^4,
-    verb = false,
-    model = false) where T <: Number
-    
-    d, steps = size(X)
-
-    nfft = nfft == 0 ? nextfastfft(steps) : nfft
-    nffth = nfft ÷ 2
-    L = min(par,steps-1)
-
-    R_pred_smoothed = @timed matrix_autocov_seq(X; L, win)
-    if verb
-        println("Time taken for autocov: ", R_pred_smoothed.time)
-        println("Bytes Allocated: ", R_pred_smoothed.bytes)
-    end
-
-    # Compute coefficients of spectral factorization of z-spect-pred
-    S⁻ = @timed spectfact_matrix_CKMS(R_pred_smoothed.value; ϵ = tol_ckms, N_ckms, verb)
-    if verb
-        println("Time taken for spectfact: ",S⁻.time)
-        println("Bytes Allocated: ",S⁻.bytes)
-    end
-
-    Err  = S⁻.value[2] ###
-    S⁻ = S⁻.value[1]                            # the model filter ###
-
-    S⁻ = nfft >= L+1 ? cat(dims = 3,S⁻,zeros(d,d,nfft - L - 1)) :
-                            (@view S⁻[:,:,1:nfft])
-
-    fft!(S⁻, 3)                                 # z-spectrum of model filter
-
-    S⁻inv = complex(zeros(d,d,nfft))
-    for i = 1 : nfft
-        S⁻inv[:,:,i] = inv(@view S⁻[:,:,i])
-    end                                             # the final S_pred⁺
-
-    h_whf = ifft(S⁻inv, 3)
-#     model ? [h_whf, h_mf] : h_whf
-    verb ? [h_whf, Err] : h_whf
 end
 
 ###########################

@@ -466,9 +466,11 @@ my_filt extends the DSP function filt, which filters a scaler time series X by h
 vector valued processes X (d by steps) and h with (square) matrix valued coefficents,
 """
 
-function my_filt(h,X::Array{<:Number,2})
-    steps = size(X,2)
-    y = zeros(eltype(X),size(X))
+function my_filt(h::Array{<:Number,3},X::Array{<:Number,2})
+    nu, steps = size(X)
+    d, nu1, M = size(h)
+    nu1 == nu || throw(DimensionMismatch("size of h and X are not compatible"))
+    y = zeros(eltype(X), d, steps)
     for i = 1 : steps
         @views y[:,i] = sum(h[:,:,j]*X[:,i-j+1] for j = 1:min(i,size(h,3)))
     end
@@ -478,6 +480,12 @@ end
 function my_filt(h,X::Vector{<:Number})
     X = reshape(X,1,:)
     my_filt(h,X)
+end
+
+function my_filt(h::Vector{<:Number},X::Vector{<:Number})
+    h = reshape(h,1,1,:)
+    X = reshape(X,1,:)
+    my_filt(h,X)[:]
 end
 
 
