@@ -188,7 +188,8 @@ function matrix_autocov_seq(pred;
 
     R_pred_smoothed = zeros(ComplexF64,nu,nu,length(0:L))
     for i = 1 : nu
-        for j = 1 : nu
+        for j = 1 : nu ## This enforcement of conjugate semetry is very bad. Because
+                       ## cross-spectra are not conjugate symetric. 
             @views temp = at.my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
             @views temp = .5*(temp[L+1:2L+1] + conj!(temp[L+1:-1:1]))
             temp[1] = real(temp[1])
