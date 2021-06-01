@@ -46,7 +46,7 @@ function get_wf(
     # times series to be offset by one.
 
     d_s, steps = size(signal)
-    d_p, nu = size(Psi(zeros(d_s,1)),1)
+    d_p, nu = size(Psi(zeros(d_s,1)))
 
     d_p == d_s || throw(DimensionMismatch("output of Psi must have..."))
     d = d_p
@@ -75,7 +75,7 @@ end
 
 function get_pred(signal, Psi)
     d_s, steps = size(signal)
-    d_p, nu = size(Psi(zeros(d_s,1)),1)
+    d_p, nu = size(Psi(zeros(d_s,1)))
 
     d_p == d_s || throw(DimensionMismatch("output of Psi must have..."))
     d = d_p
@@ -188,7 +188,7 @@ end
 """
 function vector_wiener_filter_fft(
     sig,
-    pred::Array{T,2} where T <: Number;
+    pred::Array{T,3} where T <: Number;
     M_out = 20,
     par::Int64 = 1500,
     nfft = 0,
@@ -203,8 +203,11 @@ function vector_wiener_filter_fft(
     verb = false
     )
 
-    d, stepsy = size(sig)
-    nu, stepsx = size(pred)
+    ds, stepsy = size(sig)
+    dp, nu, stepsx = size(pred)
+    
+    dp == ds || throw(DimensionMismatch("output of Psi must have..."))
+    d = dp
 
     stepsx == stepsy || print("X and Y are not the same length. Taking min.")
     steps = minimum([stepsx stepsy])
