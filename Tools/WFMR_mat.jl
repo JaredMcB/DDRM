@@ -158,27 +158,30 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
 end
 
 
-function matrix_autocov_seq(pred;
-    L = 1500,
-    d, nu, steps = size(pred),
+function matrix_autocov_seq(pred::Array{<:Number,3};
+    L = min(size(pred,3)-1,1500),
     win = "Par"
-    )
-
+    )  
+    
+    conj!(pred)
+    d, nu, steps = size(pred)
+    
     lags = -L:L
 
     # Smoothed viewing window
     lam = at._window(L, win = win, two_sided = false)
 
-    R_pred_smoothed = zeros(Complex,nu,nu,length(0:L))
+    R_pred = zeros(Complex,nu,nu,length(-L:L))
     for i = 1 : nu
         for j = 1 : nu
-            @views temp = at.my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
-            @views temp = .5*(temp[L+1:2L+1] + conj!(temp[L+1:-1:1]))
-            temp[1] = real(temp[1])
-            R_pred_smoothed[i,j,:] = lam .* temp
+            @views R_pred[i,j,:] = sum( at.my_crosscov(pred[k,i,1:steps],pred[k,j,1:steps], -lags) for k = 1:d )
         end
     end
-    R_pred_smoothed
+    for l = 0:L
+        R_pred[:,:,L+1+l] .+= (@view R_pred[:,:,L+1-l])'
+        R_pred[:,:,L+1+l] .*= lam[l+1]/2
+    end
+    R_pred[:,:,L+1:2L+1]
 end
 
 
@@ -238,9 +241,9 @@ function vector_wiener_filter_fft(
         S_pred⁺[:,:,i] = (@view S_pred⁻[:,:,i])'
     end                                             # the final S_pred⁺
 
-    # Compute z-cross-spectrum of sigpred
-    S = @timed xspec_est == "SP" ? at.z_crossspect_fft(sig, pred;
-                        nfft, n, p, ty) : at.z_crossspect_fft_old(sig, pred; L, Nex = nfft);
+       
+    
+    
     if verb
         println("Time taken for crossspect: ",S.time)
         println("Bytes Allocated: ",S.bytes)
