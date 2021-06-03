@@ -41,6 +41,9 @@ function _crosscov_dot(x::AbstractVector{<:Number},
 
     zx = x .- mean(x)
     zy = y .- mean(y)
+    
+    conj!(zy)
+    conj!(zx)
 
     C = zeros(Complex,m)
     for k = 1:m
@@ -49,6 +52,14 @@ function _crosscov_dot(x::AbstractVector{<:Number},
     end
     C
 end
+
+"""
+This implimentation of crosscovariance buts the conjugate in the second argument.
+
+
+
+"""
+
 
 function my_crosscov(x::AbstractVector{<:Number},
                      y::AbstractVector{<:Number},
@@ -271,32 +282,21 @@ function z_crossspect_fft_old(
     ## sig = d x steps, pred = nu x steps
     d, stepsx = size(sig)
     nu, stepsy = size(pred)
-    Nexh = Nex ÷ 2
-    L = min(L,Nexh-1)
-    lags = -L+1:L-1;
-
+    
     stepsx == stepsy || print("sig and pred are not the same length. Taking min.")
     steps = min(stepsx, stepsy)
 
-    # Smoothed viewing window
-    if win == "Bar"
-        lam = 1 .- (0:L)/L
-    elseif win == "Tuk"
-        lam = .5*(1 .+ cos.(pi/L*(0:L)))
-    elseif win == "Par"
-        LL = Int(floor(L/2))
-        lam1 = 1 .- 6*((0:LL)/L).^2 .+ 6*((0:LL)/L).^3
-        lam2 = 2*(1 .- (LL+1:L)/L).^3
-        lam = [lam1; lam2]
-    else
-        lam = ones(L+1)
-    end
-    Lam = [lam[L:-1:2]; lam[1:L]]
+    Nexh = Nex ÷ 2
+    L = min(L,Nexh-1)
+    lags = -L:L
 
+    # Smoothed viewing window
+    lam = at._window(L, win = win, two_sided = true)
+    
     C_smoothed = complex(zeros(d,nu,length(lags)))
     for i = 1 : d
         for j = 1 : nu
-            @views C_smoothed[i,j,:] = Lam .* my_crosscov(sig[i,1:steps], pred[j,1:steps],lags)
+            @views C_smoothed[i,j,:] = lam .* my_crosscov(sig[i,1:steps], pred[j,1:steps],lags)
         end
     end
 
