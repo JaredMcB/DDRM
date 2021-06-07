@@ -45,7 +45,7 @@ function _crosscov_dot(x::AbstractVector{<:Number},
     conj!(zy)
     conj!(zx)
 
-    C = zeros(Complex,m)
+    C = zeros(ComplexF64,m)
     for k = 1:m
         l = lags[k]
         C[k] = ( l >= 0 ? dot(zx[1+l : L],zy[1 : L-l]) : dot(zx[1 : L+l],zy[1-l : L]))/L
@@ -291,21 +291,21 @@ function z_crossspect_fft_old(
     lags = -L:L
 
     # Smoothed viewing window
-    lam = at._window(L, win = win, two_sided = true)
+    lam = _window(L, win = win, two_sided = true)
     
-    C_smoothed = complex(zeros(d,nu,length(lags)))
+    # Get smoothed crosscovariance
+    C = complex(zeros(d,nu,length(lags)))
     for i = 1 : d
         for j = 1 : nu
-            @views C_smoothed[i,j,:] = lam .* my_crosscov(sig[i,1:steps], pred[j,1:steps],lags)
+            @views C[i,j,:] = lam .* my_crosscov(sig[i,1:steps], pred[j,1:steps],lags)
         end
     end
 
-    ## C_smoothed = d x nu x 2L+1
+    ## C = d x nu x 2L+1
 
     ## Pad with zeros in preparation for fft we want it to be Nex long
-    C_padded = cat(dims = 3, zeros(d,nu,Nex - Nexh - L+1), C_smoothed, zeros(d,nu,Nexh - L))
-    C = fftshift(C_padded,3)
-
+    C = cat(dims = 3,C[:,:, L+1:2L+1], zeros(d,nu,Nex - (2L+1)), C[:,:,1:L])
+    
     z_crossspect_num_fft = fft(C,3);
 end
 

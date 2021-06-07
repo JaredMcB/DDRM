@@ -1,7 +1,6 @@
 module WFMR_lasso
 using DSP: conv # Solely for Psi
 
-using DataFrames, Lasso
 using GLMNet
 import StatsBase: zscore!
 
@@ -31,6 +30,38 @@ function get_pred(signal, Psi)
     pred
 end
 
+function Get_PRED(sig,pred)
+    d, stepsy = size(sig)
+    nu, stepsx = size(pred)
+    stepsx == stepsy || print("X and Y are not the same length. Taking min.")
+    steps = minimum([stepsx stepsy])
+
+    sig = Array(transpose(sig))
+    pred = Array(transpose(pred))
+
+    Pred = zeros(ComplexF64,steps-M_out+1,M_out*nu)
+    for m = 1:M_out
+        Pred[:,nu*(M_out-m)+1:nu*(M_out-m+1)] = @view pred[m:(steps + m - M_out),:]
+    end
+
+    PRED = [real(Pred) -imag(Pred); imag(Pred) real(Pred)]
+    SIG = [real(sig[M_out:steps,:]); imag(sig[M_out:steps,:])]
+    SIG, PRED
+end
+
+function mkfilter(beta; l = length(beta) ÷ 2, d = 1, M_out, nu = l ÷ M_out)
+    l = length(beta) ÷ 2
+    h = zeros(ComplexF64,l,1)
+    for i = 1:l
+        h[i] = complex(beta[i],beta[i+l])
+    end
+    h_wfls = zeros(ComplexF64,d,nu,M_out)
+    for m = 1:M_out
+        h_wfls[:,:,m] = (@view h[(nu*(m-1) + 1):nu*m,:])'
+    end
+    h_wfls 
+end
+
 function get_wf_ls(signal,Psi::Function; M_out)
     d, steps = size(signal)
     nu = size(Psi(zeros(d,1)),1)
@@ -49,22 +80,13 @@ function get_wf_ls(signal,Psi::Function; M_out)
     get_wf_ls(sig,pred; M_out)
 end
 
-function get_wf_ls(sig,pred; M_out)
+function get_wf_ls(sig,pred; M_out, lambda = Array(1e-7*(1:500:30000)))
     d, stepsy = size(sig)
     nu, stepsx = size(pred)
     stepsx == stepsy || print("X and Y are not the same length. Taking min.")
     steps = minimum([stepsx stepsy])
 
-    sig = Array(transpose(sig))
-    pred = Array(transpose(pred))
-
-    Pred = zeros(ComplexF64,steps-M_out+1,M_out*nu)
-    for m = 1:M_out
-        Pred[:,nu*(M_out-m)+1:nu*(M_out-m+1)] = @view pred[m:(steps + m - M_out),:]
-    end
-
-    PRED = [real(Pred) -imag(Pred); imag(Pred) real(Pred)]
-    SIG = [real(sig[M_out:steps,:]); imag(sig[M_out:steps,:])]
+    SIG, PRED = Get_PRED(sig,pred; M_out)
 
     h = zeros(ComplexF64,M_out*nu,d)
     for i = 1:d
