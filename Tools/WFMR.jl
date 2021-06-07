@@ -121,7 +121,7 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
     F = sparse([[spzeros(d,d*(m-1)); sparse(I,d*(m-1),d*(m-1))] spzeros(d*m,d)])
     h = sparse([spzeros(d,d*(m-1)) sparse(I,d,d)])
 
-    K = complex(zeros(d*m,d))
+    K = zeros(ComplexF64,d*m,d)
     for i = 0 : m-1
         K[d*i + 1: d*(i+1),:] = NN[:,:,i+1]
     end
@@ -162,7 +162,7 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
 
     sqrt_re = sqrt(Re)
 
-    l = complex(zeros(d,d,m+1))
+    l = zeros(ComplexF64,d,d,m+1)
     l[:,:,1] = sqrt_re;
     for i = m-1:-1:0
         l[:,:,m-i+1] = K[d*i + 1: d*(i+1),:]*sqrt_re
@@ -186,17 +186,17 @@ function matrix_autocov_seq(pred;
     # Smoothed viewing window
     lam = at._window(L, win = win, two_sided = false)
 
-    R_pred_smoothed = zeros(ComplexF64,nu,nu,length(0:L))
+    R_pred = zeros(ComplexF64,nu,nu,length(-L:L))
     for i = 1 : nu
-        for j = 1 : nu ## This enforcement of conjugate semetry is very bad. Because
-                       ## cross-spectra are not conjugate symetric. 
-            @views temp = at.my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
-            @views temp = .5*(temp[L+1:2L+1] + conj!(temp[L+1:-1:1]))
-            temp[1] = real(temp[1])
-            R_pred_smoothed[i,j,:] = lam .* temp
+        for j = 1 : nu 
+            @views R_pred[i,j,:] = at.my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
         end
     end
-    R_pred_smoothed
+    for l = 0:L
+        R_pred[:,:,L+1+l] .+= (@view R_pred[:,:,L+1-l])'
+        R_pred[:,:,L+1+l] .*= lam[l+1]/2
+    end
+    R_pred
 end
 
 
