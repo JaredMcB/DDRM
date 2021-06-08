@@ -170,7 +170,7 @@ function spectfact_matrix_CKMS(P; ϵ = 1e-10,
 
 
     l, Err ###
-    l
+#     l
 end
 
 
@@ -195,6 +195,31 @@ function matrix_autocov_seq(pred;
     for l = 0:L
         R_pred[:,:,L+1+l] .+= (@view R_pred[:,:,L+1-l])'
         R_pred[:,:,L+1+l] .*= lam[l+1]/2
+    end
+    R_pred
+end
+
+function my_autocov_alt(pred::Array{<:Number,2};
+    L = min(size(pred,2)-1,1500),
+    steps = size(pred,2),
+    nu = size(pred,1),
+    win = "Par"
+    )
+
+    lags = -L:L
+
+    # Smoothed viewing window
+    lam = at._window(L, win = win, two_sided = false)
+
+    R_pred = zeros(ComplexF64,nu,nu,length(0:L))
+    for i = 1 : nu
+        for j = 1 : nu ## This enforcement of conjugate semetry is very bad. Because
+                       ## cross-spectra are not conjugate symetric. 
+            @views temp = at.my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
+            @views temp = .5*(temp[L+1:2L+1] + conj!(temp[L+1:-1:1]))
+            temp[1] = real(temp[1])
+            R_pred[i,j,:] = lam .* temp
+        end
     end
     R_pred
 end
