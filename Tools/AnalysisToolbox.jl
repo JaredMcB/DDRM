@@ -83,6 +83,58 @@ function my_autocor(x::AbstractVector{<:Number},
     my_crosscov(x,x,lags)/my_crosscov(x,x,0:0)[1]
 end
 
+
+function my_autocov(pred::Array{<:Number,2};
+    L = min(size(pred,2)-1,1500),
+    steps = size(pred,2),
+    nu = size(pred,1),
+    win = "Par"
+    )
+
+    lags = -L:L
+
+    # Smoothed viewing window
+    lam = _window(L, win = win, two_sided = false)
+
+    R_pred = zeros(ComplexF64,nu,nu,length(-L:L))
+    for i = 1 : nu
+        for j = 1 : nu 
+            @views R_pred[i,j,:] = my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
+        end
+    end
+    for l = 0:L
+        R_pred[:,:,L+1+l] .+= (@view R_pred[:,:,L+1-l])'
+        R_pred[:,:,L+1+l] .*= lam[l+1]/2
+    end
+    R_pred
+end
+
+function my_autocov_alt(pred::Array{<:Number,2};
+    L = min(size(pred,2)-1,1500),
+    steps = size(pred,2),
+    nu = size(pred,1),
+    win = "Par"
+    )
+
+    lags = -L:L
+
+    # Smoothed viewing window
+    lam = _window(L, win = win, two_sided = false)
+
+    R_pred = zeros(ComplexF64,nu,nu,length(0:L))
+    for i = 1 : nu
+        for j = 1 : nu ## This enforcement of conjugate semetry is very bad. Because
+                       ## cross-spectra are not conjugate symetric. 
+            @views temp = my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
+            @views temp = .5*(temp[L+1:2L+1] + conj!(temp[L+1:-1:1]))
+            temp[1] = real(temp[1])
+            R_pred[i,j,:] = lam .* temp
+        end
+    end
+    R_pred
+end
+
+
 function _smoother(n=4,p=5; ty = "bin")
     if ty == "bin"
         μ = Polynomial(ones(p+1))
