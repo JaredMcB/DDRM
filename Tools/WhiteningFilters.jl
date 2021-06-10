@@ -14,6 +14,7 @@ function get_whf(X::Vector{T};
     par = 1500,             # Order of approximating Lauenat Poly
     M = par,               # number of output lags
     win = "Par",            # Type of smoother for autocov
+    alt = true,
     flags...) where T<: Number;
 
     steps = length(X)
@@ -28,8 +29,9 @@ function get_whf(X::Vector{T};
     par = max(M,par)
     par = min(par,steps - 1)
 
-    R_pred_smoothed = mr.matrix_autocov_seq(reshape(X,1,:); L = par, win)
-
+    R_pred_smoothed = alt ? at.my_autocov_alt(reshape(X,1,:); L = par, win) :
+                            at.my_autocov(reshape(X,1,:); L = par, win)
+ 
     h_m, h_w = subrout(R_pred_smoothed; nfft, M, flags...)
 end
 
@@ -95,15 +97,13 @@ function get_itr_whf(X::Vector{T};
     win = "Par",            # Type of smoother for autocov
     flags...) where T<: Number;
     
-    wx = copy(X)
     h_w = [1]
     h_m = [1]
     for i = 1 : maxit
         wx       = filt(h_w, X)
-        Out      = get_whf(wx[par*(i-1)+1:end]; par, win = "Par")[1:2];
-        h        = Out[2]
+        Out      = get_whf(wx[5par*(i-1)+1:end]; par, win = "Par")[1:2];
         h_m      = conv(h_m, Out[1])
-        h_w      = conv(h_w,h)
+        h_w      = conv(h_w, Out[2])
     end
     
     h_m, h_w

@@ -204,7 +204,7 @@ function vector_wiener_filter_fft(
     nffth = nfft ÷ 2
     L = min(par,steps-1)
 
-    R_pred_smoothed = @timed at.my_autocov(pred; L, steps, nu, win)
+    R_pred_smoothed = @timed at.my_autocov_alt(pred; L, steps, nu, win)
     if verb
         println("Time taken for autocov: ", R_pred_smoothed.time)
         println("Bytes Allocated: ", R_pred_smoothed.bytes)
@@ -216,10 +216,14 @@ function vector_wiener_filter_fft(
         println("Time taken for spectfact: ",S_pred⁻.time)
         println("Bytes Allocated: ",S_pred⁻.bytes)
     end
-
+    
+    println(typeof(S_pred⁻.value)) #d
+    
     S_pred⁻ = nfft >= L+1 ? cat(dims = 3,S_pred⁻.value,zeros(nu,nu,nfft - L - 1)) :
                             (@view S_pred⁻.value[:,:,1:nfft])
-    println(typeof(S_pred⁻))
+    
+    println(typeof(S_pred⁻)) #d
+    
     fft!(S_pred⁻,3)                                 # the final S_pred⁻
 
     S_pred⁺ = zeros(ComplexF64,nu,nu,nfft)
