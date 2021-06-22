@@ -106,34 +106,8 @@ function my_autocov(pred::Array{<:Number,2};
         R_pred[:,:,L+1+l] .+= (@view R_pred[:,:,L+1-l])'
         R_pred[:,:,L+1+l] .*= lam[l+1]/2
     end
-    R_pred
+    R_pred[:,:,L+1:end]
 end
-
-function my_autocov_alt(pred::Array{<:Number,2};
-    L = min(size(pred,2)-1,1500),
-    steps = size(pred,2),
-    nu = size(pred,1),
-    win = "Par"
-    )
-
-    lags = -L:L
-
-    # Smoothed viewing window
-    lam = _window(L, win = win, two_sided = false)
-
-    R_pred = zeros(ComplexF64,nu,nu,length(0:L))
-    for i = 1 : nu
-        for j = 1 : nu ## This enforcement of conjugate semetry is very bad. Because
-                       ## cross-spectra are not conjugate symetric. 
-            @views temp = my_crosscov(pred[i,1:steps],pred[j,1:steps],lags)
-            @views temp = .5*(temp[L+1:2L+1] + conj!(temp[L+1:-1:1]))
-            temp[1] = real(temp[1])
-            R_pred[i,j,:] = lam .* temp
-        end
-    end
-    R_pred
-end
-
 
 function _smoother(n=4,p=5; ty = "bin")
     if ty == "bin"
@@ -157,14 +131,17 @@ function smoother_plot(n,p,ty)
 end
 
 function _window(L; win = "Par",two_sided = true)
+    # The "L+1"'s in the denominator is so that the last 
+    # entry in lam is not always 0. This effectively 
+    # with L = L+1
     if win == "Bar"
-        lam = 1 .- (0:L)/L
+        lam = 1 .- (0:L)/(L+1)
     elseif win == "Tuk"
-        lam = .5*(1 .+ cos.(pi/L*(0:L)))
+        lam = .5*(1 .+ cos.( pi*(0:L)/(L+1) ))
     elseif win == "Par"
-        LL = Int(floor(L/2))
-        lam1 = 1 .- 6*((0:LL)/L).^2 .+ 6*((0:LL)/L).^3
-        lam2 = 2*(1 .- (LL+1:L)/L).^3
+        LL = Int(floor((L+1)/2))
+        lam1 = 1 .- 6*((0:LL)/(L+1)).^2 .+ 6*((0:LL)/(L+1)).^3
+        lam2 = 2*(1 .- (LL+1:L)/(L+1)).^3
         lam = [lam1; lam2]
     else
         lam = ones(L+1)
