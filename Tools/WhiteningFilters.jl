@@ -4,6 +4,7 @@ using LinearAlgebra
 using DSP
 using FFTW
 using ToeplitzMatrices: Toeplitz
+using StatsBase: var
 
 at = include("AnalysisToolbox.jl")
 mr = include("WFMR.jl")
@@ -14,7 +15,6 @@ function get_whf(X::Vector{T};
     par = 1500,             # Order of approximating Lauenat Poly
     M = par,               # number of output lags
     win = "Par",            # Type of smoother for autocov
-    alt = true,
     flags...) where T<: Number;
 
     steps = length(X)
@@ -24,13 +24,13 @@ function get_whf(X::Vector{T};
         nfft = max(nfft,par,2*M)
     end
     
+    ## We need M ≤ par < steps
     M > steps - 1 && println("M is bigger than length of time series")
     M   = min(M, steps - 1)
     par = max(M,par)
     par = min(par,steps - 1)
 
-    R_pred_smoothed = alt ? at.my_autocov_alt(reshape(X,1,:); L = par, win) :
-                            at.my_autocov(reshape(X,1,:); L = par, win)
+    R_pred_smoothed = at.my_autocov(reshape(X,1,:); L = par, win)
  
     h_m, h_w = subrout(R_pred_smoothed; nfft, M, flags...)
 end
@@ -63,10 +63,12 @@ function CKMS(R;          # fitst three are common to both subroutines
 end
 
 
-function whf_cholesky(R;  # fitst three are common to both subroutines
-    nfft,                 # resolution of z-spectrum on unit cirlce
-    M,                    # number of out put lags.
+function whf_cholesky(R;  # fitst three are common to both subroutine
+    M = 100,                    # number of out put lags.
+    nfft = 2M,            # The demesion of the covariance matrix we factor
     eps = 1e-4)
+    
+    println("You are using Cholesky")
     
     par = size(R,3)
     
@@ -79,32 +81,85 @@ function whf_cholesky(R;  # fitst three are common to both subroutines
     T = Array(Toeplitz(conj(R),R)) + σ^2*I
     T = conj(cholesky(T).L)
     
-    h_m = T[nfft - M + 1:end,nfft - M + 1]
+    h_m = reverse(T[end,end-M-1:end]) #T[nfft - M + 1:end,nfft - M + 1]
     
     T = inv(T);
 
-    h_w = T[nfft - M + 1:end,nfft - M + 1]
+    h_w = reverse(T[end,end-M-1:end]) #T[nfft - M + 1:end,nfft - M + 1]
+    h_m, h_w
+end
+
+"""
+    get_itr_whf is a function that computes whitening filters in an iteratatively
+
+Examples:
+~~~~~
+x = pred[:]
+
+h_m, h_w = whf.get_itr_whf(x; maxit = 3, par = 100, getter = whf.get_whf_B);
+
+wx = filter_and_plot(h_w,x)
+~~~~~
+~~~~~
+x = pred[:]
+
+h_m, h_w = whf.get_itr_whf(x; maxit = 5, par = 1000, subrout = whf.whf_cholesky)
+
+wx = filter_and_plot(h_w,x)
+~~~~~
+"""
+
+function get_itr_whf(X::Vector{T};
+    getter = get_whf,
+    maxit = 5,
+    par = 1500,
+    flags_itr...) where T<: Number;
+    
+    h_w = [1]
+    h_m = [1]
+    println("Starting iterations")
+    for i = 1 : maxit
+        wx       = filt(h_w, X)
+        Out      = getter(wx[maxit*par*(i-1)+1:end]; par, flags_itr...)[1:2];
+        h_m      = conv(h_m, Out[1])
+        h_w      = conv(h_w, Out[2])
+    end
+    println("Ending iterations")
     h_m, h_w
 end
 
 
-function get_itr_whf(X::Vector{T};
-    maxit = 5,
-    subrout = CKMS,
-    nfft = 0,
-    par = 1500,             # Order of approximating Lauenat Poly
-    M = par,               # number of output lags
-    win = "Par",            # Type of smoother for autocov
-    flags...) where T<: Number;
+function Get_PREDhash(X::Vector{T};M_out = 30) where T<: Number;
+    steps = length(X)
     
-    h_w = [1]
-    h_m = [1]
-    for i = 1 : maxit
-        wx       = filt(h_w, X)
-        Out      = get_whf(wx[5par*(i-1)+1:end]; par, win = "Par")[1:2];
-        h_m      = conv(h_m, Out[1])
-        h_w      = conv(h_w, Out[2])
+    Xh = zeros(ComplexF64,steps-M_out+1,M_out)
+    for m = 1:M_out
+        Xh[:,m] = @view X[m:(steps + m - M_out)]
     end
+    
+    Xh
+end
+
+function get_whf_B(X::Vector{<:Number}; par = 50, eps = 1e-6)
+    # 1. Form X-hash
+    M_out = par
+    
+    Xh = Get_PREDhash(X; M_out)
+
+    # 2. Factor
+    # a small amount of regularization is needed so that the matrix we factor is PD.
+    σ = eps^2*var(X)/2
+    W = Xh'Xh/size(Xh,1) + σ*I
+    println(cond(W))
+
+    W = conj(cholesky(W).L)
+    println(cond(W))
+    
+    h_m = reverse(W[end,:])
+    
+    W = inv(W)
+    
+    h_w = reverse(W[end,:])
     
     h_m, h_w
 end

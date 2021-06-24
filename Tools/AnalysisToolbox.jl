@@ -13,7 +13,9 @@ using PyPlot # for emp_pdf and emp_cdf
 """
     my_crosscov
 I don't remember why I wrote this or if it has any advantage over some builtin
-function.
+function. I believe the StatesBase and Statsitics function don't use fft and this one does.
+
+Also, I like the conjugate to be in the second agument. 
 """
 function _crosscov_con(x::AbstractVector{<:Number},
                       y::AbstractVector{<:Number},
@@ -54,7 +56,7 @@ function _crosscov_dot(x::AbstractVector{<:Number},
 end
 
 """
-This implimentation of crosscovariance buts the conjugate in the second argument.
+This implimentation of crosscovariance puts the conjugate in the second argument.
 
 
 

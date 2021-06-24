@@ -1,7 +1,8 @@
 module WFMR_bs
 
 using DSP: conv # Solely for Psi
-
+using LinearAlgebra: cond
+using StatsBase: std
 
 at = include("AnalysisToolbox.jl")
 
@@ -56,20 +57,26 @@ end
 sig and pred should 2D arrays
 """
 
-function get_wf_bs(sig::Array{<: Number,2},pred::Array{<: Number,2}; M_out)
+function get_wf_bs(sig::Array{<:Number,2},pred::Array{<:Number,2}; M_out, eps = 0, pcond = false)
     d, stepsy = size(sig)
     nu, stepsx = size(pred)
     stepsx == stepsy || print("X and Y are not the same length. Taking min.")
     steps = minimum([stepsx stepsy])
 
     sig = Array(transpose(sig))
+    
+    # Regularization
+    pred = pred + eps * randn(eltype(pred),size(pred)) .* std(pred,dims = 2)
+    
     pred = Array(transpose(pred))
 
     PRED = zeros(ComplexF64,steps-M_out+1,M_out*nu)
     for m = 1:M_out
         PRED[:,nu*(M_out-m)+1:nu*(M_out-m+1)] = @view pred[m:(steps + m - M_out),:]
     end
-
+    
+    pcond && println("Condition Number of PRED is ", cond(PRED))
+    
     h = PRED \ sig[M_out:steps,:]
 
     h_wfbs = zeros(ComplexF64,d,nu,M_out)
